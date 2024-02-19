@@ -6,7 +6,6 @@
 build/
 
 morpheme.yaml
-*.lock
 
 .idea/
 
