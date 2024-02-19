@@ -81,6 +81,7 @@ class Color2DartCommand extends Command {
       pathBaseColor
           .write('''import 'package:core/src/shared/global/global_cubit.dart';
 import 'package:flutter/material.dart' show BuildContext, Color;
+import 'package:morpheme_library/morpheme_library.dart';
 
 extension MorphemeColorExtension on BuildContext {
   MorphemeColor get color => read<GlobalCubit>().state.theme.color;
