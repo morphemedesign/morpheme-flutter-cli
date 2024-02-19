@@ -83,7 +83,7 @@ class Color2DartCommand extends Command {
 import 'package:flutter/material.dart' show BuildContext, Color;
 
 extension MorphemeColorExtension on BuildContext {
-  MorphemeColor get color => selectedTheme.color;
+  MorphemeColor get color => read<GlobalCubit>().state.theme.color;
 }
 
 abstract base class MorphemeColor {
