@@ -1,4 +1,4 @@
-import 'package:morpheme/helper/recase.dart';
+import 'package:morpheme_cli/helper/recase.dart';
 
 enum CacheStrategy {
   asyncOrCache('async_or_cache'),

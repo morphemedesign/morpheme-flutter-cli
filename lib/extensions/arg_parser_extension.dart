@@ -1,4 +1,4 @@
-import 'package:morpheme/dependency_manager.dart';
+import 'package:morpheme_cli/dependency_manager.dart';
 
 extension ArgParserExtension on ArgParser {
   void addOptionTarget() {

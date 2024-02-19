@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
-import 'package:morpheme/constants.dart';
-import 'package:morpheme/dependency_manager.dart';
-import 'package:morpheme/helper/helper.dart';
+import 'package:morpheme_cli/constants.dart';
+import 'package:morpheme_cli/dependency_manager.dart';
+import 'package:morpheme_cli/helper/helper.dart';
 
 class Local2DartCommand extends Command {
   @override

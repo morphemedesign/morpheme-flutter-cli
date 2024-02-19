@@ -1,5 +1,5 @@
-import 'package:morpheme/helper/status_helper.dart';
-import 'package:morpheme/helper/yaml_helper.dart';
+import 'package:morpheme_cli/helper/status_helper.dart';
+import 'package:morpheme_cli/helper/yaml_helper.dart';
 
 abstract class FlavorHelper {
   static Map<dynamic, dynamic> byFlavor(

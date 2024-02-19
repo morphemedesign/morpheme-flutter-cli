@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:morpheme/build_app/build_command.dart';
-import 'package:morpheme/build_app/prebuild_command.dart';
-import 'package:morpheme/dependency_manager.dart';
-import 'package:morpheme/generate/generate.dart';
-import 'package:morpheme/project/project.dart';
-import 'package:morpheme/tools/tools.dart';
+import 'package:morpheme_cli/build_app/build_command.dart';
+import 'package:morpheme_cli/build_app/prebuild_command.dart';
+import 'package:morpheme_cli/dependency_manager.dart';
+import 'package:morpheme_cli/generate/generate.dart';
+import 'package:morpheme_cli/project/project.dart';
+import 'package:morpheme_cli/tools/tools.dart';
 
 void main(List<String> arguments) {
   final runner = CommandRunner('morpheme',

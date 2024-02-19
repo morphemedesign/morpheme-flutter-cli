@@ -1,12 +1,12 @@
 import 'dart:io';
 
-import 'package:morpheme/constants.dart';
-import 'package:morpheme/dependency_manager.dart';
-import 'package:morpheme/helper/flutter_helper.dart';
-import 'package:morpheme/helper/modular_helper.dart';
-import 'package:morpheme/helper/read_json_file.dart';
-import 'package:morpheme/helper/recase.dart';
-import 'package:morpheme/helper/status_helper.dart';
+import 'package:morpheme_cli/constants.dart';
+import 'package:morpheme_cli/dependency_manager.dart';
+import 'package:morpheme_cli/helper/flutter_helper.dart';
+import 'package:morpheme_cli/helper/modular_helper.dart';
+import 'package:morpheme_cli/helper/read_json_file.dart';
+import 'package:morpheme_cli/helper/recase.dart';
+import 'package:morpheme_cli/helper/status_helper.dart';
 
 class FeatureCommand extends Command {
   FeatureCommand() {

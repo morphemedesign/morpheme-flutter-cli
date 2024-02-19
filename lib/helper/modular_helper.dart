@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:collection/collection.dart';
-import 'package:morpheme/dependency_manager.dart';
-import 'package:morpheme/helper/helper.dart';
+import 'package:morpheme_cli/dependency_manager.dart';
+import 'package:morpheme_cli/helper/helper.dart';
 
 abstract class ModularHelper {
   static const int defaultConcurrent = 6;

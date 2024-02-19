@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:morpheme/constants.dart';
-import 'package:morpheme/dependency_manager.dart';
+import 'package:morpheme_cli/constants.dart';
+import 'package:morpheme_cli/dependency_manager.dart';
 
 class ChangelogCommand extends Command {
   ChangelogCommand() {

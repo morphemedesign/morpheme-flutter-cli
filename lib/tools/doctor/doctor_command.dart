@@ -1,6 +1,6 @@
-import 'package:morpheme/constants.dart';
-import 'package:morpheme/dependency_manager.dart';
-import 'package:morpheme/helper/flutter_helper.dart';
+import 'package:morpheme_cli/constants.dart';
+import 'package:morpheme_cli/dependency_manager.dart';
+import 'package:morpheme_cli/helper/flutter_helper.dart';
 
 class DoctorCommand extends Command {
   @override

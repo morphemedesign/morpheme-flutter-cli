@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:morpheme/helper/helper.dart';
+import 'package:morpheme_cli/helper/helper.dart';
 
 import '../../constants.dart';
 import '../../dependency_manager.dart';

@@ -1,6 +1,6 @@
-import 'package:morpheme/build_app/prebuild_ios/prebuild_ios_command.dart';
-import 'package:morpheme/constants.dart';
-import 'package:morpheme/dependency_manager.dart';
+import 'package:morpheme_cli/build_app/prebuild_ios/prebuild_ios_command.dart';
+import 'package:morpheme_cli/constants.dart';
+import 'package:morpheme_cli/dependency_manager.dart';
 
 class PreBuildCommand extends Command {
   PreBuildCommand() {

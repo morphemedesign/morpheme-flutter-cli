@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:morpheme/dependency_manager.dart';
+import 'package:morpheme_cli/dependency_manager.dart';
 
 abstract class FlutterHelper {
   static String getCommandFlutter() {

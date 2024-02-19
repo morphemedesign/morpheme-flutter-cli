@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
-import 'package:morpheme/constants.dart';
-import 'package:morpheme/dependency_manager.dart';
-import 'package:morpheme/extensions/extensions.dart';
-import 'package:morpheme/helper/helper.dart';
+import 'package:morpheme_cli/constants.dart';
+import 'package:morpheme_cli/dependency_manager.dart';
+import 'package:morpheme_cli/extensions/extensions.dart';
+import 'package:morpheme_cli/helper/helper.dart';
 
 class CucumberCommand extends Command {
   CucumberCommand() {

@@ -1,4 +1,4 @@
-import 'package:morpheme/dependency_manager.dart' as dependency_manager;
+import 'package:morpheme_cli/dependency_manager.dart' as dependency_manager;
 
 abstract class DirectoryHelper {
   static void createDir(String path, {bool recursive = false}) {

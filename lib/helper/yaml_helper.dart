@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:morpheme/dependency_manager.dart';
-import 'package:morpheme/helper/status_helper.dart';
+import 'package:morpheme_cli/dependency_manager.dart';
+import 'package:morpheme_cli/helper/status_helper.dart';
 import 'package:yaml_writer/yaml_writer.dart';
 
 abstract class YamlHelper {

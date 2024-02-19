@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:morpheme/constants.dart';
-import 'package:morpheme/dependency_manager.dart';
-import 'package:morpheme/enum/cache_strategy.dart';
-import 'package:morpheme/extensions/extensions.dart';
-import 'package:morpheme/helper/helper.dart';
+import 'package:morpheme_cli/constants.dart';
+import 'package:morpheme_cli/dependency_manager.dart';
+import 'package:morpheme_cli/enum/cache_strategy.dart';
+import 'package:morpheme_cli/extensions/extensions.dart';
+import 'package:morpheme_cli/helper/helper.dart';
 import 'package:path_to_regexp/path_to_regexp.dart';
 
 enum TypeMapper { toEntity, toResponse }

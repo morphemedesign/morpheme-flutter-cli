@@ -1,4 +1,4 @@
-import 'package:morpheme/helper/helper.dart';
+import 'package:morpheme_cli/helper/helper.dart';
 
 extension MapYamlExtension on Map {
   String get projectName => this['project_name'] ?? 'morpheme';

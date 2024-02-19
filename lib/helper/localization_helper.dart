@@ -1,6 +1,6 @@
-import 'package:morpheme/dependency_manager.dart';
-import 'package:morpheme/helper/status_helper.dart';
-import 'package:morpheme/helper/yaml_helper.dart';
+import 'package:morpheme_cli/dependency_manager.dart';
+import 'package:morpheme_cli/helper/status_helper.dart';
+import 'package:morpheme_cli/helper/yaml_helper.dart';
 
 class LocalizationHelper {
   LocalizationHelper(String pathMorphemeyaml) {
