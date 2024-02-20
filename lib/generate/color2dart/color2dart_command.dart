@@ -80,7 +80,7 @@ class Color2DartCommand extends Command {
           : {};
       pathBaseColor
           .write('''import 'package:core/src/shared/global/global_cubit.dart';
-import 'package:flutter/material.dart' show BuildContext, Color;
+import 'package:flutter/material.dart';
 import 'package:morpheme_library/morpheme_library.dart';
 
 extension MorphemeColorExtension on BuildContext {
@@ -90,7 +90,11 @@ extension MorphemeColorExtension on BuildContext {
 abstract base class MorphemeColor {
   ${colors.entries.map((e) {
         final key = e.key.toString().camelCase;
-        return '''  Color get ${key.camelCase};''';
+        if (e.value is Map) {
+          return '''  MaterialColor get ${key.camelCase};''';
+        } else {
+          return '''  Color get ${key.camelCase};''';
+        }
       }).join('\n')}
 }
 ''');
@@ -234,7 +238,7 @@ final class MorphemeTheme${theme.toString().pascalCase} extends MorphemeTheme {
     final pathItemColor = join(
         pathColors, 'src', 'morpheme_color_${theme.toString().snakeCase}.dart');
     final colors = value['colors'] is Map ? value['colors'] as Map : {};
-    pathItemColor.write('''import 'package:flutter/material.dart' show Color;
+    pathItemColor.write('''import 'package:flutter/material.dart';
 
 import 'morpheme_color.dart';
 
@@ -248,13 +252,30 @@ final class MorphemeColor${theme.pascalCase} extends MorphemeColor {
   MorphemeColor${theme.pascalCase}._();
 
   ${colors.entries.map((e) {
-      final key = e.key.toString().camelCase;
-      final value = validateAndConvertColor(e.value.toString());
-      return '''  @override
-  Color get $key => const Color($value);''';
+      return generateColorOrMatrialColor(e);
     }).join('\n')}
 }
 ''');
+  }
+
+  String generateColorOrMatrialColor(MapEntry entry) {
+    final key = entry.key.toString().camelCase;
+    dynamic value = entry.value;
+    if (value is Map) {
+      final primary = validateAndConvertColor(value['primary'].toString());
+      final swatch = value['swatch'] as Map;
+      return '''  @override
+  MaterialColor $key = const MaterialColor(
+    $primary,
+    <int, Color>{
+      ${swatch.entries.map((e) => '${e.key}: Color(${validateAndConvertColor(e.value.toString())}),').join('\n      ')} 
+    },
+  );''';
+    } else {
+      value = validateAndConvertColor(value.toString());
+      return '''  @override
+  Color get $key => const Color($value);''';
+    }
   }
 
   String validateAndConvertColor(String color) {
