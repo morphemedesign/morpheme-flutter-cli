@@ -91,7 +91,7 @@ class Json2DartCommand extends Command {
     projectName = YamlHelper.loadFileYaml(argMorphemeYaml).projectName;
 
     final isEndpoint = argResults?['endpoint'] ?? true;
-    if (isEndpoint) 'morpheme endpoint --json2dart'.run;
+    if (isEndpoint) await 'morpheme endpoint --json2dart'.run;
 
     appsName = argResults?['apps-name'];
 

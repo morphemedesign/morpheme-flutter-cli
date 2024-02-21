@@ -19,7 +19,7 @@ class LocalizationCommand extends Command {
   String get category => Constants.generate;
 
   @override
-  void run() {
+  void run() async {
     final argMorphemeYaml = argResults.getOptionMorphemeYaml();
 
     YamlHelper.validateMorphemeYaml(argMorphemeYaml);
@@ -61,7 +61,7 @@ class LocalizationCommand extends Command {
       pathArbDefault.write(merged);
     });
 
-    FlutterHelper.run(
+    await FlutterHelper.run(
         'gen-l10n --arb-dir="${morphemeYamlHelper.arbDir}" --template-arb-file="${morphemeYamlHelper.templateArbFile}" --output-localization-file="${morphemeYamlHelper.outputLocalizationFile}" --output-class="${morphemeYamlHelper.outputClass}" --output-dir="${morphemeYamlHelper.outputDir}" --no-synthetic-package');
 
     StatusHelper.success('generate l10n to ${morphemeYamlHelper.outputDir}');

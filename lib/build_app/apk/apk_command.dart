@@ -17,6 +17,7 @@ class ApkCommand extends Command {
     argParser.addOptionBuildName();
     argParser.addFlagObfuscate();
     argParser.addOptionSplitDebugInfo();
+    argParser.addFlagGenerateL10n();
   }
 
   @override
@@ -35,10 +36,13 @@ class ApkCommand extends Command {
     final argBuildName = argResults.getOptionBuildName();
     final argObfuscate = argResults.getFlagObfuscate();
     final argSplitDebugInfo = argResults.getOptionSplitDebugInfo();
+    final argGenerateL10n = argResults.getFlagGenerateL10n();
 
     YamlHelper.validateMorphemeYaml(argMorphemeYaml);
 
-    'morpheme l10n --morpheme-yaml "$argMorphemeYaml"'.run;
+    if (argGenerateL10n) {
+      await 'morpheme l10n --morpheme-yaml "$argMorphemeYaml"'.run;
+    }
 
     final flavor = FlavorHelper.byFlavor(argFlavor, argMorphemeYaml);
 
@@ -50,7 +54,7 @@ class ApkCommand extends Command {
     });
     final mode = argResults.getMode();
 
-    FlutterHelper.run(
+    await FlutterHelper.run(
       'build apk -t $argTarget ${dartDefines.join(' ')} $mode $argBuildNumber $argBuildName $argObfuscate $argSplitDebugInfo',
       showLog: true,
     );

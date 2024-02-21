@@ -136,4 +136,12 @@ path to an APK. For iOS applications, the path to an IPA. Other device types do 
 prebuilt application binaries.''',
     );
   }
+
+  void addFlagGenerateL10n({bool defaultsTo = true}) {
+    addFlag(
+      'l10n',
+      help: 'Generate l10n first before running other command.',
+      defaultsTo: defaultsTo,
+    );
+  }
 }

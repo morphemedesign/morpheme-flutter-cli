@@ -49,4 +49,5 @@ extension ArgResultsExtension on ArgResults? {
       this?['split-debug-info'] != null && this?['obfuscate']
           ? '--split-debug-info=${this!['split-debug-info']}'
           : '';
+  bool getFlagGenerateL10n() => this?['l10n'];
 }

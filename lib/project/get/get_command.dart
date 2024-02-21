@@ -6,6 +6,7 @@ import 'package:morpheme_cli/helper/helper.dart';
 class GetCommand extends Command {
   GetCommand() {
     argParser.addOptionMorphemeYaml();
+    argParser.addFlagGenerateL10n();
   }
   @override
   String get name => 'get';
@@ -20,10 +21,13 @@ class GetCommand extends Command {
   @override
   void run() async {
     final argMorphemeYaml = argResults.getOptionMorphemeYaml();
+    final argGenerateL10n = argResults.getFlagGenerateL10n();
 
     YamlHelper.validateMorphemeYaml(argMorphemeYaml);
 
-    'morpheme l10n --morpheme-yaml "$argMorphemeYaml"'.run;
+    if (argGenerateL10n) {
+      await 'morpheme l10n --morpheme-yaml "$argMorphemeYaml"'.run;
+    }
 
     final yaml = YamlHelper.loadFileYaml(argMorphemeYaml);
 

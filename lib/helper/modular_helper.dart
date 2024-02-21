@@ -28,20 +28,19 @@ abstract class ModularHelper {
         try {
           print('🚀 $path: ${commands.join(', ')}');
           for (var command in commands) {
-            command.start(
+            await command.start(
               workingDirectory: e,
-              progress: Progress(
-                (line) {
-                  stdout?.call(line);
-                },
-                stderr: (line) {
-                  if (line.isEmpty) return;
-                  if (line.contains('Waiting for another flutter command')) {
-                    return;
-                  }
-                  printerr(red(line));
-                },
-              ),
+              showLog: false,
+              progressOut: (line) {
+                stdout?.call(line);
+              },
+              progressErr: (line) {
+                if (line.isEmpty) return;
+                if (line.contains('Waiting for another flutter command')) {
+                  return;
+                }
+                printerr(red(line));
+              },
             );
           }
           customCommand?.call(e);
@@ -132,8 +131,9 @@ abstract class ModularHelper {
       return execute(['${FlutterHelper.getCommandDart()} format .']);
     } else {
       for (var element in paths) {
-        '${FlutterHelper.getCommandDart()} format .'.start(
+        await '${FlutterHelper.getCommandDart()} format .'.start(
           workingDirectory: element,
+          showLog: false,
         );
       }
     }

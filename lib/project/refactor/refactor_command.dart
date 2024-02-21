@@ -50,7 +50,7 @@ class RefactorCommand extends Command {
   bool includeLibrary = false;
 
   @override
-  void run() {
+  void run() async {
     oldName = argResults?['old-name'] ?? '';
     newName = argResults?['new-name'] ?? '';
 
@@ -68,7 +68,7 @@ class RefactorCommand extends Command {
       deleteDir(join(current, 'morpheme_library_temp'));
     }
 
-    'morpheme get'.run;
+    await 'morpheme get'.run;
 
     StatusHelper.success('morpheme refactor');
   }

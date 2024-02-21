@@ -13,10 +13,10 @@ class DoctorCommand extends Command {
   String get category => Constants.tools;
 
   @override
-  void run() {
+  void run() async {
     if (which('flutter').found) {
       print('${green('[✓]')} Flutter installed');
-      FlutterHelper.run('doctor');
+      await FlutterHelper.run('doctor');
     } else {
       printerr('${red('[x]')} Flutter not installed');
       printerr(

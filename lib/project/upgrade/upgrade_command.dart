@@ -58,8 +58,8 @@ class UpgradeCommand extends Command {
       StatusHelper.failed(
           'You don\'t have directory "$directory" in project, make sure to have "$directory" first');
     }
-    FlutterHelper.start('packages upgrade', workingDirectory: path);
-    FlutterHelper.start('packages get', workingDirectory: path);
+    await FlutterHelper.start('packages upgrade', workingDirectory: path);
+    await FlutterHelper.start('packages get', workingDirectory: path);
 
     StatusHelper.success();
   }

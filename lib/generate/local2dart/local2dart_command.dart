@@ -25,8 +25,8 @@ class Local2DartCommand extends Command {
     final pathPackageLocal2dart =
         join(current, 'core', 'packages', 'local2dart');
     if (!exists(pathPackageLocal2dart)) {
-      'morpheme core local2dart'.run;
-      FlutterHelper.start('pub add sqflite path equatable',
+      await 'morpheme core local2dart'.run;
+      await FlutterHelper.start('pub add sqflite path equatable',
           workingDirectory: join(pathPackageLocal2dart));
     }
 

@@ -15,25 +15,25 @@ class CoreCommand extends Command {
   String get category => Constants.generate;
 
   @override
-  void run() {
+  void run() async {
     if (argResults?.rest.isEmpty ?? true) {
       StatusHelper.failed(
           'Core package name is empty, add a new core package with "morpheme core <package-name>"');
     }
 
     final packageName = argResults?.rest.first ?? '';
-    addNewFeature(packageName);
+    await addNewFeature(packageName);
     addNewFeatureInPubspec(packageName);
     addNewGitIgnore(packageName);
 
     StatusHelper.success('generate package $packageName in core');
   }
 
-  void addNewFeature(String packageName) {
+  Future<void> addNewFeature(String packageName) async {
     final pathPackages =
         join(current, 'core', 'packages', packageName.snakeCase);
 
-    FlutterHelper.run(
+    await FlutterHelper.run(
         'create --template=package "core/packages/${packageName.snakeCase}"');
 
     join(pathPackages, 'pubspec.yaml').write('''name: $packageName

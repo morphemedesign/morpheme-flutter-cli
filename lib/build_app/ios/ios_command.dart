@@ -18,6 +18,7 @@ class IosCommand extends Command {
     argParser.addFlagCodesign();
     argParser.addFlagObfuscate();
     argParser.addOptionSplitDebugInfo();
+    argParser.addFlagGenerateL10n();
   }
 
   @override
@@ -38,10 +39,13 @@ class IosCommand extends Command {
     final argCodesign = argResults.getFlagCodesign();
     final argObfuscate = argResults.getFlagObfuscate();
     final argSplitDebugInfo = argResults.getOptionSplitDebugInfo();
+    final argGenerateL10n = argResults.getFlagGenerateL10n();
 
     YamlHelper.validateMorphemeYaml(argMorphemeYaml);
 
-    'morpheme l10n --morpheme-yaml "$argMorphemeYaml"'.run;
+    if (argGenerateL10n) {
+      await 'morpheme l10n --morpheme-yaml "$argMorphemeYaml"'.run;
+    }
 
     final flavor = FlavorHelper.byFlavor(argFlavor, argMorphemeYaml);
 
@@ -53,7 +57,7 @@ class IosCommand extends Command {
     });
     final mode = argResults.getMode();
 
-    FlutterHelper.run(
+    await FlutterHelper.run(
       'build ios -t $argTarget ${dartDefines.join(' ')} $mode $argBuildNumber $argBuildName $argCodesign $argObfuscate $argSplitDebugInfo',
       showLog: true,
     );

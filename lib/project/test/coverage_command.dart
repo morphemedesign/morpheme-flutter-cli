@@ -91,7 +91,7 @@ class CoverageCommand extends Command {
     if (which('genhtml').notfound) {
       StatusHelper.failed('failed cannot generate report lcov html.');
     }
-    'genhtml $lcovDir -o $outputHtmlDir'.run;
+    await 'genhtml $lcovDir -o $outputHtmlDir'.run;
 
     StatusHelper.success();
   }

@@ -33,7 +33,7 @@ class AppsCommand extends Command {
 
     final pathApp = join(current, 'apps', appsName);
 
-    addNewApps(pathApp, appsName);
+    await addNewApps(pathApp, appsName);
     addNewAppsInLocator(pathApp, appsName);
     addNewAppsInPubspec(pathApp, appsName);
     addNewGitIgnore(pathApp, appsName);
@@ -42,14 +42,14 @@ class AppsCommand extends Command {
 
     await ModularHelper.format([pathApp, '.']);
 
-    FlutterHelper.start('pub get', workingDirectory: pathApp);
-    FlutterHelper.run('pub get');
+    await FlutterHelper.start('pub get', workingDirectory: pathApp);
+    await FlutterHelper.run('pub get');
 
     StatusHelper.success('generate apps $appsName');
   }
 
-  void addNewApps(String pathApps, String appsName) {
-    FlutterHelper.run('create --template=package "$pathApps"');
+  Future<void> addNewApps(String pathApps, String appsName) async {
+    await FlutterHelper.run('create --template=package "$pathApps"');
 
     join(pathApps, 'pubspec.yaml').write('''name: $appsName
 description: A new Flutter package project.

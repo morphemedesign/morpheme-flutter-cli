@@ -13,6 +13,7 @@ class RunCommand extends Command {
     argParser.addOptionFlavor(defaultsTo: Constants.dev);
     argParser.addOptionTarget();
     argParser.addOptionMorphemeYaml();
+    argParser.addFlagGenerateL10n();
   }
 
   @override
@@ -31,10 +32,13 @@ class RunCommand extends Command {
     final argTarget = argResults.getOptionTarget();
     final argFlavor = argResults.getOptionFlavor(defaultTo: Constants.dev);
     final argMorphemeYaml = argResults.getOptionMorphemeYaml();
+    final argGenerateL10n = argResults.getFlagGenerateL10n();
 
     YamlHelper.validateMorphemeYaml(argMorphemeYaml);
 
-    'morpheme l10n --morpheme-yaml "$argMorphemeYaml"'.run;
+    if (argGenerateL10n) {
+      await 'morpheme l10n --morpheme-yaml "$argMorphemeYaml"'.run;
+    }
 
     final flavor = FlavorHelper.byFlavor(argFlavor, argMorphemeYaml);
 
@@ -45,7 +49,7 @@ class RunCommand extends Command {
       dartDefines.add('${Constants.dartDefine} "$key=$value"');
     });
     String mode = argResults.getMode();
-    FlutterHelper.run(
+    await FlutterHelper.run(
       'run -t $argTarget ${dartDefines.join(' ')} $mode',
       showLog: true,
     );

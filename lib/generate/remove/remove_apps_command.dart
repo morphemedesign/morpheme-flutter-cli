@@ -53,7 +53,7 @@ class RemoveAppsCommand extends Command {
 
     pathPubspec.write(pubspec);
 
-    '${FlutterHelper.getCommandDart()} format .'.run;
+    await '${FlutterHelper.getCommandDart()} format .'.run;
 
     StatusHelper.success('removed apps $appsName');
   }

@@ -10,6 +10,7 @@ class CucumberCommand extends Command {
   CucumberCommand() {
     argParser.addOptionFlavor(defaultsTo: Constants.dev);
     argParser.addOptionMorphemeYaml();
+    argParser.addFlagGenerateL10n();
   }
   @override
   String get name => 'cucumber';
@@ -22,7 +23,7 @@ class CucumberCommand extends Command {
   String get category => Constants.project;
 
   @override
-  void run() {
+  void run() async {
     if (which('gherkin').notfound) {
       StatusHelper.failed('gherkin not found in your machine');
     }
@@ -34,10 +35,13 @@ class CucumberCommand extends Command {
 
     final argFlavor = argResults.getOptionFlavor(defaultTo: Constants.dev);
     final argMorphemeYaml = argResults.getOptionMorphemeYaml();
+    final argGenerateL10n = argResults.getFlagGenerateL10n();
 
     YamlHelper.validateMorphemeYaml(argMorphemeYaml);
 
-    'morpheme l10n --morpheme-yaml "$argMorphemeYaml"'.run;
+    if (argGenerateL10n) {
+      await 'morpheme l10n --morpheme-yaml "$argMorphemeYaml"'.run;
+    }
 
     final flavor = FlavorHelper.byFlavor(argFlavor, argMorphemeYaml);
     FirebaseHelper.run(argFlavor, argMorphemeYaml);
@@ -57,8 +61,11 @@ class CucumberCommand extends Command {
     List<Map<String, String>> ndjsons = [];
 
     for (var element in features) {
-      final console = 'gherkin "$element"'.start(progress: Progress.capture());
-      ndjsons.add({'ndjson': console.lines.join('\n')});
+      await 'gherkin "$element"'.start(
+        progressOut: (line) {
+          ndjsons.add({'ndjson': line});
+        },
+      );
     }
 
     final pathNdjson = join(current, 'integration_test', 'ndjson');
@@ -69,9 +76,9 @@ class CucumberCommand extends Command {
 
     print('Starting cucumber integration test....');
 
-    FlutterHelper.start(
+    await FlutterHelper.start(
       'test integration_test/cucumber_test.dart ${dartDefines.join(' ')} --dart-define "INTEGRATION_TEST=true" --no-pub',
-      progress: Progress((line) {
+      progressOut: (line) {
         if (line.contains('cucumber-report')) {
           final dir = join(current, 'integration_test', 'report');
           DirectoryHelper.createDir(dir);
@@ -82,11 +89,11 @@ class CucumberCommand extends Command {
           if (which('npm').found) {
             'npm install'.start(
               workingDirectory: join(current, 'integration_test', 'report'),
-              progress: Progress.devNull(),
+              showLog: false,
             );
             'node index.js'.start(
               workingDirectory: join(current, 'integration_test', 'report'),
-              progress: Progress.devNull(),
+              showLog: false,
             );
 
             print(
@@ -103,7 +110,7 @@ class CucumberCommand extends Command {
         } else {
           print(line);
         }
-      }),
+      },
     );
 
     final totalTime = DateTime.now().difference(now);

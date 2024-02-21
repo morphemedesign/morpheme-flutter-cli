@@ -54,7 +54,7 @@ class FeatureCommand extends Command {
       StatusHelper.failed('Feature already exists in $pathFeature.');
     }
 
-    addNewFeature(pathFeature, featureName, appsName);
+    await addNewFeature(pathFeature, featureName, appsName);
     addNewFeatureInLocator(pathFeature, featureName, appsName);
     addNewFeatureInPubspec(pathFeature, featureName, appsName);
     addNewGitIgnore(pathFeature, featureName, appsName);
@@ -67,15 +67,16 @@ class FeatureCommand extends Command {
       if (appsName.isNotEmpty) pathApps,
     ]);
 
-    FlutterHelper.start('pub get', workingDirectory: pathFeature);
-    FlutterHelper.start('pub get',
+    await FlutterHelper.start('pub get', workingDirectory: pathFeature);
+    await FlutterHelper.start('pub get',
         workingDirectory: appsName.isEmpty ? '.' : pathApps);
 
     StatusHelper.success('generate feature $featureName');
   }
 
-  void addNewFeature(String pathFeature, String featureName, String appsName) {
-    FlutterHelper.run('create --template=package "$pathFeature"');
+  Future<void> addNewFeature(
+      String pathFeature, String featureName, String appsName) async {
+    await FlutterHelper.run('create --template=package "$pathFeature"');
 
     join(pathFeature, 'pubspec.yaml').write('''name: $featureName
 description: A new Flutter package project.

@@ -45,9 +45,9 @@ class TestCommand extends Command {
         default:
           workingDirectory = join(current, 'features', feature);
       }
-      FlutterHelper.start('test', workingDirectory: workingDirectory);
+      await FlutterHelper.start('test', workingDirectory: workingDirectory);
     } else if (feature != null && feature.contains('/')) {
-      FlutterHelper.start('test', workingDirectory: feature);
+      await FlutterHelper.start('test', workingDirectory: feature);
     } else {
       final argMorphemeYaml = argResults.getOptionMorphemeYaml();
 

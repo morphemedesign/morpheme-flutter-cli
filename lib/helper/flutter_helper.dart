@@ -19,23 +19,25 @@ abstract class FlutterHelper {
     }
   }
 
-  static void run(String argument, {bool showLog = false}) {
+  static Future<int> run(String argument, {bool showLog = false}) async {
     String command = '${getCommandFlutter()} $argument';
     if (showLog) print(command);
-    command.run;
+    return command.run;
   }
 
-  static void start(
+  static Future<int> start(
     String argument, {
     bool showLog = false,
     String? workingDirectory,
-    Progress? progress,
+    void Function(String line)? progressOut,
+    void Function(String line)? progressErr,
   }) {
     String command = '${getCommandFlutter()} $argument';
     if (showLog) print(command);
-    command.start(
+    return command.start(
       workingDirectory: workingDirectory,
-      progress: progress,
+      progressOut: progressOut,
+      progressErr: progressErr,
     );
   }
 }
