@@ -65,16 +65,16 @@ class InitCommand extends Command {
     IOS_APPLICATION_ID: $iosApplicationId
     BASE_URL: https://reqres.in/api
 
-firebase:
-  dev:
-    project_id: "morpheme-dev"
-    token: "YOUR FIREBASE TOKEN: firebase login:ci"
-  stag:
-    project_id: "morpheme-stag"
-    token: "YOUR FIREBASE TOKEN: firebase login:ci"
-  prod:
-    project_id: "morpheme"
-    token: "YOUR FIREBASE TOKEN: firebase login:ci"
+#firebase:
+#  dev:
+#    project_id: "morpheme-dev"
+#    token: "YOUR FIREBASE TOKEN: firebase login:ci"
+#  stag:
+#    project_id: "morpheme-stag"
+#    token: "YOUR FIREBASE TOKEN: firebase login:ci"
+#  prod:
+#    project_id: "morpheme"
+#    token: "YOUR FIREBASE TOKEN: firebase login:ci"
 
 localization:
   arb_dir: assets/assets/l10n
