@@ -1,3 +1,7 @@
+## 1.1.1
+
+- default init firebase is disable in morpheme.yaml
+
 ## 1.1.0
 
 - remove dependency dcli
