@@ -2,6 +2,7 @@ import 'package:morpheme_cli/build_app/apk/apk_command.dart';
 import 'package:morpheme_cli/build_app/appbundle/appbundle_command.dart';
 import 'package:morpheme_cli/build_app/ios/ios_command.dart';
 import 'package:morpheme_cli/build_app/ipa/ipa_command.dart';
+import 'package:morpheme_cli/build_app/web/web_command.dart';
 import 'package:morpheme_cli/constants.dart';
 import 'package:morpheme_cli/dependency_manager.dart';
 
@@ -11,6 +12,7 @@ class BuildCommand extends Command {
     addSubcommand(AppbundleCommand());
     addSubcommand(IpaCommand());
     addSubcommand(IosCommand());
+    addSubcommand(WebCommand());
   }
 
   @override

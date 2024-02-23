@@ -1,3 +1,7 @@
+## 1.2.0
+
+- add command to build web
+
 ## 1.1.1
 
 - default init firebase is disable in morpheme.yaml

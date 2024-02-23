@@ -144,4 +144,89 @@ prebuilt application binaries.''',
       defaultsTo: defaultsTo,
     );
   }
+
+  void addOptionBaseHref() {
+    addOption(
+      'base-href',
+      help:
+          '''Overrides the href attribute of the <base> tag in web/index.html. No change is done to web/index.html file if this flag is not
+provided. The value has to start and end with a slash "/". For more information:
+https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base''',
+    );
+  }
+
+  void addOptionPwaStrategy() {
+    addOption(
+      'pwa-strategy',
+      help: '''The caching strategy to be used by the PWA service worker.
+none: Generate a service worker with no body. This is useful for local testing or in cases where the service worker caching functionality is not desirable
+offline-first(default): Attempt to cache the application shell eagerly and then lazily cache all subsequent assets as they are loaded. When making a network request for an asset, the offline cache will be preferred.''',
+      allowed: ['none', 'offline-first'],
+    );
+  }
+
+  void addOptionWebRenderer() {
+    addOption(
+      'web-renderer',
+      help: '''The renderer implementation to use when building for the web.
+[auto] (default): Use the HTML renderer on mobile devices, and CanvasKit on desktop devices.
+[canvaskit]: Always use the CanvasKit renderer. This renderer uses WebGL and WebAssembly to render graphics.
+[html]: Always use the HTML renderer. This renderer uses a combination of HTML, CSS, SVG, 2D Canvas, and WebGL.
+[skwasm]: Always use the experimental skwasm renderer.''',
+      allowed: ['auto', 'canvaskit', 'html', 'skwasm'],
+    );
+  }
+
+  void addFlagWebResourcesCdn({bool defaultsTo = true}) {
+    addFlag(
+      'web-resources-cdn',
+      help: 'Use Web static resources hosted on a CDN.',
+      defaultsTo: defaultsTo,
+    );
+  }
+
+  void addFlagCsp({bool defaultsTo = false}) {
+    addFlag(
+      'csp',
+      help:
+          'Disable dynamic generation of code in the generated output. This is necessary to satisfy CSP restrictions (see http://www.w3.org/TR/CSP/).',
+      defaultsTo: defaultsTo,
+    );
+  }
+
+  void addFlagSourceMaps({bool defaultsTo = false}) {
+    addFlag(
+      'source-maps',
+      help:
+          'Generate a sourcemap file. These can be used by browsers to view and debug the original source code of a compiled and minified Dart application.',
+      defaultsTo: defaultsTo,
+    );
+  }
+
+  void addOptionDart2JsOptimization() {
+    addOption(
+      'dart2js-optimization',
+      help:
+          '''Sets the optimization level used for Dart compilation to JavaScript. Valid values range from O1 to O4. [O1, O2, O3, O4 (default)]''',
+      allowed: ['O1', 'O2', 'O3', 'O4'],
+    );
+  }
+
+  void addFlagDumpInfo({bool defaultsTo = false}) {
+    addFlag(
+      'dump-info',
+      help:
+          'Passes "--dump-info" to the Javascript compiler which generates information about the generated code is a .js.info.json file.',
+      defaultsTo: defaultsTo,
+    );
+  }
+
+  void addFlagFrequencyBasedMinification({bool defaultsTo = true}) {
+    addFlag(
+      'frequency-based-minification',
+      help:
+          'Disables the frequency based minifier. Useful for comparing the output between builds.',
+      defaultsTo: defaultsTo,
+    );
+  }
 }
