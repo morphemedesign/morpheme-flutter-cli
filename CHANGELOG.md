@@ -1,3 +1,8 @@
+## 1.3.0
+
+- add command rename file to standar snakecase with prefix or suffix
+- fixing generate assets in subfolder
+
 ## 1.2.0
 
 - add command to build web
