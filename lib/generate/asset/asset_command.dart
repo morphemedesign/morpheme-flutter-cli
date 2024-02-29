@@ -6,9 +6,6 @@ import 'package:morpheme_cli/helper/helper.dart';
 extension AssetsExtension on Map {
   String get pubspecDir =>
       this['pubspec_dir']?.toString().replaceAll('/', separator) ?? 'assets';
-  String get assetsDir =>
-      this['assets_dir']?.toString().replaceAll('/', separator) ??
-      'assets/assets';
   String get outputDir =>
       this['output_dir']?.toString().replaceAll('/', separator) ?? 'assets/lib';
   bool get createLibraryFile => this['create_library_file'] ?? true;
@@ -98,15 +95,18 @@ class AssetCommand extends Command {
       final pathOutput = join(outputDir, 'src',
           '${projectName.snakeCase}_${nameDir.snakeCase}.dart');
 
+      final assetsDir = '${morphemeAssets.pubspecDir}/$element'
+          .replaceAll(RegExp(r'\/$'), '');
+
       pathOutput.write(
           '''abstract class ${projectName.pascalCase}${nameDir.pascalCase} {
   // ignore: unused_field
-  static const String _assets = 'packages/${morphemeAssets.assetsDir}/$nameDir';
+  static const String _assets = 'packages/$assetsDir';
 ''');
 
       final items = find(
         '[a-z]*.*',
-        workingDirectory: join(current, morphemeAssets.assetsDir, nameDir),
+        workingDirectory: join(current, assetsDir),
         recursive: false,
       ).toList();
 

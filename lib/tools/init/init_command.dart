@@ -86,7 +86,6 @@ localization:
 
 assets:
   pubspec_dir: assets
-  assets_dir: assets/assets
   output_dir: assets/lib
   create_library_file: true
   
