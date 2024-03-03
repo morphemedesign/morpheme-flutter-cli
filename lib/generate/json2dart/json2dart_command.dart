@@ -60,6 +60,7 @@ class Json2DartCommand extends Command {
   String projectName = '';
 
   bool isApi = true;
+  bool isEndpoint = true;
   bool isUnitTest = false;
   bool isReplace = false;
   String? appsName;
@@ -92,9 +93,6 @@ class Json2DartCommand extends Command {
     final argMorphemeYaml = argResults.getOptionMorphemeYaml();
     projectName = YamlHelper.loadFileYaml(argMorphemeYaml).projectName;
 
-    final isEndpoint = argResults?['endpoint'] ?? true;
-    if (isEndpoint) await 'morpheme endpoint --json2dart'.run;
-
     appsName = argResults?['apps-name'];
 
     final searchFileJson2Dart = appsName?.isNotEmpty ?? false
@@ -126,6 +124,9 @@ class Json2DartCommand extends Command {
           defaultResponseDateFormat =
               ".toFormatDateTimeResponse('${config['response_format_date_time']}')";
         }
+        if (config['endpoint'] != null && config['endpoint'] is bool) {
+          isEndpoint = config['endpoint'];
+        }
         if (config['api'] != null && config['api'] is bool) {
           isApi = config['api'];
         }
@@ -136,6 +137,14 @@ class Json2DartCommand extends Command {
           isReplace = config['replace'];
         }
       }
+
+      isEndpoint = (argResults?.arguments.firstWhereOrNull(
+                      (element) => element.contains('endpoint')) !=
+                  null
+              ? argResults!['endpoint']
+              : null) ??
+          isEndpoint ??
+          true;
 
       isApi = (argResults?.arguments
                       .firstWhereOrNull((element) => element.contains('api')) !=
@@ -160,6 +169,8 @@ class Json2DartCommand extends Command {
           false;
       featureName = argResults?['feature-name'];
       pageName = argResults?['page-name'];
+
+      if (isEndpoint) await 'morpheme endpoint --json2dart'.run;
 
       if (featureName != null) {
         if (json2DartMap.keys

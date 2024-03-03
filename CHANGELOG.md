@@ -1,3 +1,7 @@
+## 1.3.3
+
+- hotfix generate endpoint with json2dart
+
 ## 1.3.2
 
 - hotfix async function and format specific generated json2dart
