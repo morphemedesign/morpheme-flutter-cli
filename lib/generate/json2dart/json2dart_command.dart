@@ -1046,9 +1046,9 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
   String setValueVariableMapper(
       String key, dynamic value, TypeMapper typeMapper) {
     if (value is List && value.firstOrNull is Map) {
-      return '${key.camelCase}?map((e) => e.${typeMapper == TypeMapper.toEntity ? 'toEntity' : 'toResponse'}()).toList()';
+      return '${key.camelCase}?.map((e) => e.${typeMapper == TypeMapper.toEntity ? 'toEntity' : 'toResponse'}()).toList()';
     } else if (value is Map) {
-      return '${key.camelCase}?${typeMapper == TypeMapper.toEntity ? 'toEntity' : 'toResponse'}()';
+      return '${key.camelCase}?.${typeMapper == TypeMapper.toEntity ? 'toEntity' : 'toResponse'}()';
     } else {
       return key.camelCase;
     }

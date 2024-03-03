@@ -1,3 +1,7 @@
+## 1.3.1
+
+- hotfix generate mapper in json2dart
+
 ## 1.3.0
 
 - add command rename file to standar snakecase with prefix or suffix
