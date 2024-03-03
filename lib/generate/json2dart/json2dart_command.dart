@@ -77,6 +77,8 @@ class Json2DartCommand extends Command {
 
   List<ModelClassName> listClassNameUnitTest = [];
 
+  List<String> format = [];
+
   final regexDateTime =
       RegExp(r'"\d{4}-\d{2}-\d{2}(\s|T)?(\d{2}:\d{2}(:\d{2})?)?(\.\d+)?Z?"');
 
@@ -135,9 +137,27 @@ class Json2DartCommand extends Command {
         }
       }
 
-      isApi = argResults?['api'] ?? isApi ?? true;
-      isUnitTest = argResults?['unit-test'] ?? isUnitTest ?? false;
-      isReplace = argResults?['replace'] ?? isReplace ?? false;
+      isApi = (argResults?.arguments
+                      .firstWhereOrNull((element) => element.contains('api')) !=
+                  null
+              ? argResults!['api']
+              : null) ??
+          isApi ??
+          true;
+      isUnitTest = (argResults?.arguments.firstWhereOrNull(
+                      (element) => element.contains('unit-test')) !=
+                  null
+              ? argResults!['unit-test']
+              : null) ??
+          isUnitTest ??
+          false;
+      isReplace = (argResults?.arguments.firstWhereOrNull(
+                      (element) => element.contains('replace')) !=
+                  null
+              ? argResults!['replace']
+              : null) ??
+          isReplace ??
+          false;
       featureName = argResults?['feature-name'];
       pageName = argResults?['page-name'];
 
@@ -156,11 +176,14 @@ class Json2DartCommand extends Command {
             featurePath =
                 join(current, 'apps', appsName, 'features', featureName);
           }
-          handleFeature(
+          await handleFeature(
               featurePath, featureName!, json2DartMap[featureName], appsName);
         }
       } else {
-        json2DartMap.forEach((featureName, featureValue) {
+        for (var element in json2DartMap.entries) {
+          final featureName = element.key;
+          final featureValue = element.value;
+
           final lastPathJson2Dart = pathJson2Dart.split(separator).last;
 
           String featurePath = join(current, 'features', featureName);
@@ -170,12 +193,12 @@ class Json2DartCommand extends Command {
             featurePath =
                 join(current, 'apps', appsName, 'features', featureName);
           }
-          handleFeature(featurePath, featureName, featureValue, appsName);
-        });
+          await handleFeature(featurePath, featureName, featureValue, appsName);
+        }
       }
     }
 
-    await ModularHelper.format();
+    await ModularHelper.format(format);
 
     StatusHelper.success('morpheme json2dart');
   }
@@ -308,12 +331,12 @@ auth:
     StatusHelper.success('morpheme json2dart init');
   }
 
-  void handleFeature(
+  Future<void> handleFeature(
     String featurePath,
     String featureName,
     dynamic featureValue,
     String? appsName,
-  ) {
+  ) async {
     if (!exists(featurePath)) {
       StatusHelper.warning(
           'Feature with name $featureName not found in $featurePath!');
@@ -332,7 +355,7 @@ auth:
         StatusHelper.warning(
             '$pageName in $featureName not found in json2dart.yaml');
       } else {
-        handlePage(
+        await handlePage(
           featureName: featureName,
           featurePath: featurePath,
           pageName: pageName!,
@@ -341,25 +364,28 @@ auth:
         );
       }
     } else {
-      featureValue.forEach((pageName, pageValue) {
-        handlePage(
+      for (var element in featureValue.entries) {
+        final pageName = element.key;
+        final pageValue = element.value;
+
+        await handlePage(
           featureName: featureName,
           featurePath: featurePath,
           pageName: pageName,
           pageValue: pageValue,
           appsName: appsName,
         );
-      });
+      }
     }
   }
 
-  void handlePage({
+  Future<void> handlePage({
     required String featureName,
     required String featurePath,
     required String pageName,
     required dynamic pageValue,
     required String? appsName,
-  }) {
+  }) async {
     final pathPage = join(featurePath, 'lib', pageName);
     final pathTestPage = join(featurePath, 'test', '${pageName}_test');
     if (!exists(pathPage)) {
@@ -384,7 +410,10 @@ auth:
 
     List<Map<String, String>> resultModelUnitTest = [];
 
-    pageValue.forEach((apiName, apiValue) {
+    for (var element in pageValue.entries) {
+      final apiName = element.key;
+      final apiValue = element.value;
+
       if (apiValue is! Map) {
         StatusHelper.warning(
             'Value api is not valid, please check format json2dart.yaml');
@@ -428,7 +457,7 @@ auth:
         keepExpiredCache = cacheStrategy['keep_expired_cache'];
       }
 
-      handleApi(
+      await handleApi(
         featureName: featureName,
         featurePath: featurePath,
         pageName: pageName,
@@ -487,9 +516,12 @@ auth:
         );
         resultModelUnitTest.add(result);
       }
-    });
+    }
+
+    format.add(pathPage);
 
     if (isUnitTest) {
+      format.add(pathTestPage);
       handleUnitTest(
         pathTestPage: pathTestPage,
         featureName: featureName,
@@ -500,7 +532,7 @@ auth:
     }
   }
 
-  void handleApi({
+  Future<void> handleApi({
     required String featureName,
     required String featurePath,
     required String pageName,
@@ -518,7 +550,7 @@ auth:
     required int? ttl,
     required bool? keepExpiredCache,
     required String? appsName,
-  }) {
+  }) async {
     if (body != null) {
       createDataModelBody(
         pathPage,
@@ -547,7 +579,7 @@ auth:
     final argAppsName = appsName != null ? '-a "$appsName"' : '';
 
     if (isApi) {
-      'morpheme api $apiName -f $featureName -p $pageName  --json2dart --method=$method --path=$pathUrl ${header != null ? '--header=$header' : ''} $argBody $argResponse $argCacheStrategy $argAppsName'
+      await 'morpheme api $apiName -f $featureName -p $pageName  --json2dart --method=$method --path=$pathUrl ${header != null ? '--header=$header' : ''} $argBody $argResponse $argCacheStrategy $argAppsName'
           .run;
     }
   }

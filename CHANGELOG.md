@@ -1,3 +1,7 @@
+## 1.3.2
+
+- hotfix async function and format specific generated json2dart
+
 ## 1.3.1
 
 - hotfix generate mapper in json2dart
