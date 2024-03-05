@@ -541,7 +541,7 @@ abstract class ${pageName.pascalCase}Repository {
 import '../../data/models/body/${apiName}_body.dart';
 import '../entities/${apiName}_entity.dart';''');
 
-      data = data.replaceAll(RegExp(r'}'),
+      data = data.replaceAll(RegExp(r'}$', multiLine: true),
           '''  Future<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,});
 }''');
 

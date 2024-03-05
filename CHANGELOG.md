@@ -1,3 +1,7 @@
+## 1.4.1
+
+- hotfix generate domain repository json2dart
+
 ## 1.4.0
 
 - add generate headers in json2dart
