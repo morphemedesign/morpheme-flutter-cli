@@ -225,7 +225,7 @@ class ApiCommand extends Command {
 
     if (headers != null) {
       headers =
-          'headers: $headers.map((key, value) => MapEntry(key, value.toString())),';
+          'headers: $headers.map((key, value) => MapEntry(key, value.toString()))..addAll(headers ?? {}),';
     }
 
     final bodyClass = getBodyClass(apiClassName, bodyList);
@@ -260,7 +260,7 @@ import '../models/body/${apiName}_body.dart';
 import '../models/response/${apiName}_response.dart';
 
 abstract class ${pageName.pascalCase}RemoteDataSource {
-  Future<$responseClass> $apiMethodName($bodyClass body);
+  Future<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,});
 }
 
 class ${pageName.pascalCase}RemoteDataSourceImpl implements ${pageName.pascalCase}RemoteDataSource {
@@ -269,8 +269,8 @@ class ${pageName.pascalCase}RemoteDataSourceImpl implements ${pageName.pascalCas
   final MorphemeHttp http;
 
   @override
-  Future<$responseClass> $apiMethodName($bodyClass body) async {
-    final response = await http.$apiMethod($apiEndpoint, $bodyImpl${headers ?? ''}$apiCacheStrategy);
+  Future<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
+    final response = await http.$apiMethod($apiEndpoint, $bodyImpl${headers ?? 'headers: headers,'}$apiCacheStrategy);
     $responseImpl
   }
 }''');
@@ -289,7 +289,7 @@ import '../models/response/${apiName}_response.dart';''');
           RegExp('abstract\\s?class\\s?${pageClassName}RemoteDataSource\\s?{',
               multiLine: true),
           '''abstract class ${pageClassName}RemoteDataSource {
-  Future<$responseClass> $apiMethodName($bodyClass body);''');
+  Future<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,});''');
 
       final isEmpty =
           RegExp(r'final MorphemeHttp http;(\s+)?}(\s+)?}').hasMatch(data);
@@ -297,8 +297,8 @@ import '../models/response/${apiName}_response.dart';''');
       data = data.replaceAll(RegExp(r'}(\s+)?}'), '''${isEmpty ? '' : '}'}
 
   @override
-  Future<$responseClass> $apiMethodName($bodyClass body) async {
-    final response = await http.$apiMethod($apiEndpoint, $bodyImpl${headers ?? ''}$apiCacheStrategy);
+  Future<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
+    final response = await http.$apiMethod($apiEndpoint, $bodyImpl${headers ?? 'headers: headers,'}$apiCacheStrategy);
     $responseImpl
   }
 }''');
@@ -426,9 +426,9 @@ class ${pageName.pascalCase}RepositoryImpl implements ${pageName.pascalCase}Repo
   final ${pageName.pascalCase}RemoteDataSource remoteDataSource;
 
   @override
-  Future<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body) async {
+  Future<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
     try {
-      final data = await remoteDataSource.$apiMethodName(body);
+      final data = await remoteDataSource.$apiMethodName(body, headers: headers);
       return Right($entityImpl);
     } on MorphemeException catch (e) {
       return Left(e.toMorphemeFailure());
@@ -461,9 +461,9 @@ import '../models/body/${apiName}_body.dart';''');
           data.replaceAll(RegExp(r'}(\s+)?}(\s+)?}'), '''${isEmpty ? '' : '}}'}
 
   @override
-  Future<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body) async {
+  Future<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
     try {
-        final data = await remoteDataSource.$apiMethodName(body);
+        final data = await remoteDataSource.$apiMethodName(body, headers: headers);
         return Right($entityImpl);
     } on MorphemeException catch (e) {
         return Left(e.toMorphemeFailure());
@@ -528,7 +528,7 @@ import '../../data/models/body/${apiName}_body.dart';
 import '../entities/${apiName}_entity.dart';
 
 abstract class ${pageName.pascalCase}Repository {
-  Future<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body);
+  Future<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,});
 }''');
     } else {
       String data =
@@ -542,7 +542,7 @@ import '../../data/models/body/${apiName}_body.dart';
 import '../entities/${apiName}_entity.dart';''');
 
       data = data.replaceAll(RegExp(r'}'),
-          '''  Future<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body);
+          '''  Future<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,});
 }''');
 
       join(path, '${pageName}_repository.dart').write(data);
@@ -583,8 +583,8 @@ class ${apiClassName}UseCase implements UseCase<$entityClass, $bodyClass> {
   final ${pageClassName}Repository repository;
 
   @override
-  Future<Either<MorphemeFailure, $entityClass>> call($bodyClass body) {
-    return repository.$apiMethodName(body);
+  Future<Either<MorphemeFailure, $entityClass>> call($bodyClass body,{Map<String, String>? headers,}) {
+    return repository.$apiMethodName(body, headers: headers);
   }
 }''');
 
@@ -658,35 +658,38 @@ class ${apiClassName}Initial extends ${apiClassName}State {
 }
 
 class ${apiClassName}Loading extends ${apiClassName}State {
-   ${apiClassName}Loading(this.body, this.extra);
+   ${apiClassName}Loading(this.body, this.headers, this.extra);
 
   final $bodyClass body;
+  final Map<String, String>? headers;
   final dynamic extra;
 
   @override
-  List<Object?> get props => [body, extra];
+  List<Object?> get props => [body, headers, extra];
 }
 
 class ${apiClassName}Success extends ${apiClassName}State {
-  ${apiClassName}Success(this.body, this.data, this.extra);
+  ${apiClassName}Success(this.body, this.headers, this.data, this.extra);
 
   final $bodyClass body;
+  final Map<String, String>? headers;
   final $entityClass data;
   final dynamic extra;
 
   @override
-  List<Object?> get props => [body, data, extra];
+  List<Object?> get props => [body, headers, data, extra];
 }
 
 class ${apiClassName}Failed extends ${apiClassName}State {
-  ${apiClassName}Failed(this.body, this.failure, this.extra);
+  ${apiClassName}Failed(this.body, this.headers, this.failure, this.extra);
 
   final $bodyClass body;
+  final Map<String, String>? headers;
   final MorphemeFailure failure;
   final dynamic extra;
 
   @override
-  List<Object?> get props => [body, failure, extra];
+  List<Object?> get props => [body, headers, failure, extra];
 }''');
 
     join(path, '${apiName}_event.dart').write('''part of '${apiName}_bloc.dart';
@@ -695,13 +698,14 @@ class ${apiClassName}Failed extends ${apiClassName}State {
 abstract class ${apiClassName}Event extends Equatable {}
 
 class Fetch$apiClassName extends ${apiClassName}Event {
-  Fetch$apiClassName(this.body, {this.extra});
+  Fetch$apiClassName(this.body, {this.headers, this.extra});
 
   final $bodyClass body;
+  final Map<String, String>? headers;
   final dynamic extra;
 
   @override
-  List<Object?> get props => [body, extra];
+  List<Object?> get props => [body, headers, extra];
 }''');
 
     join(path, '${apiName}_bloc.dart').write('''import 'package:core/core.dart';
@@ -721,12 +725,12 @@ class ${apiClassName}Bloc extends Bloc<${apiClassName}Event, ${apiClassName}Stat
     required this.useCase,
   }) : super(${apiClassName}Initial()) {
     on<Fetch$apiClassName>((event, emit) async {
-      emit(${apiClassName}Loading(event.body, event.extra));
-      final result = await useCase(event.body);
+      emit(${apiClassName}Loading(event.body, event.headers, event.extra));
+      final result = await useCase(event.body, headers: event.headers);
       emit(
         result.fold(
-          (failure) => ${apiClassName}Failed(event.body, failure, event.extra),
-          (success) => ${apiClassName}Success(event.body, success, event.extra),
+          (failure) => ${apiClassName}Failed(event.body, event.headers, failure, event.extra),
+          (success) => ${apiClassName}Success(event.body, event.headers, success, event.extra),
         ),
       );
     });

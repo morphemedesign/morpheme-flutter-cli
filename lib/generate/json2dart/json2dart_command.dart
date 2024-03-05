@@ -2223,8 +2223,8 @@ void main() {
       build: () => bloc,
       act: (bloc) => bloc.add(Fetch$className(body$className)),
       expect: () => [
-        ${className}Loading(body$className, null),
-        ${className}Success(body$className, entity$className, null),
+        ${className}Loading(body$className, null, null),
+        ${className}Success(body$className, null, entity$className, null),
       ],
     );
 
@@ -2241,8 +2241,8 @@ void main() {
       build: () => bloc,
       act: (bloc) => bloc.add(Fetch$className(body$className)),
       expect: () => [
-        ${className}Loading(body$className, null),
-        ${className}Failed(body$className, timeoutFailed, null),
+        ${className}Loading(body$className, null, null),
+        ${className}Failed(body$className, null, timeoutFailed, null),
       ],
     );
 
@@ -2259,8 +2259,8 @@ void main() {
       build: () => bloc,
       act: (bloc) => bloc.add(Fetch$className(body$className)),
       expect: () => [
-        ${className}Loading(body$className, null),
-        ${className}Failed(body$className, unauthorizedFailed, null),
+        ${className}Loading(body$className, null, null),
+        ${className}Failed(body$className, null, unauthorizedFailed, null),
       ],
     );
 
@@ -2277,8 +2277,8 @@ void main() {
       build: () => bloc,
       act: (bloc) => bloc.add(Fetch$className(body$className)),
       expect: () => [
-        ${className}Loading(body$className, null),
-        ${className}Failed(body$className, internalFailed, null),
+        ${className}Loading(body$className, null, null),
+        ${className}Failed(body$className, null, internalFailed, null),
       ],
     );
 
@@ -2295,8 +2295,8 @@ void main() {
       build: () => bloc,
       act: (bloc) => bloc.add(Fetch$className(body$className)),
       expect: () => [
-        ${className}Loading(body$className, null),
-        ${className}Failed(body$className, redirectionFailed, null),
+        ${className}Loading(body$className, null, null),
+        ${className}Failed(body$className, null, redirectionFailed, null),
       ],
     );
 
@@ -2313,8 +2313,8 @@ void main() {
       build: () => bloc,
       act: (bloc) => bloc.add(Fetch$className(body$className)),
       expect: () => [
-        ${className}Loading(body$className, null),
-        ${className}Failed(body$className, clientFailed, null),
+        ${className}Loading(body$className, null, null),
+        ${className}Failed(body$className, null, clientFailed, null),
       ],
     );
 
@@ -2331,8 +2331,8 @@ void main() {
       build: () => bloc,
       act: (bloc) => bloc.add(Fetch$className(body$className)),
       expect: () => [
-        ${className}Loading(body$className, null),
-        ${className}Failed(body$className, serverFailed, null),
+        ${className}Loading(body$className, null, null),
+        ${className}Failed(body$className, null, serverFailed, null),
       ],
     );
   });
