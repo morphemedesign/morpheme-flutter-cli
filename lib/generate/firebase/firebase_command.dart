@@ -25,7 +25,7 @@ class FirebaseCommand extends Command {
   String get category => Constants.generate;
 
   @override
-  void run() {
+  void run() async {
     final argFlavor = argResults.getOptionFlavor(defaultTo: Constants.dev);
     final argMorphemeYaml = argResults.getOptionMorphemeYaml();
     final argOverwrite = argResults?['overwrite'] as bool? ?? false;
@@ -68,7 +68,7 @@ class FirebaseCommand extends Command {
       }
 
       if (regenerate || argOverwrite) {
-        'flutterfire configure $argToken$argPlatform$argWebAppId -p "$project"  -a "$androidPackageName" -i "$iosBundleId" -y'
+        await 'flutterfire configure $argToken$argPlatform$argWebAppId -p "$project"  -a "$androidPackageName" -i "$iosBundleId" -y'
             .run;
       }
     } else {

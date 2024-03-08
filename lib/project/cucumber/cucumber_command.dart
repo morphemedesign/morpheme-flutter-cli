@@ -78,7 +78,7 @@ class CucumberCommand extends Command {
 
     await FlutterHelper.start(
       'test integration_test/cucumber_test.dart ${dartDefines.join(' ')} --dart-define "INTEGRATION_TEST=true" --no-pub',
-      progressOut: (line) {
+      progressOut: (line) async {
         if (line.contains('cucumber-report')) {
           final dir = join(current, 'integration_test', 'report');
           DirectoryHelper.createDir(dir);
@@ -87,11 +87,11 @@ class CucumberCommand extends Command {
           join(dir, 'cucumber-report.json').write(cucumberReport);
 
           if (which('npm').found) {
-            'npm install'.start(
+            await 'npm install'.start(
               workingDirectory: join(current, 'integration_test', 'report'),
               showLog: false,
             );
-            'node index.js'.start(
+            await 'node index.js'.start(
               workingDirectory: join(current, 'integration_test', 'report'),
               showLog: false,
             );

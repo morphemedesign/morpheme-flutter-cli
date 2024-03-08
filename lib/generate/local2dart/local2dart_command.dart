@@ -41,7 +41,7 @@ class Local2DartCommand extends Command {
     generateDatabaseInstance(pathPackageLocal2dart);
     generateLocal2dart(pathPackageLocal2dart);
 
-    '${FlutterHelper.getCommandDart()} format .'
+    await '${FlutterHelper.getCommandDart()} format .'
         .start(workingDirectory: pathPackageLocal2dart);
 
     StatusHelper.success('morpheme local2dart');

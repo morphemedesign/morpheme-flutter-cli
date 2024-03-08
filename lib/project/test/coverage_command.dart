@@ -86,7 +86,7 @@ class CoverageCommand extends Command {
 
     print("lcov --remove $lcovDir $removeFile -o $lcovDir");
 
-    "lcov --remove $lcovDir $removeFile -o $lcovDir".run;
+    await "lcov --remove $lcovDir $removeFile -o $lcovDir".run;
 
     if (which('genhtml').notfound) {
       StatusHelper.failed('failed cannot generate report lcov html.');

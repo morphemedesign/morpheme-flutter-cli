@@ -60,9 +60,9 @@ class RefactorCommand extends Command {
 
     addOrUpdateProjectNameMorphemeYaml();
     refactorProjectNamePubspec();
-    refactorProject();
+    await refactorProject();
 
-    if (includeLibrary) refactorLibrary();
+    if (includeLibrary) await refactorLibrary();
 
     if (exists(join(current, 'morpheme_library_temp'))) {
       deleteDir(join(current, 'morpheme_library_temp'));
@@ -96,7 +96,7 @@ class RefactorCommand extends Command {
     );
   }
 
-  void refactorProject() {
+  Future<void> refactorProject() async {
     final excludeChanges =
         argResults?['exclude-changes']?.toString().isNotEmpty ?? false
             ? (argResults?['exclude-changes']?.toString() ?? '').split(',')
@@ -153,16 +153,16 @@ class RefactorCommand extends Command {
       exceptDirs: exceptDirs,
     );
 
-    'morpheme assets'.run;
+    await 'morpheme assets'.run;
   }
 
-  void refactorLibrary() {
+  Future<void> refactorLibrary() async {
     final pathTempLibrary = join(current, 'morpheme_library_temp');
     if (exists(pathTempLibrary)) {
       deleteDir(pathTempLibrary);
     }
 
-    'git clone https://github.com/morphemedesign/morpheme-flutter-library.git morpheme_library_temp'
+    await 'git clone https://github.com/morphemedesign/morpheme-flutter-library.git morpheme_library_temp'
         .run;
 
     final pathOldLibrary =

@@ -37,7 +37,7 @@ class CreateCommand extends Command {
   String get category => Constants.project;
 
   @override
-  void run() {
+  void run() async {
     final rest = argResults?.rest ?? [];
     if (rest.isEmpty) {
       StatusHelper.failed(
@@ -58,21 +58,21 @@ class CreateCommand extends Command {
         ? '--application-id "${argResults?['application-id']}"'
         : '';
 
-    'git clone https://github.com/morphemedesign/morpheme-flutter.git $appName $tag'
+    await 'git clone https://github.com/morphemedesign/morpheme-flutter.git $appName $tag'
         .run;
 
     deleteDir(join(workingDirectory, '.git'));
-    'morpheme init --app-name "$appName" $applicationId'
+    await 'morpheme init --app-name "$appName" $applicationId'
         .start(workingDirectory: workingDirectory);
     if (refactor) {
       final includeLibrary =
           (argResults?['include-library'] ?? false) ? '--include-library' : '';
-      'morpheme refactor --old-name="morpheme" --new-name="$appName" $includeLibrary'
+      await 'morpheme refactor --old-name="morpheme" --new-name="$appName" $includeLibrary'
           .start(workingDirectory: workingDirectory);
     } else {
-      'morpheme get'.start(workingDirectory: workingDirectory);
+      await 'morpheme get'.start(workingDirectory: workingDirectory);
     }
-    'morpheme config'.start(workingDirectory: workingDirectory);
+    await 'morpheme config'.start(workingDirectory: workingDirectory);
 
     StatusHelper.generated(workingDirectory);
   }

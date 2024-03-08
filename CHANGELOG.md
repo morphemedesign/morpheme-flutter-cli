@@ -1,3 +1,8 @@
+## 1.4.2
+
+- fix async command wait until done
+- throw error if exit code > 0
+
 ## 1.4.1
 
 - hotfix generate domain repository json2dart
