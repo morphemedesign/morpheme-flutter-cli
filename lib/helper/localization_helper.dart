@@ -1,5 +1,4 @@
 import 'package:morpheme_cli/dependency_manager.dart';
-import 'package:morpheme_cli/helper/status_helper.dart';
 import 'package:morpheme_cli/helper/yaml_helper.dart';
 
 class LocalizationHelper {
@@ -23,18 +22,6 @@ class LocalizationHelper {
     _outputDir =
         localization[keyOutputDir]?.toString().replaceAll('/', separator) ?? '';
     _replace = localization[keyReplace] == true;
-
-    if (!exists(_abrDir)) {
-      StatusHelper.failed(
-          '''The '$keyArbDir' directory, 'LocalDirectory: '$_abrDir'', does not exist.
-Make sure that the correct path was provided.''');
-    }
-
-    if (!exists('$_abrDir/$_templateArbFile')) {
-      StatusHelper.failed(
-          '''The '$keyTemplateArbFile' directory, 'LocalFile: '$_abrDir/$_templateArbFile'', does not exist.
-Make sure that the correct path file was provided.''');
-    }
   }
 
   late String _abrDir;

@@ -1,3 +1,7 @@
+## 1.4.3
+
+- fix generate l10n when template file is not exist
+
 ## 1.4.2
 
 - fix async command wait until done
