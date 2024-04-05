@@ -63,6 +63,7 @@ class FeatureCommand extends Command {
 
     await ModularHelper.format([
       pathFeature,
+      join(current, 'lib'),
       if (appsName.isEmpty) '.',
       if (appsName.isNotEmpty) pathApps,
     ]);
@@ -137,12 +138,23 @@ void setupLocatorFeature${featureName.pascalCase}() {
 
     String locator = File(pathLocator).readAsStringSync();
 
-    locator = locator.replaceAll(
-      RegExp(r'(^(\s+)?void setup)', multiLine: true),
-      '''import 'package:$featureName/locator.dart';
+    if (RegExp(r'(^(\s+)?void setup)', multiLine: true).hasMatch(locator)) {
+      locator = locator.replaceAll(
+        RegExp(r'(^(\s+)?void setup)', multiLine: true),
+        '''import 'package:$featureName/locator.dart';
 
 void setup''',
-    );
+      );
+    } else if (RegExp(r'(^(\s+)?Future<void> setup)', multiLine: true)
+        .hasMatch(locator)) {
+      locator = locator.replaceAll(
+        RegExp(r'(^(\s+)?Future<void> setup)', multiLine: true),
+        '''import 'package:$featureName/locator.dart';
+
+Future<void> setup''',
+      );
+    }
+
     locator = locator.replaceAll(
       '}',
       '''  setupLocatorFeature${featureName.pascalCase}();
