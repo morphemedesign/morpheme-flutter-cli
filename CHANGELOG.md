@@ -1,3 +1,8 @@
+## 1.4.4
+
+- fix generate locator if setup locator is future
+- add after command endpoint & asset with morpheme format
+
 ## 1.4.3
 
 - fix generate l10n when template file is not exist
