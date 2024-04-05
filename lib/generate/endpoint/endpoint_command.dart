@@ -30,15 +30,17 @@ class EndpointCommand extends Command {
     final argMorphemeYaml = argResults.getOptionMorphemeYaml();
     projectName = YamlHelper.loadFileYaml(argMorphemeYaml).projectName;
 
-    final bool json2dart = argResults?['json2dart'] ?? false;
-
-    final pathOutput = join(
+    final pathDir = join(
       current,
       'core',
       'lib',
       'src',
       'constants',
       'src',
+    );
+
+    final pathOutput = join(
+      pathDir,
       '${projectName.snakeCase}_endpoints.dart',
     );
 
@@ -148,7 +150,7 @@ class EndpointCommand extends Command {
     pathOutput.write(file.toString());
     StatusHelper.generated(pathOutput);
 
-    if (!json2dart) await ModularHelper.format();
+    await ModularHelper.format([pathDir]);
 
     StatusHelper.success('morpheme endpoint');
   }

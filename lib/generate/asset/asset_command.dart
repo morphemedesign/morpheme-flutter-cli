@@ -28,7 +28,7 @@ class AssetCommand extends Command {
   String projectName = '';
 
   @override
-  void run() {
+  void run() async {
     final argMorphemeYaml = argResults.getOptionMorphemeYaml();
 
     YamlHelper.validateMorphemeYaml(argMorphemeYaml);
@@ -67,6 +67,8 @@ class AssetCommand extends Command {
 
     createFileAssets(pubspecAssets, morphemeAssets);
     if (morphemeAssets.createLibraryFile) createFileExport(morphemeAssets);
+
+    await ModularHelper.format([morphemeAssets.outputDir]);
 
     StatusHelper.success('morpheme assets');
   }
