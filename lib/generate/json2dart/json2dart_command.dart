@@ -209,7 +209,7 @@ class Json2DartCommand extends Command {
       }
     }
 
-    await ModularHelper.format(format);
+    if (format.isNotEmpty) await ModularHelper.format(format);
 
     StatusHelper.success('morpheme json2dart');
   }
