@@ -1,3 +1,8 @@
+## 1.5.0
+
+- add boolean get state isInitial, isLoading, isFailed & isSuccess in generate api
+- fix show print error when error loadYaml
+
 ## 1.4.4
 
 - fix generate locator if setup locator is future
