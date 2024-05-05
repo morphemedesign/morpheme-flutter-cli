@@ -610,6 +610,16 @@ class ${apiClassName}UseCase implements UseCase<$entityClass, $bodyClass> {
 
 @immutable
 abstract class ${apiClassName}State extends Equatable {
+  bool get isInitial => this is ${apiClassName}Initial;
+  bool get isLoading => this is ${apiClassName}Loading;
+  bool get isFailed => this is ${apiClassName}Failed;
+  bool get isSuccess => this is ${apiClassName}Success;
+
+  bool get isNotInitial => this is! ${apiClassName}Initial;
+  bool get isNotLoading => this is! ${apiClassName}Loading;
+  bool get isNotFailed => this is! ${apiClassName}Failed;
+  bool get isNotSuccess => this is! ${apiClassName}Success;
+
   void when({
     void Function(${apiClassName}Initial state)? onInitial,
     void Function(${apiClassName}Loading state)? onLoading,
