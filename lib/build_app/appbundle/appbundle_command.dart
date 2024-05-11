@@ -1,7 +1,6 @@
 import 'package:morpheme_cli/constants.dart';
 import 'package:morpheme_cli/dependency_manager.dart';
 import 'package:morpheme_cli/extensions/extensions.dart';
-import 'package:morpheme_cli/helper/cucumber_helper.dart';
 import 'package:morpheme_cli/helper/helper.dart';
 
 class AppbundleCommand extends Command {

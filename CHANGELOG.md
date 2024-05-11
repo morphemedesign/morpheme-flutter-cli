@@ -1,3 +1,7 @@
+## 1.6.0
+
+- add download command
+
 ## 1.5.0
 
 - add boolean get state isInitial, isLoading, isFailed & isSuccess in generate api
