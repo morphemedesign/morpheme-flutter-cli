@@ -34,7 +34,16 @@ class ApiCommand extends Command {
     argParser.addOption(
       'method',
       abbr: 'm',
-      allowed: ['get', 'post', 'put', 'patch', 'delete', 'multipart'],
+      allowed: [
+        'get',
+        'post',
+        'put',
+        'patch',
+        'delete',
+        'multipart',
+        'postMultipart',
+        'patchMultipart',
+      ],
       defaultsTo: 'post',
     );
     argParser.addOption('path');
@@ -101,8 +110,8 @@ class ApiCommand extends Command {
     final String method = argResults?['method'] as String? ?? 'post';
     final String? pathUrl = argResults?['path'];
     final String? header = argResults?['header'];
-    final bool bodyList =
-        (argResults?['body-list'] ?? false) && method != 'multipart';
+    final bool bodyList = (argResults?['body-list'] ?? false) &&
+        !method.toLowerCase().contains('multipart');
     final bool responseList = argResults?['response-list'] ?? false;
 
     final CacheStrategy? cacheStrategy = argResults?['cache-strategy'] == null
@@ -190,6 +199,10 @@ class ApiCommand extends Command {
     }
   }
 
+  bool isMultipart(String method) {
+    return method.toLowerCase().contains('multipart');
+  }
+
   void createDataDataSource(
     String pathPage,
     String appsName,
@@ -231,7 +244,7 @@ class ApiCommand extends Command {
     final bodyClass = getBodyClass(apiClassName, bodyList);
     final bodyImpl = bodyList
         ? 'body: jsonEncode(body.map((e) => e.toMap()).toList()),'
-        : 'body: body.toMap()${method == 'multipart' ? '.map((key, value) => MapEntry(key, value.toString()))' : ''},${method == 'multipart' ? ' files: body.files,' : ''}';
+        : 'body: body.toMap()${isMultipart(method) ? '.map((key, value) => MapEntry(key, value.toString()))' : ''},${isMultipart(method) ? ' files: body.files,' : ''}';
 
     final responseClass = getResponseClass(apiClassName, responseList);
     final responseImpl = responseList
@@ -244,7 +257,11 @@ class ApiCommand extends Command {
     final convert =
         bodyList || responseList ? "import 'dart:convert';\n\n" : '';
 
-    final apiMethod = method == 'multipart' ? 'postMultipart' : method;
+    final apiMethod = isMultipart(method)
+        ? method == 'multipart'
+            ? 'postMultipart'
+            : method
+        : method;
     final apiEndpoint = paramPath.isEmpty
         ? '${projectName.pascalCase}Endpoints.$apiMethodName${appsName.pascalCase}'
         : '${projectName.pascalCase}Endpoints.$apiMethodName${appsName.pascalCase}(${paramPath.map((e) => 'body.${e.camelCase}').join(',')})';

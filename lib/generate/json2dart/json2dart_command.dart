@@ -226,7 +226,7 @@ class Json2DartCommand extends Command {
 # node 2 is page name
 # node 3 is api name can be multiple api in 1 page
 #
-# method allow: get, post, put, patch, delete & multipart.
+# method allow: get, post, put, patch, delete, multipart (postMultipart / patchMultipart).
 # cache_strategy allow: async_or_cache, cache_or_async, just_async, just_cache. by default set to just_async.
 # base_url: base_url for remote api take from String.environment('\$base_url').
 #
@@ -568,7 +568,7 @@ auth:
         pageName,
         apiName,
         body,
-        method == 'multipart',
+        (method ?? '').toLowerCase().contains('multipart'),
         paramPath,
       );
     }
@@ -1717,8 +1717,13 @@ void main() {
       final className = e['apiName']?.pascalCase;
       final methodName = e['apiName']?.camelCase;
 
-      final isMultipart = e['method'] == 'multipart';
-      final httpMethod = isMultipart ? 'postMultipart' : e['method'];
+      final isMultipart =
+          e['method']?.toLowerCase().contains('multipart') ?? false;
+      final httpMethod = isMultipart
+          ? e['method'] == 'multipart'
+              ? 'postMultipart'
+              : e['method']
+          : e['method'];
       final header = e['header']?.isEmpty ?? true ? '' : '${e['header']},';
       final body = (e['isBodyList'] == 'true' && !isMultipart)
           ? 'jsonEncode(body$className.map((e) => e.toMap()).toList()),'

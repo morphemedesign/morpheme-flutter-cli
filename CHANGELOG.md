@@ -1,3 +1,7 @@
+## 1.7.0
+
+- support generate json2dart method patchMultipart
+
 ## 1.6.0
 
 - add download command
