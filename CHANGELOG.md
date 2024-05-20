@@ -1,3 +1,10 @@
+## 1.8.3
+
+- fixing flavor order ic_launcher command
+
+## 1.8.2
+
+- add argument flavor for ic_launcher command
 ## 1.8.2
 
 - add argument flavor for ic_launcher command

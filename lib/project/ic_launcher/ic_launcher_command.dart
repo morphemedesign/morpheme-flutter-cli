@@ -28,14 +28,14 @@ class IcLauncherCommand extends Command {
   }
 
   void copyIcLauncherAndroid(String flavor) {
-    final from = join(current, 'ic_launcher', 'android', flavor);
+    final from = join(current, 'ic_launcher', flavor, 'android');
     final to = join(current, 'android', 'app', 'src', 'main', 'res');
 
     copyTree(from, to, overwrite: true);
   }
 
   void copyIcLauncherIos(String flavor) {
-    final from = join(current, 'ic_launcher', 'ios', flavor);
+    final from = join(current, 'ic_launcher', flavor, 'ios');
     final to = join(current, 'ios', 'Runner');
 
     copyTree(from, to, overwrite: true);
