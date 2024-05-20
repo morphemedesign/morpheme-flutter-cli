@@ -69,9 +69,8 @@ dependencies:
     path: ../../core
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^3.0.1
+  dev_dependency_manager:
+    path: ../../core/packages/dev_dependency_manager
 
 flutter:
   uses-material-design: true

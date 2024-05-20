@@ -94,12 +94,11 @@ dependencies:
     sdk: flutter
 
   core:
-    ${appsName.isEmpty ? "path: ../../core" : "path: ../../../../core"}
+    path: ${appsName.isEmpty ? "../../core" : "../../../../core"}
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^3.0.1
+  dev_dependency_manager:
+    path: ${appsName.isEmpty ? "../../core/packages/dev_dependency_manager" : "../../../../core/packages/dev_dependency_manager"}
 
 flutter:
   uses-material-design: true

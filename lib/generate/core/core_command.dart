@@ -39,7 +39,6 @@ class CoreCommand extends Command {
     join(pathPackages, 'pubspec.yaml').write('''name: $packageName
 description: A new Flutter package project.
 version: 0.0.1
-homepage: null
 
 publish_to: "none"
 
@@ -52,9 +51,8 @@ dependencies:
     sdk: flutter
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^3.0.1
+  dev_dependency_manager:
+    path: ../dev_dependency_manager
 
 flutter:''');
 

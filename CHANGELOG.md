@@ -1,3 +1,8 @@
+## 1.8.0
+
+- add ic-launcher command for copy ic_launcher spesific platform
+- generate apps, core and feature with customize dev dependency
+
 ## 1.7.0
 
 - support generate json2dart method patchMultipart
