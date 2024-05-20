@@ -5,6 +5,7 @@ import 'package:morpheme_cli/build_app/prebuild_command.dart';
 import 'package:morpheme_cli/dependency_manager.dart';
 import 'package:morpheme_cli/generate/generate.dart';
 import 'package:morpheme_cli/project/download/download_command.dart';
+import 'package:morpheme_cli/project/ic_launcher/ic_launcher_command.dart';
 import 'package:morpheme_cli/project/project.dart';
 import 'package:morpheme_cli/tools/rename/rename_command.dart';
 import 'package:morpheme_cli/tools/tools.dart';
@@ -44,6 +45,7 @@ void main(List<String> arguments) {
     ..addCommand(CucumberCommand())
     ..addCommand(UnusedL10nCommand())
     ..addCommand(DownloadCommand())
+    ..addCommand(IcLauncherCommand())
     //* Build
     ..addCommand(BuildCommand())
     //* Tools
@@ -62,7 +64,7 @@ void main(List<String> arguments) {
   try {
     final results = runner.argParser.parse(arguments);
     if (results.wasParsed('version')) {
-      print('Morpheme CLI 1.7.0');
+      print('Morpheme CLI 1.8.0');
       exit(0);
     }
   } catch (e) {
