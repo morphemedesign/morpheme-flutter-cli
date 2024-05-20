@@ -1,3 +1,7 @@
+## 1.8.1
+
+- fix copy directory ic-launcher command
+
 ## 1.8.0
 
 - add ic-launcher command for copy ic_launcher spesific platform

@@ -24,13 +24,13 @@ class IcLauncherCommand extends Command {
     final from = join(current, 'ic_launcher', 'android');
     final to = join(current, 'android', 'app', 'src', 'main', 'res');
 
-    copy(from, to, overwrite: true);
+    copyTree(from, to, overwrite: true);
   }
 
   void copyIcLauncherIos() {
     final from = join(current, 'ic_launcher', 'ios');
     final to = join(current, 'ios', 'Runner');
 
-    copy(from, to, overwrite: true);
+    copyTree(from, to, overwrite: true);
   }
 }
