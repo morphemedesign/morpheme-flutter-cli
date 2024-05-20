@@ -36,7 +36,7 @@ class IcLauncherCommand extends Command {
 
   void copyIcLauncherIos(String flavor) {
     final from = join(current, 'ic_launcher', flavor, 'ios');
-    final to = join(current, 'ios', 'Runner');
+    final to = join(current, 'ios', 'Runner', 'Assets.xcassets');
 
     copyTree(from, to, overwrite: true);
   }

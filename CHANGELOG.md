@@ -1,3 +1,7 @@
+## 1.8.4
+
+- fixing path to for ios ic_launcher command
+
 ## 1.8.3
 
 - fixing flavor order ic_launcher command
