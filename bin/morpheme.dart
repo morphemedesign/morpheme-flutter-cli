@@ -66,7 +66,7 @@ void main(List<String> arguments) {
   try {
     final results = runner.argParser.parse(arguments);
     if (results.wasParsed('version')) {
-      print('Morpheme CLI 1.9.1');
+      print('Morpheme CLI 1.9.2');
       exit(0);
     }
   } catch (e) {

@@ -1,3 +1,8 @@
+## 1.9.2
+
+- fix cascade_invocations for locator api command
+- make paralel generat json2dart
+
 ## 1.9.1
 
 - make cascade_invocations for locator api command
