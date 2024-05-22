@@ -1,3 +1,7 @@
+## 1.9.4
+
+- This reverts commit 4b0b02901c00c384ae21ecd2f87592efabcca9f9
+
 ## 1.9.3
 
 - reset to 15d81f4aad964d4b8293e6e4039b6e75f9f49076
