@@ -192,8 +192,6 @@ class Json2DartCommand extends Command {
               featurePath, featureName!, json2DartMap[featureName], appsName);
         }
       } else {
-        List<Future Function()> futures = [];
-
         for (var element in json2DartMap.entries) {
           final featureName = element.key;
           final featureValue = element.value;
@@ -207,21 +205,12 @@ class Json2DartCommand extends Command {
             featurePath =
                 join(current, 'apps', appsName, 'features', featureName);
           }
-
-          futures.add(
-            () async {
-              handleFeature(featurePath, featureName, featureValue, appsName);
-            },
-          );
+          await handleFeature(featurePath, featureName, featureValue, appsName);
         }
-
-        await ModularHelper.paralel(futures: futures);
       }
     }
 
-    print('Morpheme fix.......');
     if (fix.isNotEmpty) await ModularHelper.fix(fix);
-    print('Morpheme format.......');
     if (format.isNotEmpty) await ModularHelper.format(format);
 
     StatusHelper.success('morpheme json2dart');

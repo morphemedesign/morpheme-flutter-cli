@@ -8,24 +8,6 @@ import 'package:morpheme_cli/helper/helper.dart';
 abstract class ModularHelper {
   static const int defaultConcurrent = 6;
 
-  static Future<void> paralel({
-    required List<Future Function()> futures,
-    int concurrent = defaultConcurrent,
-  }) async {
-    int runnable = 0;
-    final length = futures.length;
-    print('📦 Paralel: $length');
-    print('---------------------------------------');
-    for (runnable = 0; runnable < length; runnable += concurrent) {
-      int take =
-          runnable + concurrent > length ? length % concurrent : concurrent;
-      final isolate = futures
-          .getRange(runnable, runnable + take)
-          .map((e) => Isolate.run(e));
-      await Future.wait(isolate);
-    }
-  }
-
   static Future<void> execute(
     List<String> commands, {
     int concurrent = defaultConcurrent,
