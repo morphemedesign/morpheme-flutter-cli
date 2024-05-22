@@ -808,7 +808,7 @@ ${!isDomainRepositoryAlready ? '''import 'domain/repositories/${pageName}_reposi
 import 'domain/usecases/${apiName}_use_case.dart';
 import 'presentation/bloc/$apiName/${apiName}_bloc.dart';''');
 
-    data = data.replaceAll(RegExp(r'}', multiLine: true), '''
+    data = data.replaceAll(RegExp(r';?(\s+)?}', multiLine: true), '''
   // *Bloc
   ..registerFactory(() => ${apiClassName}Bloc(useCase: locator()))
 
@@ -849,7 +849,7 @@ import 'presentation/bloc/$apiName/${apiName}_bloc.dart';''');
       '${pageName.pascalCase}Cubit($bloc)',
     );
 
-    data = data.replaceAll(RegExp(r'}', multiLine: true), ''';}''');
+    data = data.replaceAll(RegExp(r';?(\s+)?}', multiLine: true), ''';}''');
 
     join(pathPage, 'locator.dart').write(data);
 

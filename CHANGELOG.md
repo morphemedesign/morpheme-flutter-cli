@@ -1,3 +1,7 @@
+## 1.9.6
+
+- fix end of semicolon for generate locator
+
 ## 1.9.5
 
 - fix end of semicolon for generate locator
