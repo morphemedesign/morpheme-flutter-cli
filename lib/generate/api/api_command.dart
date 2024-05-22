@@ -846,7 +846,7 @@ import 'presentation/bloc/$apiName/${apiName}_bloc.dart';''');
 
     data = data.replaceAll(
       RegExp(r"\w*Cubit\((([\w,:\s]*(\(\))?)+)?\)"),
-      '${pageName.pascalCase}Cubit($bloc)',
+      '${pageName.pascalCase}Cubit($bloc,)',
     );
 
     data = data.replaceAll(RegExp(r';?(\s+)?}', multiLine: true), ''';}''');

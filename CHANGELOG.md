@@ -1,3 +1,7 @@
+## 1.9.7
+
+- add end comas , in locator api command
+
 ## 1.9.6
 
 - fix end of semicolon for generate locator
