@@ -786,7 +786,7 @@ import 'presentation/cubit/${pageName.snakeCase}_cubit.dart';
 
 void setupLocator${pageName.pascalCase}() {
   // *Cubit
-  locator..registerFactory(() => ${pageName.pascalCase}Cubit());
+  locator..registerFactory(() => ${pageName.pascalCase}Cubit())
 }''');
     }
 
@@ -810,20 +810,20 @@ import 'presentation/bloc/$apiName/${apiName}_bloc.dart';''');
 
     data = data.replaceAll(RegExp(r'}', multiLine: true), '''
   // *Bloc
-  ..registerFactory(() => ${apiClassName}Bloc(useCase: locator()));
+  ..registerFactory(() => ${apiClassName}Bloc(useCase: locator()))
 
   // *Usecase
-  ..registerLazySingleton(() => ${apiClassName}UseCase(repository: locator()));
+  ..registerLazySingleton(() => ${apiClassName}UseCase(repository: locator()))
   ${!isDataDatasourceAlready ? '''
   // *Repository
   ..registerLazySingleton<${pageName.pascalCase}Repository>(
     () => ${pageName.pascalCase}RepositoryImpl(remoteDataSource: locator()),
-  );''' : ''}
+  )''' : ''}
  ${!isDataRepositoryAlready && !isDomainRepositoryAlready ? '''
   // *Datasource
   ..registerLazySingleton<${pageName.pascalCase}RemoteDataSource>(
     () => ${pageName.pascalCase}RemoteDataSourceImpl(http: locator()),
-  );''' : ''}
+  )''' : ''}
 }''');
 
     join(path, 'locator.dart').write(data);
