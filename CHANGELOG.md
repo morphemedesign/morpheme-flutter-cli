@@ -1,3 +1,8 @@
+## 1.9.8
+
+- add end comas , in locator api command
+- order constructor first fromMap and toJson
+
 ## 1.9.7
 
 - add end comas , in locator api command

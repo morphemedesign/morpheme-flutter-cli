@@ -746,8 +746,6 @@ part '${apiName}_event.dart';
 part '${apiName}_state.dart';
 
 class ${apiClassName}Bloc extends Bloc<${apiClassName}Event, ${apiClassName}State> {
-  final ${apiClassName}UseCase useCase;
-
   ${apiClassName}Bloc({
     required this.useCase,
   }) : super(${apiClassName}Initial()) {
@@ -762,6 +760,8 @@ class ${apiClassName}Bloc extends Bloc<${apiClassName}Event, ${apiClassName}Stat
       );
     });
   }
+
+  final ${apiClassName}UseCase useCase;
 }''');
 
     StatusHelper.generated(join(path, '${apiName}_state.dart'));
@@ -786,7 +786,7 @@ import 'presentation/cubit/${pageName.snakeCase}_cubit.dart';
 
 void setupLocator${pageName.pascalCase}() {
   // *Cubit
-  locator..registerFactory(() => ${pageName.pascalCase}Cubit())
+  locator..registerFactory(() => ${pageName.pascalCase}Cubit(),)
 }''');
     }
 

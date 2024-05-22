@@ -953,16 +953,16 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
     final classString = '''class $apiClassName extends Equatable {
   ${setConstractor(apiClassName, map)}
 
+  ${fromMap(apiClassName, map, suffix, listClassNameResponse, apiClassName)}
+
+  factory $apiClassName.fromJson(String source) =>
+      $apiClassName.fromMap(json.decode(source));
+
   ${setTypeData(map, suffix, listClassNameResponse, apiClassName)}
 
   ${toMap(map)}
 
-  ${fromMap(apiClassName, map, suffix, listClassNameResponse, apiClassName)}
-
   String toJson() => json.encode(toMap());
-
-  factory $apiClassName.fromJson(String source) =>
-      $apiClassName.fromMap(json.decode(source));
 
   ${setPropsEquatable(map)}
 }
