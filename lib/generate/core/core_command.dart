@@ -25,6 +25,7 @@ class CoreCommand extends Command {
     await addNewFeature(packageName);
     addNewFeatureInPubspec(packageName);
     addNewGitIgnore(packageName);
+    addNewAnalysisOption(packageName);
 
     StatusHelper.success('generate package $packageName in core');
   }
@@ -141,5 +142,15 @@ coverage/
 test/coverage_helper_test.dart
 ''');
     }
+  }
+
+  void addNewAnalysisOption(String packageName) {
+    final path = join(current, 'core', 'packages', packageName.snakeCase,
+        'analysis_options.yaml');
+    path.write('''include: package:dev_dependency_manager/flutter.yaml
+    
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options
+''');
   }
 }

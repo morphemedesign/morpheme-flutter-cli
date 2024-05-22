@@ -37,6 +37,7 @@ class AppsCommand extends Command {
     addNewAppsInLocator(pathApp, appsName);
     addNewAppsInPubspec(pathApp, appsName);
     addNewGitIgnore(pathApp, appsName);
+    addNewAnalysisOption(pathApp, appsName);
 
     removeUnusedDir(pathApp, appsName);
 
@@ -180,6 +181,15 @@ coverage/
 test/coverage_helper_test.dart
 ''');
     }
+  }
+
+  void addNewAnalysisOption(String pathApps, String appsName) {
+    final path = join(pathApps, 'analysis_options.yaml');
+    path.write('''include: package:dev_dependency_manager/flutter.yaml
+    
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options
+''');
   }
 
   void removeUnusedDir(String pathApps, String appsName) {

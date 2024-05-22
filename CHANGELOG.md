@@ -1,3 +1,8 @@
+## 1.9.0
+
+- add fix command
+- generate custom analysis_option.yaml when create core, feature and apps
+
 ## 1.8.4
 
 - fixing path to for ios ic_launcher command

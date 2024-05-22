@@ -58,6 +58,7 @@ class FeatureCommand extends Command {
     addNewFeatureInLocator(pathFeature, featureName, appsName);
     addNewFeatureInPubspec(pathFeature, featureName, appsName);
     addNewGitIgnore(pathFeature, featureName, appsName);
+    addNewAnalysisOption(pathFeature, featureName, appsName);
 
     removeUnusedDir(pathFeature, featureName, appsName);
 
@@ -231,6 +232,16 @@ coverage/
 test/coverage_helper_test.dart
 ''');
     }
+  }
+
+  void addNewAnalysisOption(
+      String pathFeature, String featureName, String appsName) {
+    final path = join(pathFeature, 'analysis_options.yaml');
+    path.write('''include: package:dev_dependency_manager/flutter.yaml
+    
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options
+''');
   }
 
   void removeUnusedDir(
