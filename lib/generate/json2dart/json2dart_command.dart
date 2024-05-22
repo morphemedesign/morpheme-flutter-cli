@@ -78,6 +78,7 @@ class Json2DartCommand extends Command {
 
   List<ModelClassName> listClassNameUnitTest = [];
 
+  List<String> fix = [];
   List<String> format = [];
 
   final regexDateTime =
@@ -209,6 +210,7 @@ class Json2DartCommand extends Command {
       }
     }
 
+    if (fix.isNotEmpty) await ModularHelper.fix(fix);
     if (format.isNotEmpty) await ModularHelper.format(format);
 
     StatusHelper.success('morpheme json2dart');
@@ -358,6 +360,8 @@ auth:
           'Value feature is not valid, please check format json2dart.yaml');
       return;
     }
+
+    fix.add(featurePath);
 
     if (this.featureName != null && pageName != null) {
       if (featureValue.keys

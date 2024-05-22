@@ -1,3 +1,8 @@
+## 1.9.1
+
+- make cascade_invocations for locator api command
+- after generate json2dart do dart fix
+
 ## 1.9.0
 
 - add fix command
