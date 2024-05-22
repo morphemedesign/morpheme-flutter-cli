@@ -849,6 +849,8 @@ import 'presentation/bloc/$apiName/${apiName}_bloc.dart';''');
       '${pageName.pascalCase}Cubit($bloc)',
     );
 
+    data = data.replaceAll(RegExp(r'}', multiLine: true), ''';}''');
+
     join(pathPage, 'locator.dart').write(data);
 
     StatusHelper.generated(join(pathPage, 'locator.dart'));

@@ -210,7 +210,9 @@ class Json2DartCommand extends Command {
       }
     }
 
+    print('Execute morpheme fix................');
     if (fix.isNotEmpty) await ModularHelper.fix(fix);
+    print('Execute morpheme format................');
     if (format.isNotEmpty) await ModularHelper.format(format);
 
     StatusHelper.success('morpheme json2dart');

@@ -1,3 +1,7 @@
+## 1.9.5
+
+- fix end of semicolon for generate locator
+
 ## 1.9.4
 
 - This reverts commit 4b0b02901c00c384ae21ecd2f87592efabcca9f9

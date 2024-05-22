@@ -133,7 +133,12 @@ abstract class ModularHelper {
       for (var element in paths) {
         await '${FlutterHelper.getCommandDart()} format .'.start(
           workingDirectory: element,
-          showLog: false,
+          progressErr: (line) => printerr(line),
+          progressOut: (line) {
+            if (line.startsWith(RegExp(r'📦|🚀|✅|❌'))) {
+              print(line);
+            }
+          },
         );
       }
     }
@@ -146,7 +151,12 @@ abstract class ModularHelper {
       for (var element in paths) {
         await '${FlutterHelper.getCommandDart()} fix --apply'.start(
           workingDirectory: element,
-          showLog: false,
+          progressErr: (line) => printerr(line),
+          progressOut: (line) {
+            if (line.startsWith(RegExp(r'📦|🚀|✅|❌'))) {
+              print(line);
+            }
+          },
         );
       }
     }
