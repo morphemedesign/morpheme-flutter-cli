@@ -1,3 +1,7 @@
+## 1.9.3
+
+- reset to 15d81f4aad964d4b8293e6e4039b6e75f9f49076
+
 ## 1.9.2
 
 - fix cascade_invocations for locator api command
