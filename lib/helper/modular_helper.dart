@@ -139,6 +139,11 @@ abstract class ModularHelper {
     }
   }
 
+  static Future<void> fix({int concurrent = defaultConcurrent}) => execute(
+        ['${FlutterHelper.getCommandDart()} fix --apply'],
+        concurrent: concurrent,
+      );
+
   static Future<void> get({int concurrent = defaultConcurrent}) => execute(
         ['${FlutterHelper.getCommandFlutter()} pub get'],
         concurrent: concurrent,

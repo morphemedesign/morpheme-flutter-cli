@@ -5,6 +5,7 @@ import 'package:morpheme_cli/build_app/prebuild_command.dart';
 import 'package:morpheme_cli/dependency_manager.dart';
 import 'package:morpheme_cli/generate/generate.dart';
 import 'package:morpheme_cli/project/download/download_command.dart';
+import 'package:morpheme_cli/project/fix/fix_command.dart';
 import 'package:morpheme_cli/project/ic_launcher/ic_launcher_command.dart';
 import 'package:morpheme_cli/project/project.dart';
 import 'package:morpheme_cli/tools/rename/rename_command.dart';
@@ -46,6 +47,7 @@ void main(List<String> arguments) {
     ..addCommand(UnusedL10nCommand())
     ..addCommand(DownloadCommand())
     ..addCommand(IcLauncherCommand())
+    ..addCommand(FixCommand())
     //* Build
     ..addCommand(BuildCommand())
     //* Tools
