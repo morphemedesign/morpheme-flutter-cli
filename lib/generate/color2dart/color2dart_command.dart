@@ -250,13 +250,13 @@ final class MorphemeTheme${theme.toString().pascalCase} extends MorphemeTheme {
 import 'morpheme_color.dart';
 
 final class MorphemeColor${theme.pascalCase} extends MorphemeColor {
-  static final MorphemeColor${theme.pascalCase} _instance = MorphemeColor${theme.pascalCase}._();
-
   factory MorphemeColor${theme.pascalCase}() {
     return _instance;
   }
 
   MorphemeColor${theme.pascalCase}._();
+
+  static final MorphemeColor${theme.pascalCase} _instance = MorphemeColor${theme.pascalCase}._();
 
   ${colors.entries.map((e) {
       return generateColorOrMatrialColor(e);
@@ -304,23 +304,29 @@ final class MorphemeColor${theme.pascalCase} extends MorphemeColor {
 
   void generateLibrary(Map colorYaml) {
     final pathLibraryColor = join(pathColors, 'morpheme_colors.dart');
+    final fileLibraryColors = find(
+      '*.dart',
+      recursive: false,
+      includeHidden: false,
+      workingDirectory: join(pathColors, 'src'),
+      types: [Find.file],
+    ).toList();
     pathLibraryColor.write('''library morpheme_colors;
 
-export 'src/morpheme_color.dart';
-${colorYaml.entries.map((e) {
-      final theme = e.key.toString().snakeCase;
-      return '''export 'src/morpheme_color_$theme.dart';''';
-    }).join('\n')}
+${fileLibraryColors.map((e) => "export 'src/${e.split(separator).last}';").join('\n')}
 ''');
 
     final pathLibraryTheme = join(pathThemes, 'morpheme_themes.dart');
+    final fileLibraryThemes = find(
+      '*.dart',
+      recursive: false,
+      includeHidden: false,
+      workingDirectory: join(pathThemes, 'src'),
+      types: [Find.file],
+    ).toList();
     pathLibraryTheme.write('''library morpheme_themes;
 
-export 'src/morpheme_theme.dart';
-${colorYaml.entries.map((e) {
-      final theme = e.key.toString().snakeCase;
-      return '''export 'src/morpheme_theme_$theme.dart';''';
-    }).join('\n')}
+${fileLibraryThemes.map((e) => "export 'src/${e.split(separator).last}';").join('\n')}
 ''');
   }
 

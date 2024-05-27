@@ -1,3 +1,7 @@
+## 1.10.3
+
+- fix color2dart linter and generate library for color and theme
+
 ## 1.10.2
 
 - fix support muliflavor for assets
