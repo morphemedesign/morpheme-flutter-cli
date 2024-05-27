@@ -9,11 +9,18 @@ extension AssetsExtension on Map {
   String get outputDir =>
       this['output_dir']?.toString().replaceAll('/', separator) ?? 'assets/lib';
   bool get createLibraryFile => this['create_library_file'] ?? true;
+  String get assetsDir =>
+      this['assets_dir']?.toString().replaceAll('/', separator) ??
+      'assets/assets';
+  String get flavorDir =>
+      this['flavor_dir']?.toString().replaceAll('/', separator) ??
+      'assets/flavor';
 }
 
 class AssetCommand extends Command {
   AssetCommand() {
     argParser.addOptionMorphemeYaml();
+    argParser.addOptionFlavor(defaultsTo: '');
   }
 
   @override
@@ -30,12 +37,20 @@ class AssetCommand extends Command {
   @override
   void run() async {
     final argMorphemeYaml = argResults.getOptionMorphemeYaml();
+    final argFlavor = argResults.getOptionFlavor(defaultTo: '');
 
     YamlHelper.validateMorphemeYaml(argMorphemeYaml);
     final morphemeYaml = YamlHelper.loadFileYaml(argMorphemeYaml);
 
     if (morphemeYaml['assets'] == null) {
       StatusHelper.failed('assets not found in $argMorphemeYaml');
+    }
+
+    if (argFlavor.isNotEmpty && exists(morphemeYaml.flavorDir)) {
+      final pathFlavorDir = join(current, morphemeYaml.flavorDir, argFlavor);
+      final pathAssetsDir = join(current, morphemeYaml.assetsDir, argFlavor);
+
+      copyTree(pathFlavorDir, pathAssetsDir, overwrite: true);
     }
 
     projectName = morphemeYaml.projectName;

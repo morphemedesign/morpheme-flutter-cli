@@ -445,7 +445,7 @@ class ${pageName.pascalCase}RepositoryImpl implements ${pageName.pascalCase}Repo
   @override
   Future<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
     try {
-      final data = await remoteDataSource.$apiMethodName(body, headers: headers);
+      final data = await remoteDataSource.$apiMethodName(body, headers: headers,);
       return Right($entityImpl);
     } on MorphemeException catch (e) {
       return Left(e.toMorphemeFailure());
@@ -685,18 +685,18 @@ class ${apiClassName}Initial extends ${apiClassName}State {
 }
 
 class ${apiClassName}Loading extends ${apiClassName}State {
-   ${apiClassName}Loading(this.body, this.headers, this.extra);
+   ${apiClassName}Loading(this.body, this.headers, this.extra,);
 
   final $bodyClass body;
   final Map<String, String>? headers;
   final dynamic extra;
 
   @override
-  List<Object?> get props => [body, headers, extra];
+  List<Object?> get props => [body, headers, extra,];
 }
 
 class ${apiClassName}Success extends ${apiClassName}State {
-  ${apiClassName}Success(this.body, this.headers, this.data, this.extra);
+  ${apiClassName}Success(this.body, this.headers, this.data, this.extra,);
 
   final $bodyClass body;
   final Map<String, String>? headers;
@@ -704,11 +704,11 @@ class ${apiClassName}Success extends ${apiClassName}State {
   final dynamic extra;
 
   @override
-  List<Object?> get props => [body, headers, data, extra];
+  List<Object?> get props => [body, headers, data, extra,];
 }
 
 class ${apiClassName}Failed extends ${apiClassName}State {
-  ${apiClassName}Failed(this.body, this.headers, this.failure, this.extra);
+  ${apiClassName}Failed(this.body, this.headers, this.failure, this.extra,);
 
   final $bodyClass body;
   final Map<String, String>? headers;
@@ -716,7 +716,7 @@ class ${apiClassName}Failed extends ${apiClassName}State {
   final dynamic extra;
 
   @override
-  List<Object?> get props => [body, headers, failure, extra];
+  List<Object?> get props => [body, headers, failure, extra,];
 }''');
 
     join(path, '${apiName}_event.dart').write('''part of '${apiName}_bloc.dart';
@@ -725,14 +725,14 @@ class ${apiClassName}Failed extends ${apiClassName}State {
 abstract class ${apiClassName}Event extends Equatable {}
 
 class Fetch$apiClassName extends ${apiClassName}Event {
-  Fetch$apiClassName(this.body, {this.headers, this.extra});
+  Fetch$apiClassName(this.body, {this.headers, this.extra,});
 
   final $bodyClass body;
   final Map<String, String>? headers;
   final dynamic extra;
 
   @override
-  List<Object?> get props => [body, headers, extra];
+  List<Object?> get props => [body, headers, extra,];
 }''');
 
     join(path, '${apiName}_bloc.dart').write('''import 'package:core/core.dart';
@@ -750,12 +750,12 @@ class ${apiClassName}Bloc extends Bloc<${apiClassName}Event, ${apiClassName}Stat
     required this.useCase,
   }) : super(${apiClassName}Initial()) {
     on<Fetch$apiClassName>((event, emit) async {
-      emit(${apiClassName}Loading(event.body, event.headers, event.extra));
-      final result = await useCase(event.body, headers: event.headers);
+      emit(${apiClassName}Loading(event.body, event.headers, event.extra,));
+      final result = await useCase(event.body, headers: event.headers,);
       emit(
         result.fold(
-          (failure) => ${apiClassName}Failed(event.body, event.headers, failure, event.extra),
-          (success) => ${apiClassName}Success(event.body, event.headers, success, event.extra),
+          (failure) => ${apiClassName}Failed(event.body, event.headers, failure, event.extra,),
+          (success) => ${apiClassName}Success(event.body, event.headers, success, event.extra,),
         ),
       );
     });
@@ -786,7 +786,7 @@ import 'presentation/cubit/${pageName.snakeCase}_cubit.dart';
 
 void setupLocator${pageName.pascalCase}() {
   // *Cubit
-  locator..registerFactory(() => ${pageName.pascalCase}Cubit(),)
+  locator..registerFactory(() => ${pageName.pascalCase}Cubit(),);
 }''');
     }
 
@@ -809,20 +809,21 @@ import 'domain/usecases/${apiName}_use_case.dart';
 import 'presentation/bloc/$apiName/${apiName}_bloc.dart';''');
 
     data = data.replaceAll(RegExp(r';?(\s+)?}', multiLine: true), '''
+
   // *Bloc
-  ..registerFactory(() => ${apiClassName}Bloc(useCase: locator()))
+  ..registerFactory(() => ${apiClassName}Bloc(useCase: locator()),)
 
   // *Usecase
-  ..registerLazySingleton(() => ${apiClassName}UseCase(repository: locator()))
+  ..registerLazySingleton(() => ${apiClassName}UseCase(repository: locator()),)
   ${!isDataDatasourceAlready ? '''
   // *Repository
   ..registerLazySingleton<${pageName.pascalCase}Repository>(
-    () => ${pageName.pascalCase}RepositoryImpl(remoteDataSource: locator()),
+    () => ${pageName.pascalCase}RepositoryImpl(remoteDataSource: locator(),),
   )''' : ''}
  ${!isDataRepositoryAlready && !isDomainRepositoryAlready ? '''
   // *Datasource
   ..registerLazySingleton<${pageName.pascalCase}RemoteDataSource>(
-    () => ${pageName.pascalCase}RemoteDataSourceImpl(http: locator()),
+    () => ${pageName.pascalCase}RemoteDataSourceImpl(http: locator(),),
   )''' : ''}
 }''');
 

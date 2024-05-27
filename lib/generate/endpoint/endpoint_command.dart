@@ -84,7 +84,7 @@ class EndpointCommand extends Command {
             .toString()
             .contains('_createUri${baseUrl.toString().pascalCase}')) {
           file.writeln(
-            '  static Uri _createUri${baseUrl.toString().pascalCase}(String path) => Uri.parse(const String.fromEnvironment(\'$baseUrl\') + path);',
+            '  static Uri _createUri${baseUrl.toString().pascalCase}(String path) => Uri.parse(const String.fromEnvironment(\'$baseUrl\') + path,);',
           );
         }
       }
@@ -124,9 +124,8 @@ class EndpointCommand extends Command {
                     data =
                         "static Uri ${apiKey.toString().camelCase}${appsName.pascalCase} = ${isHttp ? 'Uri.parse' : '_createUri${baseUrl.toString().pascalCase}'}('$pathUrl');";
                   } else {
-                    final parameterString = parameters
-                        .map((e) => 'String ${e.camelCase}')
-                        .join(',');
+                    final parameterString =
+                        parameters.map((e) => 'String ${e.camelCase},').join();
                     final replacePath = parameters
                         .map((e) => ".replaceAll(':$e', ${e.camelCase})")
                         .join();
@@ -150,6 +149,7 @@ class EndpointCommand extends Command {
     pathOutput.write(file.toString());
     StatusHelper.generated(pathOutput);
 
+    await ModularHelper.fix([pathDir]);
     await ModularHelper.format([pathDir]);
 
     StatusHelper.success('morpheme endpoint');

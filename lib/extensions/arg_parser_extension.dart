@@ -229,4 +229,12 @@ offline-first(default): Attempt to cache the application shell eagerly and then 
       defaultsTo: defaultsTo,
     );
   }
+
+  void addOptionDeviceId() {
+    addOption(
+      'device-id',
+      abbr: 'd',
+      help: '''Target device id or name (prefixes allowed).''',
+    );
+  }
 }

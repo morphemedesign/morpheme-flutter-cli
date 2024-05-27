@@ -1,3 +1,13 @@
+## 1.10.0
+
+- add support muliflavor for assets, color2dart
+- add support format command to spesific apps, feature or page
+- add support fix command to spesific apps, feature or page
+- add trailing coma in endpoint, api & json2dart command
+- add argument device-id in run command and cucumber command
+- change upgrade to upgrade-dependency command for upgrade dependency
+- add upgrade command to upgrade version morpheme_cli
+
 ## 1.9.8
 
 - add end comas , in locator api command

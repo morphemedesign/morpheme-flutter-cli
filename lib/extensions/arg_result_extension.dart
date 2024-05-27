@@ -70,4 +70,6 @@ extension ArgResultsExtension on ArgResults? {
       this?['frequency-based-minification']
           ? ''
           : '--no-frequency-based-minification';
+  String getDeviceId() =>
+      this?['device-id'] ? '--device-id ${this?['device-id']}' : '';
 }

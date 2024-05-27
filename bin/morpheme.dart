@@ -4,11 +4,7 @@ import 'package:morpheme_cli/build_app/build_command.dart';
 import 'package:morpheme_cli/build_app/prebuild_command.dart';
 import 'package:morpheme_cli/dependency_manager.dart';
 import 'package:morpheme_cli/generate/generate.dart';
-import 'package:morpheme_cli/project/download/download_command.dart';
-import 'package:morpheme_cli/project/fix/fix_command.dart';
-import 'package:morpheme_cli/project/ic_launcher/ic_launcher_command.dart';
 import 'package:morpheme_cli/project/project.dart';
-import 'package:morpheme_cli/tools/rename/rename_command.dart';
 import 'package:morpheme_cli/tools/tools.dart';
 
 void main(List<String> arguments) {
@@ -39,7 +35,7 @@ void main(List<String> arguments) {
     ..addCommand(CleanCommand())
     ..addCommand(FormatCommand())
     ..addCommand(TestCommand())
-    ..addCommand(UpgradeCommand())
+    ..addCommand(UpgradeDependencyCommand())
     ..addCommand(CoverageCommand())
     ..addCommand(AnalyzeCommand())
     ..addCommand(RefactorCommand())
@@ -54,7 +50,8 @@ void main(List<String> arguments) {
     ..addCommand(RenameCommand())
     ..addCommand(ChangelogCommand())
     ..addCommand(DoctorCommand())
-    ..addCommand(InitCommand());
+    ..addCommand(InitCommand())
+    ..addCommand(UpgradeCommand());
 
   runner.argParser.addFlag(
     'version',
@@ -66,7 +63,7 @@ void main(List<String> arguments) {
   try {
     final results = runner.argParser.parse(arguments);
     if (results.wasParsed('version')) {
-      print('Morpheme CLI 1.9.8');
+      print('Morpheme CLI 1.10.0');
       exit(0);
     }
   } catch (e) {

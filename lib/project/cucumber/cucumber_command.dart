@@ -11,6 +11,7 @@ class CucumberCommand extends Command {
     argParser.addOptionFlavor(defaultsTo: Constants.dev);
     argParser.addOptionMorphemeYaml();
     argParser.addFlagGenerateL10n();
+    argParser.addOptionDeviceId();
   }
   @override
   String get name => 'cucumber';
@@ -36,6 +37,7 @@ class CucumberCommand extends Command {
     final argFlavor = argResults.getOptionFlavor(defaultTo: Constants.dev);
     final argMorphemeYaml = argResults.getOptionMorphemeYaml();
     final argGenerateL10n = argResults.getFlagGenerateL10n();
+    final deviceId = argResults.getDeviceId();
 
     YamlHelper.validateMorphemeYaml(argMorphemeYaml);
 
@@ -77,7 +79,7 @@ class CucumberCommand extends Command {
     print('Starting cucumber integration test....');
 
     await FlutterHelper.start(
-      'test integration_test/cucumber_test.dart ${dartDefines.join(' ')} --dart-define "INTEGRATION_TEST=true" --no-pub',
+      'test integration_test/cucumber_test.dart ${dartDefines.join(' ')} --dart-define "INTEGRATION_TEST=true" --no-pub $deviceId',
       progressOut: (line) async {
         if (line.contains('cucumber-report')) {
           final dir = join(current, 'integration_test', 'report');

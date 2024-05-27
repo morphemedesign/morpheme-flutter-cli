@@ -810,7 +810,7 @@ import 'domain/entities/${e.toString().snakeCase}_entity.dart' as ${e.toString()
     if (value is List) {
       if (value.isNotEmpty) {
         if (value.first is Map) {
-          return '$variable?.map((e) => e.toMap()).toList()';
+          return '$variable?.map((e) => e.toMap(),).toList()';
         }
       }
     }
@@ -831,7 +831,7 @@ import 'domain/entities/${e.toString().snakeCase}_entity.dart' as ${e.toString()
     if (value is List) {
       if (value.isNotEmpty) {
         if (value.first is Map) {
-          return '$variable?.map((e) => e.toMap()).toList()';
+          return '$variable?.map((e) => e.toMap(),).toList()';
         }
       }
     }
@@ -865,7 +865,7 @@ import 'domain/entities/${e.toString().snakeCase}_entity.dart' as ${e.toString()
   String fromMap(String apiClassName, Map map, String suffix,
       List<ModelClassName> listClassName, String parent) {
     final variable = map.keys;
-    return '''factory $apiClassName.fromMap(Map<String, dynamic> map) {
+    return '''factory $apiClassName.fromMap(Map<String, dynamic> map,) {
     return ${variable.isEmpty ? 'const' : ''} $apiClassName(
       ${variable.map((e) => "${e.toString().camelCase}: ${getVariableFromMap(e, map[e], suffix, listClassName, parent)}").join(',      \n')}${variable.isNotEmpty ? ',' : ''}
     );
@@ -886,14 +886,14 @@ import 'domain/entities/${e.toString().snakeCase}_entity.dart' as ${e.toString()
     }
     if (value is Map) {
       final data =
-          '${ModelClassNameHelper.getClassName(listClassName, suffix, key.pascalCase, false, false, parent)}.fromMap($variable)';
+          '${ModelClassNameHelper.getClassName(listClassName, suffix, key.pascalCase, false, false, parent)}.fromMap($variable,)';
       return '$variable == null ? null : $data';
     }
     if (value is List) {
       if (value.isNotEmpty) {
         if (value.first is Map) {
           final data =
-              'List.from(($variable as List).map((e) => ${ModelClassNameHelper.getClassName(listClassName, suffix, key.pascalCase, false, false, parent)}.fromMap(e)))';
+              'List.from(($variable as List).map((e) => ${ModelClassNameHelper.getClassName(listClassName, suffix, key.pascalCase, false, false, parent)}.fromMap(e)),)';
           return '$variable == null ? null : $data';
         } else if (value.first is String &&
             RegExp(r'^\d{4}-\d{2}-\d{2}(\s|T)?(\d{2}:\d{2}(:\d{2})?)?(\.\d+)?Z?$')

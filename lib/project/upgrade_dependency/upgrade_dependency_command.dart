@@ -3,8 +3,8 @@ import 'package:morpheme_cli/dependency_manager.dart';
 import 'package:morpheme_cli/extensions/extensions.dart';
 import 'package:morpheme_cli/helper/helper.dart';
 
-class UpgradeCommand extends Command {
-  UpgradeCommand() {
+class UpgradeDependencyCommand extends Command {
+  UpgradeDependencyCommand() {
     argParser.addOptionMorphemeYaml();
     argParser.addFlag(
       'all',
@@ -29,7 +29,7 @@ class UpgradeCommand extends Command {
   }
 
   @override
-  String get name => 'upgrade';
+  String get name => 'upgrade-dependency';
 
   @override
   String get description =>

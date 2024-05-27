@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:morpheme_cli/constants.dart';
 import 'package:morpheme_cli/dependency_manager.dart';
+import 'package:morpheme_cli/extensions/extensions.dart';
 import 'package:morpheme_cli/helper/helper.dart';
 
 class Color2DartCommand extends Command {
@@ -11,6 +12,7 @@ class Color2DartCommand extends Command {
       help: 'Clear files before generated new files.',
       defaultsTo: false,
     );
+    argParser.addOptionFlavor(defaultsTo: '');
   }
 
   @override
@@ -33,10 +35,15 @@ class Color2DartCommand extends Command {
       init();
       return;
     }
-
-    final pathColorYaml = join(current, 'color2dart', 'color2dart.yaml');
+    final argFlavor = argResults.getOptionFlavor(defaultTo: '');
+    String pathColorYaml = join(current, 'color2dart', 'color2dart.yaml');
+    if (argFlavor.isNotEmpty) {
+      pathColorYaml = join(current, 'color2dart', argFlavor, 'color2dart.yaml');
+    }
     if (!exists(pathColorYaml)) {
-      init();
+      StatusHelper.failed(
+        'File $pathColorYaml is not found, you can create color2dart with `morpheme color2dart init`',
+      );
     }
 
     final colorYaml = YamlHelper.loadFileYaml(pathColorYaml);
