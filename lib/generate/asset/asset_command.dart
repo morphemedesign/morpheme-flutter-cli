@@ -46,15 +46,15 @@ class AssetCommand extends Command {
       StatusHelper.failed('assets not found in $argMorphemeYaml');
     }
 
-    if (argFlavor.isNotEmpty && exists(morphemeYaml.flavorDir)) {
-      final pathFlavorDir = join(current, morphemeYaml.flavorDir, argFlavor);
-      final pathAssetsDir = join(current, morphemeYaml.assetsDir, argFlavor);
+    projectName = morphemeYaml.projectName;
+    final morphemeAssets = morphemeYaml['assets'] as Map;
+
+    if (argFlavor.isNotEmpty && exists(morphemeAssets.flavorDir)) {
+      final pathFlavorDir = join(current, morphemeAssets.flavorDir, argFlavor);
+      final pathAssetsDir = join(current, morphemeAssets.assetsDir, argFlavor);
 
       copyTree(pathFlavorDir, pathAssetsDir, overwrite: true);
     }
-
-    projectName = morphemeYaml.projectName;
-    final morphemeAssets = morphemeYaml['assets'] as Map;
 
     final pathYaml = join(current, morphemeAssets.pubspecDir, 'pubspec.yaml');
 

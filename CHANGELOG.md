@@ -1,3 +1,7 @@
+## 1.10.1
+
+- fix support muliflavor for assets
+
 ## 1.10.0
 
 - add support muliflavor for assets, color2dart
