@@ -51,7 +51,7 @@ class AssetCommand extends Command {
 
     if (argFlavor.isNotEmpty && exists(morphemeAssets.flavorDir)) {
       final pathFlavorDir = join(current, morphemeAssets.flavorDir, argFlavor);
-      final pathAssetsDir = join(current, morphemeAssets.assetsDir, argFlavor);
+      final pathAssetsDir = join(current, morphemeAssets.assetsDir);
 
       copyTree(pathFlavorDir, pathAssetsDir, overwrite: true);
     }
