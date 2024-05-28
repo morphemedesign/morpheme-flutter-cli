@@ -1,3 +1,7 @@
+## 1.10.4
+
+- fix morpheme cucumber command
+
 ## 1.10.3
 
 - fix color2dart linter and generate library for color and theme
