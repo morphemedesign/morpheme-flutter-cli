@@ -51,6 +51,7 @@ void main(List<String> arguments) {
     ..addCommand(ChangelogCommand())
     ..addCommand(DoctorCommand())
     ..addCommand(InitCommand())
+    ..addCommand(RepositoryCommand())
     ..addCommand(UpgradeCommand());
 
   runner.argParser.addFlag(
@@ -63,7 +64,7 @@ void main(List<String> arguments) {
   try {
     final results = runner.argParser.parse(arguments);
     if (results.wasParsed('version')) {
-      print('Morpheme CLI 1.10.4');
+      print('Morpheme CLI 1.11.0');
       exit(0);
     }
   } catch (e) {

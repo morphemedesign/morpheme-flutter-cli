@@ -8,6 +8,7 @@ export 'format/format_command.dart';
 export 'get/get_command.dart';
 export 'ic_launcher/ic_launcher_command.dart';
 export 'refactor/refactor_command.dart';
+export 'repository/repository_command.dart';
 export 'run/run_command.dart';
 export 'test/coverage_command.dart';
 export 'test/test_command.dart';

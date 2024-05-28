@@ -1,3 +1,8 @@
+## 1.11.0
+
+- add new repository command to clone or pull from remote
+- call repository command from get command when repository key in morpheme.yaml is exists
+
 ## 1.10.4
 
 - fix morpheme cucumber command
