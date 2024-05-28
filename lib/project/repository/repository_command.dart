@@ -31,7 +31,7 @@ class RepositoryCommand extends Command {
           if (!exists(key)) {
             'git clone $value $key'.run;
           } else {
-            'git pull $value $key'.start(
+            'git pull'.start(
               workingDirectory: key,
             );
           }

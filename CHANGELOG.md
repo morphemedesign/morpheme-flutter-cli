@@ -1,3 +1,7 @@
+## 1.11.2
+
+- fix repository command to pull from remote
+
 ## 1.11.1
 
 - fix repository command to pull from remote
