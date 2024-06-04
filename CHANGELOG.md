@@ -1,3 +1,8 @@
+## 1.11.3
+
+- add flow json2dart format, fix, then last format
+- git fetch first before pull in repository command
+
 ## 1.11.2
 
 - fix repository command to pull from remote
