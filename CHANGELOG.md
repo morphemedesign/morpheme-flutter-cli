@@ -1,3 +1,7 @@
+## 1.12.0
+
+- add color2dart config from morpheme.yaml for color2dart_dir and output_dir
+
 ## 1.11.4
 
 - git fetch first before pull in repository command

@@ -6,6 +6,7 @@ import 'package:morpheme_cli/helper/helper.dart';
 
 class Color2DartCommand extends Command {
   Color2DartCommand() {
+    argParser.addOptionMorphemeYaml();
     argParser.addFlag(
       'clear-files',
       abbr: 'c',
@@ -35,10 +36,32 @@ class Color2DartCommand extends Command {
       init();
       return;
     }
+
+    final argMorphemeYaml = argResults.getOptionMorphemeYaml();
+    YamlHelper.validateMorphemeYaml(argMorphemeYaml);
+    final morphemeYaml = YamlHelper.loadFileYaml(argMorphemeYaml);
+
+    if (morphemeYaml['color2dart'] == null) {
+      StatusHelper.failed('color2dart not found in $argMorphemeYaml');
+    }
+
+    final morphemeColor2dart = morphemeYaml['color2dart'] as Map;
+    final color2dartDir = morphemeColor2dart['color2dart_dir']?.toString();
+    final outputDir = morphemeColor2dart['output_dir']?.toString();
+
+    if (outputDir != null) {
+      pathColors = join(outputDir, 'morpheme_colors');
+      pathThemes = join(outputDir, 'morpheme_themes');
+    }
+
     final argFlavor = argResults.getOptionFlavor(defaultTo: '');
-    String pathColorYaml = join(current, 'color2dart', 'color2dart.yaml');
+    String pathColorYaml = color2dartDir != null
+        ? join(current, color2dartDir, 'color2dart.yaml')
+        : join(current, 'color2dart', 'color2dart.yaml');
     if (argFlavor.isNotEmpty) {
-      pathColorYaml = join(current, 'color2dart', argFlavor, 'color2dart.yaml');
+      pathColorYaml = color2dartDir != null
+          ? join(current, color2dartDir, argFlavor, 'color2dart.yaml')
+          : join(current, 'color2dart', argFlavor, 'color2dart.yaml');
     }
     if (!exists(pathColorYaml)) {
       StatusHelper.failed(
