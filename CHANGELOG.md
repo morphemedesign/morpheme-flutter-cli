@@ -1,3 +1,7 @@
+## 1.11.4
+
+- git fetch first before pull in repository command
+
 ## 1.11.3
 
 - add flow json2dart format, fix, then last format

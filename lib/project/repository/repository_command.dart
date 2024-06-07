@@ -31,7 +31,10 @@ class RepositoryCommand extends Command {
           if (!exists(key)) {
             'git clone $value $key'.run;
           } else {
-            'git fetch && git pull'.start(
+            'git fetch'.start(
+              workingDirectory: key,
+            );
+            'git pull'.start(
               workingDirectory: key,
             );
           }
