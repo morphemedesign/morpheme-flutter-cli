@@ -25,14 +25,14 @@ class GetCommand extends Command {
 
     YamlHelper.validateMorphemeYaml(argMorphemeYaml);
 
-    if (argGenerateL10n) {
-      await 'morpheme l10n --morpheme-yaml "$argMorphemeYaml"'.run;
-    }
-
     final yaml = YamlHelper.loadFileYaml(argMorphemeYaml);
 
     if (yaml.containsKey('repository')) {
       await 'morpheme repository --morpheme-yaml "$argMorphemeYaml"'.run;
+    }
+
+    if (argGenerateL10n) {
+      await 'morpheme l10n --morpheme-yaml "$argMorphemeYaml"'.run;
     }
 
     await ModularHelper.get(concurrent: yaml.concurrent);

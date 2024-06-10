@@ -1,3 +1,7 @@
+## 1.12.1
+
+- order git clone repo then generate l10n in get command
+
 ## 1.12.0
 
 - add color2dart config from morpheme.yaml for color2dart_dir and output_dir
