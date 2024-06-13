@@ -1,3 +1,7 @@
+## 1.12.2
+
+- comment call repository in get command
+
 ## 1.12.1
 
 - order git clone repo then generate l10n in get command
