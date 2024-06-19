@@ -1,3 +1,7 @@
+## 1.12.3
+
+- fix json2dart when generate list value null
+
 ## 1.12.2
 
 - comment call repository in get command

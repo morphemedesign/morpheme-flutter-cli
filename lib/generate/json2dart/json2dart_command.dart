@@ -895,16 +895,16 @@ import 'domain/entities/${e.toString().snakeCase}_entity.dart' as ${e.toString()
       if (value.isNotEmpty) {
         if (value.first is Map) {
           final data =
-              'List.from(($variable as List).map((e) => ${ModelClassNameHelper.getClassName(listClassName, suffix, key.pascalCase, false, false, parent)}.fromMap(e)),)';
-          return '$variable == null ? null : $data';
+              'List.from(($variable as List).where((element) => element != null).map((e) => ${ModelClassNameHelper.getClassName(listClassName, suffix, key.pascalCase, false, false, parent)}.fromMap(e)),)';
+          return '$variable is List ? $data : null';
         } else if (value.first is String &&
             RegExp(r'^\d{4}-\d{2}-\d{2}(\s|T)?(\d{2}:\d{2}(:\d{2})?)?(\.\d+)?Z?$')
                 .hasMatch(value.first)) {
-          final data = 'List.from(DateTime.parse($variable))';
-          return '$variable == null ? null : $data';
+          final data = 'List.from(($variable as List).where((element) => element != null).map((e) => DateTime.parse($variable)}.fromMap(e)),)';
+          return '$variable is List ? $data : null';
         } else {
           final data = 'List.from($variable)';
-          return '$variable == null ? null : $data';
+          return '$variable is List ? $data : null';
         }
       }
     }
