@@ -68,7 +68,7 @@ class FirebaseCommand extends Command {
       }
 
       if (regenerate || argOverwrite) {
-        await 'flutterfire configure $argToken$argPlatform$argWebAppId -p "$project"  -a "$androidPackageName" -i "$iosBundleId" -y'
+        await 'flutterfire configure $argToken$argPlatform$argWebAppId -p "$project"  -a "$androidPackageName" -i "$iosBundleId" -m "$iosBundleId" -w "$androidPackageName" -x "$androidPackageName" -y'
             .run;
       }
     } else {

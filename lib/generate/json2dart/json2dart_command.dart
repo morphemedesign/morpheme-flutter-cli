@@ -26,6 +26,10 @@ class Json2DartCommand extends Command {
       'unit-test',
       help: 'Generate unit test for api implementation.',
     );
+    argParser.addFlag(
+      'only-unit-test',
+      help: 'Generate only unit test for api implementation.',
+    );
     argParser.addOption(
       'feature-name',
       abbr: 'f',
@@ -62,6 +66,7 @@ class Json2DartCommand extends Command {
   bool isApi = true;
   bool isEndpoint = true;
   bool isUnitTest = false;
+  bool isOnlyUnitTest = false;
   bool isReplace = false;
   String? appsName;
   String? featureName;
@@ -161,6 +166,13 @@ class Json2DartCommand extends Command {
               : null) ??
           isUnitTest ??
           false;
+      isOnlyUnitTest = (argResults?.arguments.firstWhereOrNull(
+                      (element) => element.contains('only-unit-test')) !=
+                  null
+              ? argResults!['only-unit-test']
+              : null) ??
+          isUnitTest ??
+          false;
       isReplace = (argResults?.arguments.firstWhereOrNull(
                       (element) => element.contains('replace')) !=
                   null
@@ -171,7 +183,9 @@ class Json2DartCommand extends Command {
       featureName = argResults?['feature-name'];
       pageName = argResults?['page-name'];
 
-      if (isEndpoint) await 'morpheme endpoint --json2dart'.run;
+      if (!isOnlyUnitTest && isEndpoint) {
+        await 'morpheme endpoint --json2dart'.run;
+      }
 
       if (featureName != null) {
         if (json2DartMap.keys
@@ -418,14 +432,14 @@ auth:
       return;
     }
 
-    if (isApi) {
+    if (!isOnlyUnitTest && isApi) {
       removeAllRelatedApiPage(pathPage, pageName, pageValue, isReplace);
     }
-    if (isUnitTest && !isReplace) {
+    if ((isOnlyUnitTest || isUnitTest)) {
       removeAllRelatedApiPageUnitTest(featureName, pageName);
     }
 
-    createMapper(pathPage, pageValue);
+    if (!isOnlyUnitTest) createMapper(pathPage, pageValue);
 
     List<Map<String, String>> resultModelUnitTest = [];
 
@@ -476,25 +490,27 @@ auth:
         keepExpiredCache = cacheStrategy['keep_expired_cache'];
       }
 
-      await handleApi(
-        featureName: featureName,
-        featurePath: featurePath,
-        pageName: pageName,
-        pathPage: pathPage,
-        apiName: apiName,
-        body: body,
-        response: response,
-        method: apiValue['method'],
-        pathUrl: pathUrl ?? '',
-        paramPath: paramPath,
-        header: apiValue['header'],
-        isBodyList: isBodyList,
-        isResponseList: isResponseList,
-        cacheStrategy: strategy,
-        ttl: ttl,
-        keepExpiredCache: keepExpiredCache,
-        appsName: appsName,
-      );
+      if (!isOnlyUnitTest) {
+        await handleApi(
+          featureName: featureName,
+          featurePath: featurePath,
+          pageName: pageName,
+          pathPage: pathPage,
+          apiName: apiName,
+          body: body,
+          response: response,
+          method: apiValue['method'],
+          pathUrl: pathUrl ?? '',
+          paramPath: paramPath,
+          header: apiValue['header'],
+          isBodyList: isBodyList,
+          isResponseList: isResponseList,
+          cacheStrategy: strategy,
+          ttl: ttl,
+          keepExpiredCache: keepExpiredCache,
+          appsName: appsName,
+        );
+      }
 
       dynamic bodyUnitTest;
       dynamic responseUnitTest;
@@ -512,7 +528,7 @@ auth:
         responseUnitTest = {};
       }
 
-      if (isUnitTest && body != null && response != null) {
+      if ((isOnlyUnitTest || isUnitTest) && body != null && response != null) {
         final result = createModelUnitTest(
           pathTestPage: pathTestPage,
           appsName: appsName ?? '',
@@ -539,7 +555,7 @@ auth:
 
     format.add(pathPage);
 
-    if (isUnitTest) {
+    if (isOnlyUnitTest || isUnitTest) {
       format.add(pathTestPage);
       handleUnitTest(
         pathTestPage: pathTestPage,
@@ -900,7 +916,8 @@ import 'domain/entities/${e.toString().snakeCase}_entity.dart' as ${e.toString()
         } else if (value.first is String &&
             RegExp(r'^\d{4}-\d{2}-\d{2}(\s|T)?(\d{2}:\d{2}(:\d{2})?)?(\.\d+)?Z?$')
                 .hasMatch(value.first)) {
-          final data = 'List.from(($variable as List).where((element) => element != null).map((e) => DateTime.parse($variable)}.fromMap(e)),)';
+          final data =
+              'List.from(($variable as List).where((element) => element != null).map((e) => DateTime.parse($variable)}.fromMap(e)),)';
           return '$variable is List ? $data : null';
         } else {
           final data = 'List.from($variable)';
@@ -1554,10 +1571,10 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
         '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
         
 import 'package:core/core.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:dev_dependency_manager/dev_dependency_manager.dart';
 import 'package:$featureName/$pageName/data/models/body/${apiName.snakeCase}_body.dart' as body_${apiName.snakeCase};
 
-void main() {
+Future<void> main() async {
   initializeDateFormatting();
 
   test('Test body convert to map', () {
@@ -1589,13 +1606,13 @@ void main() {
 
 ${isResponseList ? "import 'dart:convert';" : ''}
         
+import 'package:core/core.dart';
 import 'package:$featureName/$pageName/mapper.dart';
 import 'package:$featureName/$pageName/data/models/response/${apiName.snakeCase}_response.dart' as response_${apiName.snakeCase};
 import 'package:$featureName/$pageName/domain/entities/${apiName.snakeCase}_entity.dart' as entity_${apiName.snakeCase};
-import 'package:core/core.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:dev_dependency_manager/dev_dependency_manager.dart';
 
-void main() {
+Future<void> main() async {
   initializeDateFormatting();
 
   ${getConstOrFinalValue(responseVariable)} response${apiName.pascalCase} = $responseVariable
@@ -1701,12 +1718,11 @@ import 'package:${featureName.snakeCase}/$pageName/data/datasources/${pageName}_
 ${resultModelUnitTest.map((e) => '''import 'package:${featureName.snakeCase}/$pageName/data/models/body/${e['apiName']?.snakeCase}_body.dart' as body_${e['apiName']?.snakeCase};
 import 'package:${featureName.snakeCase}/$pageName/data/models/response/${e['apiName']?.snakeCase}_response.dart' as response_${e['apiName']?.snakeCase};''').join('\n')}
 import 'package:core/core.dart';
-import 'package:core/core_test.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:dev_dependency_manager/dev_dependency_manager.dart';
 
 class MockMorphemeHttp extends Mock implements MorphemeHttp {}
 
-void main() {
+Future<void> main() async {
   initializeDateFormatting();
 
   late MockMorphemeHttp http;
@@ -1872,12 +1888,11 @@ ${resultModelUnitTest.map((e) => '''import 'package:$featureName/$pageName/data/
 import 'package:$featureName/$pageName/data/models/response/${e['apiName']?.snakeCase}_response.dart' as response_${e['apiName']?.snakeCase};
 import 'package:$featureName/$pageName/domain/entities/${e['apiName']?.snakeCase}_entity.dart' as entity_${e['apiName']?.snakeCase};''').join('\n')}
 import 'package:core/core.dart';
-import 'package:core/core_test.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:dev_dependency_manager/dev_dependency_manager.dart';
 
 class MockRemoteDataSource extends Mock implements ${pageName.pascalCase}RemoteDataSource {}
 
-void main() {
+Future<void> main() async {
   late MockRemoteDataSource mockRemoteDatasource;
   late ${pageName.pascalCase}RepositoryImpl repository;
 
@@ -2101,12 +2116,11 @@ import 'package:$featureName/$pageName/data/models/body/${apiName?.snakeCase}_bo
 import 'package:$featureName/$pageName/domain/entities/${apiName?.snakeCase}_entity.dart' as entity_${e['apiName']?.snakeCase};
 import 'package:$featureName/$pageName/domain/usecases/${apiName?.snakeCase}_use_case.dart';
 import 'package:core/core.dart';
-import 'package:core/core_test.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:dev_dependency_manager/dev_dependency_manager.dart';
 
 class MockRepository extends Mock implements ${pageName.pascalCase}Repository {}
 
-void main() {
+Future<void> main() async {
   late ${className}UseCase usecase;
   late MockRepository mockRepository;
 
@@ -2160,12 +2174,11 @@ import 'package:$featureName/$pageName/domain/entities/${apiName?.snakeCase}_ent
 import 'package:$featureName/$pageName/domain/usecases/${apiName?.snakeCase}_use_case.dart';
 import 'package:$featureName/$pageName/presentation/bloc/${apiName?.snakeCase}/${apiName?.snakeCase}_bloc.dart';
 import 'package:core/core.dart';
-import 'package:core/core_test.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:dev_dependency_manager/dev_dependency_manager.dart';
 
 class MockUseCase extends Mock implements ${className}UseCase {}
 
-void main() {
+Future<void> main() async {
   late ${className}Bloc bloc;
   late MockUseCase mockUseCase;
 
@@ -2409,9 +2422,9 @@ void main() {
 import 'package:$featureName/$pageName/mapper.dart';
 ${resultModelUnitTest.map((e) => '''import 'package:$featureName/$pageName/data/models/response/${e['apiName']?.snakeCase}_response.dart' as response_${e['apiName']?.snakeCase};
 import 'package:$featureName/$pageName/domain/entities/${e['apiName']?.snakeCase}_entity.dart' as entity_${e['apiName']?.snakeCase};''').join('\n')}
-import 'package:flutter_test/flutter_test.dart';
+import 'package:dev_dependency_manager/dev_dependency_manager.dart';
 
-void main() {
+Future<void> main() async {
   ${resultModelUnitTest.map((e) {
       final className = e['apiName']?.pascalCase;
       final isResponseList = e['isResponseList'] == 'true';

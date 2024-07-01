@@ -1,3 +1,7 @@
+## 1.12.8
+
+- add argument generate only unit test in json2dart
+
 ## 1.12.3
 
 - fix json2dart when generate list value null
