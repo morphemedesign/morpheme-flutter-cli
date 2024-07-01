@@ -124,7 +124,8 @@ class CoverageCommand extends Command {
     buffer.writeln('// GENERATED MORPHEME COVERAGE HELPER TEST');
     buffer.writeln();
     buffer.writeln('// ignore_for_file: unused_import');
-    buffer.writeln("import 'package:flutter_test/flutter_test.dart';");
+    buffer.writeln(
+        "import 'package:dev_dependency_manager/dev_dependency_manager.dart';");
 
     for (var file in files) {
       final fileLibPath =

@@ -1,3 +1,11 @@
+## 1.12.14
+
+- same datetime format response 
+
+## 1.12.10
+
+- fix double comma in generate json2dart unit-test
+
 ## 1.12.8
 
 - add argument generate only unit test in json2dart

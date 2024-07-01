@@ -171,7 +171,7 @@ class Json2DartCommand extends Command {
                   null
               ? argResults!['only-unit-test']
               : null) ??
-          isUnitTest ??
+          isOnlyUnitTest ??
           false;
       isReplace = (argResults?.arguments.firstWhereOrNull(
                       (element) => element.contains('replace')) !=
@@ -522,7 +522,9 @@ auth:
         final jsonResponse = apiValue['response'] != null
             ? File(apiValue['response']).readAsStringSync()
             : '{}';
-        responseUnitTest = jsonDecode(jsonResponse);
+
+        Map<String, dynamic> jsonObject = json.decode(jsonResponse);
+        responseUnitTest = processJson(jsonObject);
       } catch (e) {
         bodyUnitTest = {};
         responseUnitTest = {};
@@ -1467,17 +1469,23 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
       body is List,
     );
 
-    createDataModelResponseTest(
+    final formattedJsonString = createJsonResponseTest(
       pathTestPage,
       featureName,
       pageName,
       apiName,
       jsonResponse,
+    );
+
+    createDataModelResponseTest(
+      pathTestPage,
+      featureName,
+      pageName,
+      apiName,
+      formattedJsonString,
       responseVariable,
       response is List,
     );
-
-    createJsonTest(pathTestPage, featureName, pageName, apiName, jsonResponse);
 
     String? headers;
     if (pathHeader != null && exists(pathHeader)) {
@@ -1490,7 +1498,7 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
 
     if (headers != null) {
       headers =
-          ',headers: $headers.map((key, value) => MapEntry(key, value.toString())),';
+          'headers: $headers.map((key, value) => MapEntry(key, value.toString()))';
     }
 
     result['apiName'] = apiName;
@@ -1686,7 +1694,7 @@ Future<void> main() async {
     StatusHelper.generated(join(path, '${pageName}_response_test.dart'));
   }
 
-  void createJsonTest(
+  String createJsonResponseTest(
     String pathTestPage,
     String featureName,
     String pageName,
@@ -1696,9 +1704,19 @@ Future<void> main() async {
     final path = join(pathTestPage, 'json');
 
     DirectoryHelper.createDir(path, recursive: true);
-    join(path, '${apiName.snakeCase}_success.json').write(jsonResponse);
+    String formattedJsonString = jsonResponse.toString();
+
+    try {
+      Map<String, dynamic> jsonObject = json.decode(jsonResponse);
+      jsonObject = processJson(jsonObject);
+      formattedJsonString = json.encode(jsonObject);
+    } catch (_) {}
+
+    join(path, '${apiName.snakeCase}_success.json').write(formattedJsonString);
 
     StatusHelper.generated(join(path, '${apiName.snakeCase}_success.json'));
+
+    return formattedJsonString;
   }
 
   void createDataDataSourceTest(
@@ -2447,5 +2465,57 @@ Future<void> main() async {
 }''');
 
     StatusHelper.generated(join(path, 'mapper_test.dart'));
+  }
+
+  Map<String, dynamic> processJson(Map<String, dynamic> jsonObject) {
+    jsonObject.forEach((key, value) {
+      if (value is String) {
+        // Apply regex transformation only to date-time strings
+        jsonObject[key] = formatDateString(value);
+      } else if (value is Map<String, dynamic>) {
+        // Recursively process nested objects
+        jsonObject[key] = processJson(value);
+      } else if (value is List) {
+        // Process lists of objects
+        jsonObject[key] = value.map((item) {
+          if (item is Map<String, dynamic>) {
+            return processJson(item);
+          } else if (item is String) {
+            return formatDateString(item);
+          }
+          return item;
+        }).toList();
+      }
+    });
+    return jsonObject;
+  }
+
+  String formatDateString(String input) {
+    // Regular expression to match date-time formats
+    RegExp dateTimeRegex =
+        RegExp(r'^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?Z)?$');
+
+    if (dateTimeRegex.hasMatch(input)) {
+      // Match and remove 'T' and possible milliseconds and 'Z'
+      input = input.replaceAll(RegExp(r'T|\.\d*Z'), ' ').trim();
+
+      // Add missing seconds
+      if (RegExp(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}$').hasMatch(input)) {
+        return "$input:00";
+      }
+
+      // Add missing minutes and seconds
+      if (RegExp(r'\d{4}-\d{2}-\d{2} \d{2}$').hasMatch(input)) {
+        return "$input:00:00";
+      }
+
+      // Add default time if only date is present
+      if (RegExp(r'\d{4}-\d{2}-\d{2}$').hasMatch(input)) {
+        return "$input 00:00:00";
+      }
+    }
+
+    // Return input as-is if it's not a date-time string
+    return input;
   }
 }
