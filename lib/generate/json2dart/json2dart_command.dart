@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
+import 'package:intl/intl.dart';
 import 'package:morpheme_cli/constants.dart';
 import 'package:morpheme_cli/dependency_manager.dart';
 import 'package:morpheme_cli/enum/cache_strategy.dart';
@@ -2493,26 +2494,14 @@ Future<void> main() async {
   String formatDateString(String input) {
     // Regular expression to match date-time formats
     RegExp dateTimeRegex =
-        RegExp(r'^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?Z)?$');
+        RegExp(r'\d{4}-\d{2}-\d{2}(\s|T)?(\d{2}:\d{2}(:\d{2})?)?(\.\d+)?Z?');
 
     if (dateTimeRegex.hasMatch(input)) {
-      // Match and remove 'T' and possible milliseconds and 'Z'
-      input = input.replaceAll(RegExp(r'T|\.\d*Z'), ' ').trim();
+      final date = DateTime.tryParse(input);
 
-      // Add missing seconds
-      if (RegExp(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}$').hasMatch(input)) {
-        return "$input:00";
-      }
+      if (date == null) return input;
 
-      // Add missing minutes and seconds
-      if (RegExp(r'\d{4}-\d{2}-\d{2} \d{2}$').hasMatch(input)) {
-        return "$input:00:00";
-      }
-
-      // Add default time if only date is present
-      if (RegExp(r'\d{4}-\d{2}-\d{2}$').hasMatch(input)) {
-        return "$input 00:00:00";
-      }
+      return DateFormat('yyyy-MM-dd HH:mm:ss').format(date);
     }
 
     // Return input as-is if it's not a date-time string
