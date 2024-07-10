@@ -1,3 +1,7 @@
+## 1.13.0
+
+- add command prebuild for android
+
 ## 1.12.15
 
 - same datetime format response 
