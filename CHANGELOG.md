@@ -1,6 +1,6 @@
 ## 1.13.1
 
-- add command prebuild for android
+- add command lcov --ignore-errors unused
 
 ## 1.13.0
 
