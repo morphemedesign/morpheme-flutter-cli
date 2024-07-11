@@ -84,9 +84,11 @@ class CoverageCommand extends Command {
         .replaceAll('/', separator);
     final removeFile = (morphemeYaml['coverage']['remove'] as List).join(' ');
 
-    print("lcov --remove $lcovDir $removeFile -o $lcovDir");
+    print(
+        "lcov --remove $lcovDir $removeFile -o $lcovDir --ignore-errors unused");
 
-    await "lcov --remove $lcovDir $removeFile -o $lcovDir".run;
+    await "lcov --remove $lcovDir $removeFile -o $lcovDir --ignore-errors unused"
+        .run;
 
     if (which('genhtml').notfound) {
       StatusHelper.failed('failed cannot generate report lcov html.');

@@ -1,3 +1,7 @@
+## 1.13.1
+
+- add command prebuild for android
+
 ## 1.13.0
 
 - add command prebuild for android
