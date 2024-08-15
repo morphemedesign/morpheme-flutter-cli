@@ -225,7 +225,7 @@ class ApiCommand extends Command {
     final apiMethodName = apiName.camelCase;
 
     final path = join(pathPage, 'data', 'datasources');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
 
     String? headers;
     if (pathHeader != null && exists(pathHeader)) {
@@ -334,7 +334,7 @@ import '../models/response/${apiName}_response.dart';''');
     final apiClassName = apiName.pascalCase;
 
     final path = join(pathPage, 'data', 'models', 'body');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
 
     join(path, '${apiName}_body.dart').write('''import 'package:core/core.dart';
 
@@ -369,7 +369,7 @@ class ${apiClassName}Body extends Equatable {
     final apiClassName = apiName.pascalCase;
 
     final path = join(pathPage, 'data', 'models', 'response');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     join(path, '${apiName}_response.dart').write('''import 'dart:convert';
 
 import 'package:core/core.dart';
@@ -416,7 +416,7 @@ class ${apiClassName}Response extends Equatable {
     final apiMethodName = apiName.camelCase;
 
     final path = join(pathPage, 'data', 'repositories');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
 
     final bodyClass = getBodyClass(apiClassName, bodyList);
     final entityClass = getEntityClass(apiClassName, responseList);
@@ -504,7 +504,7 @@ import '../models/body/${apiName}_body.dart';''');
     final apiClassName = apiName.pascalCase;
 
     final path = join(pathPage, 'domain', 'entities');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     join(path, '${apiName}_entity.dart')
         .write('''import 'package:core/core.dart';
 
@@ -532,7 +532,7 @@ class ${apiClassName}Entity extends Equatable {
     final apiMethodName = apiName.camelCase;
 
     final path = join(pathPage, 'domain', 'repositories');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
 
     final bodyClass = getBodyClass(apiClassName, bodyList);
     final entityClass = getEntityClass(apiClassName, responseList);
@@ -580,7 +580,7 @@ import '../entities/${apiName}_entity.dart';''');
     final apiMethodName = apiName.camelCase;
 
     final path = join(pathPage, 'domain', 'usecases');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
 
     final bodyClass = getBodyClass(apiClassName, bodyList);
     final entityClass = getEntityClass(apiClassName, responseList);
@@ -618,7 +618,7 @@ class ${apiClassName}UseCase implements UseCase<$entityClass, $bodyClass> {
     final apiClassName = apiName.pascalCase;
 
     final path = join(pathPage, 'presentation', 'bloc', apiName);
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
 
     final bodyClass = getBodyClass(apiClassName, bodyList);
     final entityClass = getEntityClass(apiClassName, responseList);
@@ -777,7 +777,7 @@ class ${apiClassName}Bloc extends Bloc<${apiClassName}Event, ${apiClassName}Stat
     final apiClassName = apiName.pascalCase;
 
     final path = pathPage;
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
 
     if (!exists(join(path, 'locator.dart'))) {
       join(path, 'locator.dart').write('''import 'package:core/core.dart';
@@ -865,7 +865,7 @@ import 'presentation/bloc/$apiName/${apiName}_bloc.dart';''');
     final apiClassName = apiName.pascalCase;
 
     final path = pathPage;
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
 
     if (!exists(join(path, 'mapper.dart'))) {
       join(path, 'mapper.dart')

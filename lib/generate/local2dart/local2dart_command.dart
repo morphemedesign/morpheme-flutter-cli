@@ -49,7 +49,7 @@ class Local2DartCommand extends Command {
 
   void init() {
     final path = join(current, 'local2dart');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
 
     if (!exists(join(path, 'local2dart.yaml'))) {
       join(path, 'local2dart.yaml').write('''# local2dart

@@ -94,7 +94,7 @@ class PageCommand extends Command {
   }
 
   void generateGitKeep(String path) {
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     touch(join(path, '.gitkeep'), create: true);
     StatusHelper.generated(join(path, '.gitkeep'));
   }
@@ -186,7 +186,7 @@ class PageCommand extends Command {
     String methodName,
   ) {
     final path = join(pathPage, 'presentation', 'cubit');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     join(path, '${pageName}_state.dart')
         .write('''part of '${pageName}_cubit.dart';
 
@@ -255,7 +255,7 @@ class ${className}Cubit extends MorphemeCubit<${className}StateCubit> {
     String methodName,
   ) {
     final path = join(pathPage, 'presentation', 'pages');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     join(path, '${pageName}_page.dart')
         .write('''import 'package:core/core.dart';
 import 'package:flutter/material.dart';
@@ -303,7 +303,7 @@ class _${className}PageState extends State<${className}Page>
     String methodName,
   ) {
     final path = pathPage;
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     join(path, 'locator.dart').write('''import 'package:core/core.dart';
 
 import 'presentation/cubit/${pageName}_cubit.dart';

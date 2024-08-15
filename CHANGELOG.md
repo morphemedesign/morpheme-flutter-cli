@@ -1,3 +1,7 @@
+## 1.14.0
+
+- support generate color2dart for all flavor in the same time
+
 ## 1.13.1
 
 - add command lcov --ignore-errors unused

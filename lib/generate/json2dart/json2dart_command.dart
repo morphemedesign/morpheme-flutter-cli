@@ -237,7 +237,7 @@ class Json2DartCommand extends Command {
 
   void init() {
     final path = join(current, 'json2dart');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
 
     if (!exists(join(path, 'json2dart.yaml'))) {
       join(path, 'json2dart.yaml')
@@ -357,8 +357,8 @@ auth:
     final pathBody = join(path, 'json', 'body');
     final pathResponse = join(path, 'json', 'response');
 
-    DirectoryHelper.createDir(pathBody, recursive: true);
-    DirectoryHelper.createDir(pathResponse, recursive: true);
+    DirectoryHelper.createDir(pathBody);
+    DirectoryHelper.createDir(pathResponse);
 
     StatusHelper.success('morpheme json2dart init');
   }
@@ -672,7 +672,7 @@ auth:
     );
 
     final path = join(pathPage, 'data', 'models', 'body');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     join(path, '${apiName.snakeCase}_body.dart').write(classBody);
 
     StatusHelper.generated(join(path, '${apiName.snakeCase}_body.dart'));
@@ -694,7 +694,7 @@ import 'package:core/core.dart';
         getResponseClass(apiClassName, 'Response', '', response, true);
 
     final path = join(pathPage, 'data', 'models', 'response');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     join(path, '${apiName.snakeCase}_response.dart').write(classResponse);
 
     StatusHelper.generated(join(path, '${apiName.snakeCase}_response.dart'));
@@ -747,7 +747,7 @@ import 'package:core/core.dart';
     classResponse += getEntityClass(apiClassName, 'Entity', '', response, true);
 
     final path = join(pathPage, 'domain', 'entities');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     join(path, '${apiName.snakeCase}_entity.dart').write(classResponse);
 
     StatusHelper.generated(join(path, '${apiName.snakeCase}_entity.dart'));
@@ -755,7 +755,7 @@ import 'package:core/core.dart';
 
   void createMapper(String pathPage, Map map) {
     final variable = map.keys;
-    DirectoryHelper.createDir(pathPage, recursive: true);
+    DirectoryHelper.createDir(pathPage);
     join(pathPage, 'mapper.dart').write(
         '${variable.map((e) => """import 'data/models/response/${e.toString().snakeCase}_response.dart' as ${e.toString().snakeCase}_response;
 import 'domain/entities/${e.toString().snakeCase}_entity.dart' as ${e.toString().snakeCase}_entity""").join(';\n')};');
@@ -1032,7 +1032,7 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
     );
 
     final path = pathPage;
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     join(path, 'mapper.dart').append(extensionMapper);
   }
 
@@ -1575,7 +1575,7 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
     bool isBodyList,
   ) {
     final path = join(pathTestPage, 'data', 'models', 'body');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     join(path, '${apiName.snakeCase}_body_test.dart').write(
         '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
         
@@ -1608,7 +1608,7 @@ Future<void> main() async {
     bool isResponseList,
   ) {
     final path = join(pathTestPage, 'data', 'models', 'response');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
 
     join(path, '${apiName.snakeCase}_response_test.dart').write(
         '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
@@ -1704,7 +1704,7 @@ Future<void> main() async {
   ) {
     final path = join(pathTestPage, 'json');
 
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     String formattedJsonString = jsonResponse.toString();
 
     try {
@@ -1727,7 +1727,7 @@ Future<void> main() async {
     List<Map<String, String>> resultModelUnitTest,
   ) {
     final path = join(pathTestPage, 'data', 'datasources');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     join(path, '${pageName}_remote_data_source_test.dart').write(
         '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_import
 
@@ -1897,7 +1897,7 @@ Future<void> main() async {
     List<Map<String, String>> resultModelUnitTest,
   ) {
     final path = join(pathTestPage, 'data', 'repositories');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     join(path, '${pageName}_repository_impl_test.dart').write(
         '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
         
@@ -2094,7 +2094,7 @@ Future<void> main() async {
     List<Map<String, String>> resultModelUnitTest,
   ) {
     final path = join(pathTestPage, 'domain', 'entities');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     touch(join(path, '.gitkeep'), create: true);
 
     StatusHelper.generated(join(path, '.gitkeep'));
@@ -2107,7 +2107,7 @@ Future<void> main() async {
     List<Map<String, String>> resultModelUnitTest,
   ) {
     final path = join(pathTestPage, 'domain', 'repositories');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     touch(join(path, '.gitkeep'), create: true);
 
     StatusHelper.generated(join(path, '.gitkeep'));
@@ -2120,7 +2120,7 @@ Future<void> main() async {
     List<Map<String, String>> resultModelUnitTest,
   ) {
     final path = join(pathTestPage, 'domain', 'usecases');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
 
     for (var e in resultModelUnitTest) {
       final apiName = e['apiName'];
@@ -2179,7 +2179,7 @@ Future<void> main() async {
     List<Map<String, String>> resultModelUnitTest,
   ) {
     final path = join(pathTestPage, 'presentation', 'bloc');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
 
     for (var e in resultModelUnitTest) {
       final apiName = e['apiName'];
@@ -2395,7 +2395,7 @@ Future<void> main() async {
     List<Map<String, String>> resultModelUnitTest,
   ) {
     final path = join(pathTestPage, 'presentation', 'cubit');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     touch(join(path, '.gitkeep'), create: true);
 
     StatusHelper.generated(join(path, '.gitkeep'));
@@ -2408,7 +2408,7 @@ Future<void> main() async {
     List<Map<String, String>> resultModelUnitTest,
   ) {
     final path = join(pathTestPage, 'presentation', 'pages');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     touch(join(path, '.gitkeep'), create: true);
 
     StatusHelper.generated(join(path, '.gitkeep'));
@@ -2421,7 +2421,7 @@ Future<void> main() async {
     List<Map<String, String>> resultModelUnitTest,
   ) {
     final path = join(pathTestPage, 'presentation', 'widgets');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     touch(join(path, '.gitkeep'), create: true);
 
     StatusHelper.generated(join(path, '.gitkeep'));
@@ -2434,7 +2434,7 @@ Future<void> main() async {
     List<Map<String, String>> resultModelUnitTest,
   ) {
     final path = pathTestPage;
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
     join(path, 'mapper_test.dart').write(
         '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
         

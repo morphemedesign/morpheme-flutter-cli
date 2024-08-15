@@ -13,6 +13,12 @@ class Color2DartCommand extends Command {
       help: 'Clear files before generated new files.',
       defaultsTo: false,
     );
+    argParser.addFlag(
+      'all-flavor',
+      abbr: 'a',
+      help: 'Generate all flavor with the same time.',
+      defaultsTo: false,
+    );
     argParser.addOptionFlavor(defaultsTo: '');
   }
 
@@ -25,12 +31,15 @@ class Color2DartCommand extends Command {
   @override
   String get category => Constants.generate;
 
+  bool isAllFlavor = false;
+
   String pathColors = join('core', 'lib', 'src', 'themes', 'morpheme_colors');
   String pathThemes = join('core', 'lib', 'src', 'themes', 'morpheme_themes');
 
   @override
   void run() async {
     final clearOldFiles = argResults?['clear-files'] as bool;
+    isAllFlavor = argResults?['all-flavor'] as bool;
 
     if (argResults?.rest.firstOrNull == 'init') {
       init();
@@ -54,7 +63,10 @@ class Color2DartCommand extends Command {
       pathThemes = join(outputDir, 'morpheme_themes');
     }
 
+    if (clearOldFiles) deleteFiles();
+
     final argFlavor = argResults.getOptionFlavor(defaultTo: '');
+
     String pathColorYaml = color2dartDir != null
         ? join(current, color2dartDir, 'color2dart.yaml')
         : join(current, 'color2dart', 'color2dart.yaml');
@@ -63,20 +75,32 @@ class Color2DartCommand extends Command {
           ? join(current, color2dartDir, argFlavor, 'color2dart.yaml')
           : join(current, 'color2dart', argFlavor, 'color2dart.yaml');
     }
-    if (!exists(pathColorYaml)) {
-      StatusHelper.failed(
-        'File $pathColorYaml is not found, you can create color2dart with `morpheme color2dart init`',
-      );
-    }
 
-    final colorYaml = YamlHelper.loadFileYaml(pathColorYaml);
-    if (clearOldFiles) deleteFiles();
+    List<String> allFlavorPath = isAllFlavor
+        ? find(
+            'color2dart.yaml',
+            recursive: true,
+            types: [Find.file],
+            workingDirectory: color2dartDir ?? join(current),
+          ).toList()
+        : [pathColorYaml];
+
+    final colorYaml = YamlHelper.loadFileYaml(allFlavorPath.first);
     generateBase(colorYaml.entries.firstOrNull);
 
-    colorYaml.forEach((theme, value) {
-      generateTheme(theme, value);
-      generateColors(theme, value);
-    });
+    for (var path in allFlavorPath) {
+      final flavor = path
+          .replaceAll('${separator}color2dart.yaml', '')
+          .split(separator)
+          .last;
+
+      final colorYaml = YamlHelper.loadFileYaml(path);
+
+      colorYaml.forEach((theme, value) {
+        generateTheme(theme, value, flavor);
+        generateColors(theme, value, flavor);
+      });
+    }
 
     generateLibrary(colorYaml);
 
@@ -104,39 +128,77 @@ class Color2DartCommand extends Command {
 
   void generateBase(MapEntry? mapEntry) {
     if (mapEntry != null) {
-      final pathBaseColor = join(pathColors, 'src', 'morpheme_color.dart');
+      final dirColor = join(pathColors, 'src');
+      DirectoryHelper.createDir(dirColor);
+
+      final pathBaseColor = join(dirColor, 'morpheme_color.dart');
       final colors = mapEntry.value['colors'] is Map
           ? mapEntry.value['colors'] as Map
           : {};
-      pathBaseColor
-          .write('''import 'package:core/src/shared/global/global_cubit.dart';
-import 'package:flutter/material.dart';
-import 'package:morpheme_library/morpheme_library.dart';
+      pathBaseColor.write('''import 'package:flutter/material.dart';
 
 extension MorphemeColorExtension on BuildContext {
-  MorphemeColor get color => read<GlobalCubit>().state.theme.color;
+  MorphemeColor get color => Theme.of(this).extension<MorphemeColor>()!;
 }
 
-abstract base class MorphemeColor {
+class MorphemeColor extends ThemeExtension<MorphemeColor> {
+  MorphemeColor({
+    ${colors.entries.map((e) => '    required this.${e.key.toString().camelCase},').join('\n')}
+  });
+  
   ${colors.entries.map((e) {
         final key = e.key.toString().camelCase;
         if (e.value is Map) {
-          return '''  MaterialColor get ${key.camelCase};''';
+          return '''  final MaterialColor ${key.camelCase};''';
         } else {
-          return '''  Color get ${key.camelCase};''';
+          return '''  final Color ${key.camelCase};''';
         }
       }).join('\n')}
+
+  @override
+  MorphemeColor copyWith({
+    ${colors.entries.map((e) {
+        final key = e.key.toString().camelCase;
+        if (e.value is Map) {
+          return '''    MaterialColor? ${key.camelCase},''';
+        } else {
+          return '''    Color? ${key.camelCase},''';
+        }
+      }).join('\n')}
+  }) {
+    return MorphemeColor(
+      ${colors.entries.map((e) => '      ${e.key.toString().camelCase}: ${e.key.toString().camelCase} ?? this.${e.key.toString().camelCase},').join('\n')}
+    );
+  }
+
+  @override
+  MorphemeColor lerp(covariant MorphemeColor? other, double t) {
+    if (other is MorphemeColor) {
+      return this;
+    }
+
+    return MorphemeColor(
+      ${colors.entries.map((e) {
+        final key = e.key.toString().camelCase;
+        if (e.value is Map) {
+          return '''    ${key.camelCase}: other?.${key.camelCase} ?? ${key.camelCase},''';
+        } else {
+          return '''    ${key.camelCase}: Color.lerp(${key.camelCase}, other?.${key.camelCase}, t) ?? ${key.camelCase},''';
+        }
+      }).join('\n')}
+    );
+  }
 }
 ''');
 
-      final pathBaseTheme = join(pathThemes, 'src', 'morpheme_theme.dart');
+      final dirTheme = join(pathThemes, 'src');
+      DirectoryHelper.createDir(dirTheme);
+
+      final pathBaseTheme = join(dirTheme, 'morpheme_theme.dart');
       if (!exists(pathBaseTheme)) {
-        pathBaseTheme
-            .write('''import 'package:core/src/component/component.dart';
-import 'package:core/src/constants/constants.dart';
-import 'package:core/src/themes/morpheme_colors/morpheme_colors.dart';
-import 'package:dependency_manager/dependency_manager.dart';
-import 'package:flutter/material.dart';
+        pathBaseTheme.write('''import 'package:flutter/material.dart';
+
+import '../../morpheme_colors/morpheme_colors.dart';
 
 abstract base class MorphemeTheme {
   MorphemeTheme(this.id);
@@ -153,6 +215,7 @@ abstract base class MorphemeTheme {
 
   ThemeData get themeData => rawThemeData.copyWith(
         scaffoldBackgroundColor: color.white,
+        extensions: [color],
         appBarTheme: AppBarTheme(
           elevation: 0,
           color: color.white,
@@ -234,56 +297,61 @@ abstract base class MorphemeTheme {
     }
   }
 
-  void generateTheme(String theme, dynamic value) {
-    final pathItemTheme = join(
-        pathThemes, 'src', 'morpheme_theme_${theme.toString().snakeCase}.dart');
+  void generateTheme(String theme, dynamic value, String flavor) {
+    final className = isAllFlavor ? '$flavor $theme' : theme;
+
+    final dir = join(pathThemes, 'src');
+    DirectoryHelper.createDir(dir);
+
+    final pathItemTheme =
+        join(dir, 'morpheme_theme_${className.snakeCase}.dart');
     if (!exists(pathItemTheme)) {
       final brightness = value['brightness'] == 'dark' ? 'dark' : 'light';
-      pathItemTheme.write(
-          '''import 'package:core/src/themes/morpheme_colors/morpheme_colors.dart';
-import 'package:flutter/material.dart';
+      pathItemTheme.write('''import 'package:flutter/material.dart';
 
+import '../../morpheme_colors/morpheme_colors.dart';
 import 'morpheme_theme.dart';
 
-final class MorphemeTheme${theme.toString().pascalCase} extends MorphemeTheme {
-  MorphemeTheme${theme.toString().pascalCase}() : super('${theme.toString().snakeCase}');
+final class MorphemeTheme${className.pascalCase} extends MorphemeTheme {
+  MorphemeTheme${className.pascalCase}() : super('${className.snakeCase}');
 
   @override
-  MorphemeColor get color => MorphemeColor${theme.toString().pascalCase}();
+  MorphemeColor get color => MorphemeColor${className.pascalCase}();
 
   @override
-  ThemeData get rawThemeData => ThemeData.$brightness();
+  ThemeData get rawThemeData => ThemeData.$brightness().copyWith(
+        extensions: [color],
+      );
 
   @override
   ColorScheme get colorScheme => ColorScheme.$brightness(
         primary: color.primary,
-        error: color.error,
       );
 }
 ''');
     }
   }
 
-  void generateColors(String theme, dynamic value) {
-    final pathItemColor = join(
-        pathColors, 'src', 'morpheme_color_${theme.toString().snakeCase}.dart');
+  void generateColors(String theme, dynamic value, String flavor) {
+    final className = isAllFlavor ? '$flavor $theme' : theme;
+
+    final dir = join(pathColors, 'src');
+    DirectoryHelper.createDir(dir);
+
+    final pathItemColor =
+        join(dir, 'morpheme_color_${className.snakeCase}.dart');
     final colors = value['colors'] is Map ? value['colors'] as Map : {};
     pathItemColor.write('''import 'package:flutter/material.dart';
 
 import 'morpheme_color.dart';
 
-final class MorphemeColor${theme.pascalCase} extends MorphemeColor {
-  factory MorphemeColor${theme.pascalCase}() {
-    return _instance;
-  }
+ class MorphemeColor${className.pascalCase} extends MorphemeColor {
 
-  MorphemeColor${theme.pascalCase}._();
-
-  static final MorphemeColor${theme.pascalCase} _instance = MorphemeColor${theme.pascalCase}._();
-
-  ${colors.entries.map((e) {
+  MorphemeColor${className.pascalCase}() : super(
+    ${colors.entries.map((e) {
       return generateColorOrMatrialColor(e);
     }).join('\n')}
+  );
 }
 ''');
   }
@@ -294,17 +362,15 @@ final class MorphemeColor${theme.pascalCase} extends MorphemeColor {
     if (value is Map) {
       final primary = validateAndConvertColor(value['primary'].toString());
       final swatch = value['swatch'] as Map;
-      return '''  @override
-  MaterialColor $key = const MaterialColor(
+      return '''    $key: const MaterialColor(
     $primary,
     <int, Color>{
       ${swatch.entries.map((e) => '${e.key}: Color(${validateAndConvertColor(e.value.toString())}),').join('\n      ')} 
     },
-  );''';
+  ),''';
     } else {
       value = validateAndConvertColor(value.toString());
-      return '''  @override
-  Color get $key => const Color($value);''';
+      return '    $key: const Color($value),';
     }
   }
 
@@ -355,7 +421,7 @@ ${fileLibraryThemes.map((e) => "export 'src/${e.split(separator).last}';").join(
 
   void init() {
     final path = join(current, 'color2dart');
-    DirectoryHelper.createDir(path, recursive: true);
+    DirectoryHelper.createDir(path);
 
     if (!exists(join(path, 'color2dart.yaml'))) {
       join(path, 'color2dart.yaml')
