@@ -1,3 +1,7 @@
+## 1.14.1
+
+- fix generate asset when generate for current module
+
 ## 1.14.0
 
 - support generate color2dart for all flavor in the same time

@@ -102,7 +102,7 @@ class AssetCommand extends Command {
 
       final findOld = find(
         '*_${nameDir.snakeCase}.dart',
-        workingDirectory: join(current, 'assets', 'lib', 'src'),
+        workingDirectory: join(outputDir, 'src'),
       ).toList();
 
       for (var item in findOld) {
@@ -118,7 +118,7 @@ class AssetCommand extends Command {
       pathOutput.write(
           '''abstract class ${projectName.pascalCase}${nameDir.pascalCase} {
   // ignore: unused_field
-  static const String _assets = 'packages/$assetsDir';
+  static const String _assets = 'packages/${assetsDir.replaceAll(RegExp(r'\.'), current.split(separator).last)}';
 ''');
 
       final items = find(
