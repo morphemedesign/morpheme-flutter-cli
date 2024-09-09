@@ -33,12 +33,13 @@ class EndpointCommand extends Command {
     final pathDir = join(
       current,
       'core',
+      'lib',
       'src',
       'data',
       'remote',
     );
 
-    String pathOutput = join(
+    final pathOutput = join(
       pathDir,
       '${projectName.snakeCase}_endpoints.dart',
     );
