@@ -33,13 +33,12 @@ class EndpointCommand extends Command {
     final pathDir = join(
       current,
       'core',
-      'lib',
       'src',
-      'constants',
-      'src',
+      'data',
+      'remote',
     );
 
-    final pathOutput = join(
+    String pathOutput = join(
       pathDir,
       '${projectName.snakeCase}_endpoints.dart',
     );
@@ -48,14 +47,7 @@ class EndpointCommand extends Command {
 
     final findOld = find(
       '*_endpoints.dart',
-      workingDirectory: join(
-        current,
-        'core',
-        'lib',
-        'src',
-        'constants',
-        'src',
-      ),
+      workingDirectory: pathDir,
     ).toList();
 
     for (var item in findOld) {

@@ -1,3 +1,7 @@
+## 1.14.2
+
+- change generate path dir endpoint endpoint to `core/src/data/remote`
+
 ## 1.14.1
 
 - fix generate asset when generate for current module
