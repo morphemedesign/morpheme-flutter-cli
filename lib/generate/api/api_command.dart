@@ -265,7 +265,7 @@ class ApiCommand extends Command {
     final apiEndpoint = paramPath.isEmpty
         ? '${projectName.pascalCase}Endpoints.$apiMethodName${appsName.pascalCase}'
         : '${projectName.pascalCase}Endpoints.$apiMethodName${appsName.pascalCase}(${paramPath.map((e) => 'body.${e.camelCase}').join(',')})';
-    final apiCacheStrategy = cacheStrategy == null
+    final apiCacheStrategy = cacheStrategy == null || isMultipart(method)
         ? ''
         : '${cacheStrategy.toParamCacheStrategy(ttl: ttl, keepExpiredCache: keepExpiredCache)},';
 
