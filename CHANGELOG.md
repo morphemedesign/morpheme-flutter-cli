@@ -1,3 +1,8 @@
+## 1.14.4
+
+- fix api command generate data model multipart without cache strategy
+- fix json2dart generate data model mutlipart to Map<String, List<File>>
+
 ## 1.14.3
 
 - change generate path dir endpoint endpoint to `core/lib/src/data/remote`

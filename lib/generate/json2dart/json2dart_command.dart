@@ -803,7 +803,7 @@ import 'domain/entities/${e.toString().snakeCase}_entity.dart' as ${e.toString()
     List<String> paramPath = const [],
   ]) {
     final variable = map.keys;
-    return '''${isMultipart ? 'final Map<String, File>? files;' : ''}
+    return '''${isMultipart ? 'final Map<String, List<File>>? files;' : ''}
     ${paramPath.map((e) => 'final String ${e.camelCase};').join('\n')}
     ${variable.map((e) => 'final ${getTypeVariable(e, map[e], suffix, listClassName, parent)}${getTypeVariable(e, map[e], suffix, listClassName, parent) != 'dynamic' ? '?' : ''} ${e.toString().camelCase}').join(';  \n')}${variable.isNotEmpty ? ';' : ''}''';
   }
