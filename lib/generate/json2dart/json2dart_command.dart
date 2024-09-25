@@ -711,9 +711,9 @@ import 'package:core/core.dart';
       return 'const $apiClassName(${isMultipart ? '{ this.files }' : ''});';
     }
     return '''const $apiClassName({
-    ${isMultipart ? 'required this.files,' : ''}
-    ${paramPath.map((e) => 'required this.${e.camelCase},').join('    \n')}
-    ${variable.map((e) => 'required this.${e.toString().camelCase},').join('    \n')}
+    ${isMultipart ? 'this.files,' : ''}
+    ${paramPath.map((e) => 'this.${e.camelCase},').join('    \n')}
+    ${variable.map((e) => 'this.${e.toString().camelCase},').join('    \n')}
   });''';
   }
 
@@ -1005,6 +1005,14 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
   ${setConstractor(apiClassName, map)}
 
   ${setTypeData(map, suffix, listClassNameEntity, apiClassName)}
+
+  $apiClassName copyWith({
+    ${map.keys.map((e) => '${getTypeVariable(e, map[e], suffix, listClassNameEntity, apiClassName)}? ${e.toString().camelCase},').join('\n    ')}
+  }) {
+    return $apiClassName(
+      ${map.keys.map((e) => '${e.toString().camelCase}: ${e.toString().camelCase} ?? this.${e.toString().camelCase},').join('\n      ')}
+    );
+  }
 
   ${setPropsEquatable(map)}
 }

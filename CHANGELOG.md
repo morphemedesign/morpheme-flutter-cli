@@ -1,3 +1,7 @@
+## 1.14.5
+
+- add copyWith in entity and constructor response and entity make to non required
+
 ## 1.14.4
 
 - fix api command generate data model multipart without cache strategy
