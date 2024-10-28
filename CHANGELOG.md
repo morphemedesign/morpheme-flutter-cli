@@ -1,3 +1,7 @@
+## 1.14.6
+
+- fix json2dart generate response fromMap for data List number
+
 ## 1.14.5
 
 - add copyWith in entity and constructor response and entity make to non required

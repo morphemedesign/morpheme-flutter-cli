@@ -923,7 +923,15 @@ import 'domain/entities/${e.toString().snakeCase}_entity.dart' as ${e.toString()
               'List.from(($variable as List).where((element) => element != null).map((e) => DateTime.parse($variable)}.fromMap(e)),)';
           return '$variable is List ? $data : null';
         } else {
+          // final data = 'List.from($variable)';
+          final variableList = value.firstOrNull;
           final data = 'List.from($variable)';
+          if (variableList is int) {
+            return '$variable is List ? List.from(($variable as List).where((element) => element != null).map((e) => int.tryParse(e.toString()) ?? 0),) : null';
+          }
+          if (variableList is double) {
+            return '$variable is List ? List.from(($variable as List).where((element) => element != null).map((e) => double.tryParse(e.toString()) ?? 0),) : null';
+          }
           return '$variable is List ? $data : null';
         }
       }
