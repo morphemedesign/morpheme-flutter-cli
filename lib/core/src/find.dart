@@ -135,13 +135,13 @@ typedef ProgressCallback = bool Function(FindItem item);
 /// See the below notes for details.
 ///
 /// ```dart
-/// find('*.jpg', recursive:true).forEach((file) => print(file));
+/// find('*.jpg', recursive:true).forEach((file) => printMessage(file));
 ///
 /// List<String> results = find('[a-z]*.jpg', caseSensitive:true).toList();
 ///
 /// find('*.jpg'
 ///   , types:[Find.directory, Find.file])
-///     .forEach((file) => print(file));
+///     .forEach((file) => printMessage(file));
 /// ```
 ///
 /// Valid patterns are:
@@ -301,7 +301,7 @@ class Find {
         if (directory == null) {
           break;
         }
-        // print('calling _processDirectory ${count++}');
+        // printMessage('calling _processDirectory ${count++}');
         if (!_processDirectory(
           workingDirectory0,
           directory.path,
@@ -331,7 +331,7 @@ class Find {
     ProgressCallback progress,
     List<FileSystemEntity?> nextLevel,
   ) {
-    // print('process Directory ${dircount++}');
+    // printMessage('process Directory ${dircount++}');
     final list = Directory(currentDirectory).listSync(followLinks: false);
 
     var nextLevelIndex = 0;
@@ -534,7 +534,7 @@ class _PatternMatcher {
 
   bool match(String path) {
     final matchPart = _extractMatchPart(path);
-    //  print('path: $path, matchPart: $matchPart pattern: $pattern');
+    //  printMessage('path: $path, matchPart: $matchPart pattern: $pattern');
     return regEx.stringMatch(matchPart) == matchPart;
   }
 

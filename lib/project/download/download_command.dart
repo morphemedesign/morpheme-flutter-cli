@@ -34,7 +34,7 @@ class DownloadCommand extends Command {
 
     download.forEach((key, value) async {
       if (value is! Map) {
-        print(
+        printMessage(
             'Configuration error for $key: expected a map with "url" and "path".');
         StatusHelper.failed(
             'Configuration error for $key: expected a map with "url" and "path".');
@@ -46,14 +46,15 @@ class DownloadCommand extends Command {
       final bool isCompressed = value['compressed'] ?? false;
 
       if (url == null || path == null) {
-        print('Invalid configuration for $key. URL and path must be provided.');
+        printMessage(
+            'Invalid configuration for $key. URL and path must be provided.');
         StatusHelper.failed(
             'Invalid configuration for $key. URL and path must be provided.');
         return;
       }
 
       try {
-        print('Downloading from $url to $path...');
+        printMessage('Downloading from $url to $path...');
         final bytes = await HttpClientHelper.downloadFile(
           url,
           onProgress: (downloadedLength, contentLength, progress) {
@@ -68,13 +69,13 @@ class DownloadCommand extends Command {
         }
         File file = File(join(path, basename(url)));
         await file.writeAsBytes(bytes);
-        print('Download completed.');
+        printMessage('Download completed.');
 
         if (isCompressed) {
-          print('Extracting the compressed file...');
+          printMessage('Extracting the compressed file...');
           await ArchiveHelper.extractFile(file, path);
-          print('Extraction completed.');
-          print('Removing compressed file');
+          printMessage('Extraction completed.');
+          printMessage('Removing compressed file');
           if (await file.exists()) {
             await file.delete();
           }
@@ -82,10 +83,10 @@ class DownloadCommand extends Command {
           if (await macosxDir.exists()) {
             await macosxDir.delete(recursive: true);
           }
-          print('Removal completed.');
+          printMessage('Removal completed.');
         }
       } catch (e) {
-        print('Failed to download or extract file: $e');
+        printMessage('Failed to download or extract file: $e');
         StatusHelper.failed('Failed to download or extract file: $e');
       }
     });

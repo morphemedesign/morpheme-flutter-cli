@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:morpheme_cli/core/src/commandline_converter.dart';
 import 'package:morpheme_cli/helper/helper.dart';
 
+import 'loading.dart';
+
 extension StringExtension on String {
   Future<int> get run async {
     final commandCli = CommandlineConverter().convert(this);
@@ -17,8 +19,16 @@ extension StringExtension on String {
       runInShell: true,
       environment: Platform.environment,
     );
-    process.stdout.transform(utf8.decoder).listen(stdout.write);
-    process.stderr.transform(utf8.decoder).listen(stderr.write);
+    process.stdout.transform(utf8.decoder).listen(
+      (line) {
+        printMessage(line.replaceAll(RegExp(r'[\s\n]+$'), ''));
+      },
+    );
+    process.stderr.transform(utf8.decoder).listen(
+      (line) {
+        printerrMessage(line.replaceAll(RegExp(r'[\s\n]+$'), ''));
+      },
+    );
 
     final exitCode = await process.exitCode;
 
@@ -51,12 +61,12 @@ extension StringExtension on String {
 
     process.stdout.transform(utf8.decoder).listen(((line) {
       progressOut?.call(line);
-      if (showLog) stdout.write(line);
+      if (showLog) printMessage(line.replaceAll(RegExp(r'[\s\n]+$'), ''));
     }));
 
     process.stderr.transform(utf8.decoder).listen(((line) {
       progressErr?.call(line);
-      if (showLog) stderr.write(line);
+      if (showLog) printerrMessage(line.replaceAll(RegExp(r'[\s\n]+$'), ''));
     }));
 
     final exitCode = await process.exitCode;

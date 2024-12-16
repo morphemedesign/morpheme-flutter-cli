@@ -7,7 +7,7 @@ import 'package:morpheme_cli/generate/generate.dart';
 import 'package:morpheme_cli/project/project.dart';
 import 'package:morpheme_cli/tools/tools.dart';
 
-void main(List<String> arguments) {
+void main(List<String> arguments) async {
   final runner = CommandRunner('morpheme',
       'Morpheme CLI Boost productivity with modular project creation, API generation & folder structuring tools. Simplify Flutter dev! #Flutter #CLI')
     //* Generate
@@ -51,7 +51,6 @@ void main(List<String> arguments) {
     ..addCommand(ChangelogCommand())
     ..addCommand(DoctorCommand())
     ..addCommand(InitCommand())
-    ..addCommand(RepositoryCommand())
     ..addCommand(UpgradeCommand());
 
   runner.argParser.addFlag(
@@ -64,15 +63,21 @@ void main(List<String> arguments) {
   try {
     final results = runner.argParser.parse(arguments);
     if (results.wasParsed('version')) {
-      print('Morpheme CLI 1.14.6');
+      printMessage('Morpheme CLI 2.0.0');
       exit(0);
     }
   } catch (e) {
-    printerr(red(e.toString()));
+    printerrMessage(red(e.toString()));
   }
 
-  runner.run(arguments).onError((error, stackTrace) {
-    printerr(red(error.toString()));
+  Loading().start();
+
+  await runner.run(arguments).onError((error, stackTrace) {
+    Loading().stop();
+
+    printerrMessage(red(error.toString()));
     exit(1);
   });
+
+  Loading().stop();
 }

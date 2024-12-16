@@ -21,7 +21,7 @@ abstract class YamlHelper {
       final String yamlString = file.readAsStringSync();
       return loadYaml(yamlString);
     } catch (e) {
-      printerr(e.toString());
+      printerrMessage(e.toString());
       return {};
     }
   }

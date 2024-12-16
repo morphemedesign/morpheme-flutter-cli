@@ -65,6 +65,10 @@ class RemoveFeatureCommand extends Command {
     String pubspec = File(pathPubspec).readAsStringSync();
 
     pubspec = pubspec.replaceAll(
+      RegExp("\\s+- features/${featureName.snakeCase}"),
+      '',
+    );
+    pubspec = pubspec.replaceAll(
       RegExp(
           "\\s+${featureName.snakeCase}:\\s+path: ./features/${featureName.snakeCase}"),
       '',

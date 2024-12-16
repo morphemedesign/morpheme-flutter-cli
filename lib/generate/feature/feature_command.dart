@@ -87,8 +87,9 @@ version: 0.0.1
 publish_to: "none"
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
-  flutter: ">=3.10.0"
+  sdk: "^3.6.0"
+  flutter: "^3.27.0"
+resolution: workspace
 
 dependencies:
   flutter:
@@ -175,6 +176,12 @@ Future<void> setup''',
       return;
     }
     String pubspec = File(pathPubspec).readAsStringSync();
+    pubspec = pubspec.replaceAll(
+      RegExp(r'(^\n?dependencies)', multiLine: true),
+      '''  - features/$featureName
+
+dependencies''',
+    );
     pubspec = pubspec.replaceAll(
       RegExp(r'(^\n?dev_dependencies)', multiLine: true),
       '''  $featureName:

@@ -1,3 +1,4 @@
+import 'package:morpheme_cli/core/core.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -543,7 +544,7 @@ void main() {
   }
 
   test('Take changelog first', () {
-    print(getLatestChangelog(changelog));
-    print(getLatestChangelog(changelog1));
+    printMessage(getLatestChangelog(changelog));
+    printMessage(getLatestChangelog(changelog1));
   });
 }

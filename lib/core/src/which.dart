@@ -42,7 +42,7 @@ import 'is.dart';
 /// To print the path to the command:
 ///
 /// ```dart
-/// print(which('ls').path);
+/// printMessage(which('ls').path);
 /// ```
 ///
 /// To check if an app is on the path use:
@@ -50,7 +50,7 @@ import 'is.dart';
 /// ```dart
 /// if (which('apt').found)
 /// {
-///   print('found apt');
+///   printMessage('found apt');
 /// }
 /// ```
 ///

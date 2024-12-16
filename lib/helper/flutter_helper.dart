@@ -21,8 +21,14 @@ abstract class FlutterHelper {
 
   static Future<int> run(String argument, {bool showLog = false}) async {
     String command = '${getCommandFlutter()} $argument';
-    if (showLog) print(command);
-    return command.run;
+    if (showLog) printMessage(command);
+    return command.start(
+      showLog: false,
+      progressOut: (line) =>
+          printMessage(line.replaceAll(RegExp(r'[\s\n]+$'), '')),
+      progressErr: (line) =>
+          printerrMessage(line.replaceAll(RegExp(r'[\s\n]+$'), '')),
+    );
   }
 
   static Future<int> start(
@@ -33,7 +39,7 @@ abstract class FlutterHelper {
     void Function(String line)? progressErr,
   }) {
     String command = '${getCommandFlutter()} $argument';
-    if (showLog) print(command);
+    if (showLog) printMessage(command);
     return command.start(
       workingDirectory: workingDirectory,
       progressOut: progressOut,

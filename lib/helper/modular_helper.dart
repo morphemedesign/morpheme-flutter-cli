@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:isolate';
+import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:morpheme_cli/dependency_manager.dart';
@@ -13,9 +14,26 @@ abstract class ModularHelper {
     int concurrent = defaultConcurrent,
     void Function(String)? customCommand,
     void Function(String line)? stdout,
+    bool ignorePubWorkspaces = false,
   }) async {
+    List<(bool, String)> logs = [];
+
     final workingDirectoryFlutter = find('pubspec.yaml', workingDirectory: '.')
         .toList()
+        .where(
+          (element) {
+            if (ignorePubWorkspaces) {
+              return true;
+            }
+
+            final resolution = 'resolution';
+
+            final yaml = YamlHelper.loadFileYaml(element);
+            final hasResolution = yaml.containsKey(resolution);
+
+            return !hasResolution;
+          },
+        )
         .map((e) => e.replaceAll('${separator}pubspec.yaml', ''))
         .sorted((a, b) =>
             b.split(separator).length.compareTo(a.split(separator).length));
@@ -26,27 +44,52 @@ abstract class ModularHelper {
       futures.add(() async {
         final path = e.replaceAll(current, '.');
         try {
-          print('🚀 $path: ${commands.join(', ')}');
+          printMessage('🚀 $path: ${commands.join(', ')}');
           for (var command in commands) {
             await command.start(
               workingDirectory: e,
               showLog: false,
               progressOut: (line) {
                 stdout?.call(line);
+                logs.add((false, line));
               },
               progressErr: (line) {
                 if (line.isEmpty) return;
                 if (line.contains('Waiting for another flutter command')) {
                   return;
                 }
-                printerr(red(line));
+                logs.add((true, line));
               },
             );
           }
           customCommand?.call(e);
-          print('✅  $path: ${commands.join(', ')}');
+          printMessage('✅  $path: ${commands.join(', ')}');
         } catch (e) {
-          print('❌  $path: ${commands.join(', ')}');
+          printMessage('❌  $path: ${commands.join(', ')}');
+          printMessage('');
+          printMessage('Logs:');
+
+          for (var element in logs) {
+            final isErrorMessage = element.$1;
+            final line = element.$2;
+
+            if (line.isEmpty || line.contains(RegExp(r'\d{2}:\d{2}'))) continue;
+
+            if (isErrorMessage) {
+              printerrMessage(red(element.$2));
+              continue;
+            }
+
+            if (line.contains(RegExp(r'error'))) {
+              printMessage(red(line));
+            } else if (line.contains(RegExp(r'info'))) {
+              printMessage(blue(line));
+            } else if (line.contains(RegExp(r'warning'))) {
+              printMessage(orange(line));
+            } else {
+              printMessage(element.$2);
+            }
+          }
           rethrow;
         }
       });
@@ -54,8 +97,8 @@ abstract class ModularHelper {
 
     int runnable = 0;
     final length = futures.length;
-    print('📦 Total Packages: $length');
-    print('---------------------------------------');
+    printMessage('📦 Total Packages: $length');
+    printMessage('---------------------------------------');
     for (runnable = 0; runnable < length; runnable += concurrent) {
       int take =
           runnable + concurrent > length ? length % concurrent : concurrent;
@@ -69,6 +112,16 @@ abstract class ModularHelper {
   static Future<void> runSequence(void Function(String path) runner) async {
     final workingDirectoryFlutter = find('pubspec.yaml', workingDirectory: '.')
         .toList()
+        .where(
+          (element) {
+            final resolution = 'resolution';
+
+            final yaml = YamlHelper.loadFileYaml(element);
+            final hasResolution = yaml.containsKey(resolution);
+
+            return !hasResolution;
+          },
+        )
         .map((e) => e.replaceAll('${separator}pubspec.yaml', ''))
         .sorted((a, b) =>
             b.split(separator).length.compareTo(a.split(separator).length));
@@ -79,19 +132,19 @@ abstract class ModularHelper {
       futures.add(() async {
         final path = e.replaceAll(current, '.');
         try {
-          print('🚀 $path');
+          printMessage('🚀 $path');
           runner.call(path);
-          print('✅  $path');
+          printMessage('✅  $path');
         } catch (e) {
-          print('❌  $path');
+          printMessage('❌  $path');
           rethrow;
         }
       });
     }
 
     final length = futures.length;
-    print('📦 Total Packages: $length');
-    print('---------------------------------------');
+    printMessage('📦 Total Packages: $length');
+    printMessage('---------------------------------------');
     for (var element in futures) {
       await element.call();
     }
@@ -100,18 +153,6 @@ abstract class ModularHelper {
   static Future<void> analyze({int concurrent = defaultConcurrent}) => execute(
         ['${FlutterHelper.getCommandFlutter()} analyze . --no-pub'],
         concurrent: concurrent,
-        stdout: (line) {
-          if (line.isEmpty) return;
-          if (line.contains(RegExp(r'error'))) {
-            printerr(red(line));
-          }
-          if (line.contains(RegExp(r'info'))) {
-            printerr(blue(line));
-          }
-          if (line.contains(RegExp(r'warning'))) {
-            printerr(orange(line));
-          }
-        },
       );
   static Future<void> clean(
           {int concurrent = defaultConcurrent, bool removeLock = false}) =>
@@ -157,18 +198,12 @@ abstract class ModularHelper {
   static Future<void> coverage({int concurrent = defaultConcurrent}) => execute(
         ['${FlutterHelper.getCommandFlutter()} test --coverage --no-pub'],
         concurrent: concurrent,
-        stdout: (line) {
-          if (line.isEmpty || line.contains(RegExp(r'\d{2}:\d{2}'))) return;
-          print(red(line));
-        },
+        ignorePubWorkspaces: true,
       );
   static Future<void> test({int concurrent = defaultConcurrent}) => execute(
         ['${FlutterHelper.getCommandFlutter()} test --no-pub'],
         concurrent: concurrent,
-        stdout: (line) {
-          if (line.isEmpty || line.contains(RegExp(r'\d{2}:\d{2}'))) return;
-          print(red(line));
-        },
+        ignorePubWorkspaces: true,
       );
   static Future<void> upgrade({int concurrent = defaultConcurrent}) => execute(
         [

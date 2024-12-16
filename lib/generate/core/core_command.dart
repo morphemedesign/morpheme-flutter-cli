@@ -24,6 +24,7 @@ class CoreCommand extends Command {
     final packageName = argResults?.rest.first ?? '';
     await addNewFeature(packageName);
     addNewFeatureInPubspec(packageName);
+    addNewFeatureInPubspecRoot(packageName);
     addNewGitIgnore(packageName);
     addNewAnalysisOption(packageName);
 
@@ -44,8 +45,9 @@ version: 0.0.1
 publish_to: "none"
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
-  flutter: ">=3.10.0"
+  sdk: "^3.6.0"
+  flutter: "^3.27.0"
+resolution: workspace
 
 dependencies:
   flutter:
@@ -95,6 +97,19 @@ dev_dependencies''',
     join(current, 'core', 'pubspec.yaml').write(pubspec);
 
     StatusHelper.generated(join(current, 'core', 'pubspec.yaml'));
+  }
+
+  void addNewFeatureInPubspecRoot(String packageName) {
+    String pubspec = File(join(current, 'pubspec.yaml')).readAsStringSync();
+    pubspec = pubspec.replaceAll(
+      RegExp(r'(^\n?dependencies)', multiLine: true),
+      '''  - core/packages/${packageName.snakeCase}
+
+dependencies''',
+    );
+    join(current, 'pubspec.yaml').write(pubspec);
+
+    StatusHelper.generated(join(current, 'pubspec.yaml'));
   }
 
   void addNewGitIgnore(String packageName) {

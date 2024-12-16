@@ -1,3 +1,10 @@
+## 2.0.0
+
+- remove unused repository command
+- add loading bar console for all command
+- support flutter 3.27 / dart 3.6 monorepo with pub workspaces
+- adjust print in modular helper
+
 ## 1.14.6
 
 - fix json2dart generate response fromMap for data List number

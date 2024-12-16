@@ -76,7 +76,7 @@ class CucumberCommand extends Command {
 
     StatusHelper.generated(pathNdjson);
 
-    print('Starting cucumber integration test....');
+    printMessage('Starting cucumber integration test....');
 
     await FlutterHelper.start(
       'test integration_test/cucumber_test.dart ${dartDefines.join(' ')} --dart-define "INTEGRATION_TEST=true" --no-pub $deviceId',
@@ -98,25 +98,25 @@ class CucumberCommand extends Command {
               showLog: false,
             );
 
-            print(
+            printMessage(
                 '🚀 Cucumber HTML report cucumber-report.html generated successfully 👍');
           }
         } else if (line.contains('morpheme-cucumber-stdout')) {
           final message = line.replaceAll('morpheme-cucumber-stdout: ', '');
-          print(message);
+          printMessage(message);
         } else if (line.toLowerCase().contains('failed')) {
           StatusHelper.failed(isExit: false, line);
         } else if (RegExp(r'\d{0,2}:\d{0,2}').hasMatch(line) ||
             line.trim().isEmpty) {
           // Do nothing
         } else {
-          print(line);
+          printMessage(line);
         }
       },
     );
 
     final totalTime = DateTime.now().difference(now);
-    print('⏰ Total Time: ${formatDurationInHhMmSs(totalTime)}');
+    printMessage('⏰ Total Time: ${formatDurationInHhMmSs(totalTime)}');
   }
 
   String formatDurationInHhMmSs(Duration duration) {

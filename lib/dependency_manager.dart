@@ -1,5 +1,3 @@
-library dependency_management;
-
 export 'package:args/args.dart';
 export 'package:args/command_runner.dart';
 export 'package:path/path.dart';

@@ -20,7 +20,7 @@ class UnusedL10nCommand extends Command {
 
   @override
   void run() async {
-    print('Checking unused l10n');
+    printMessage('Checking unused l10n');
 
     Set<String> notUsed = getTranslationTerms();
 
@@ -30,10 +30,10 @@ class UnusedL10nCommand extends Command {
       stdout.writeln('.');
     });
 
-    print('Total unused: ${notUsed.length}');
-    if (notUsed.isNotEmpty) print('---------------------------');
+    printMessage('Total unused: ${notUsed.length}');
+    if (notUsed.isNotEmpty) printMessage('---------------------------');
     for (final t in notUsed) {
-      print(t);
+      printMessage(t);
     }
 
     StatusHelper.success('unused-l10n');

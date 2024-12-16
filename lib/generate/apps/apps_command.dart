@@ -59,8 +59,9 @@ version: 0.0.1
 publish_to: "none"
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
-  flutter: ">=3.10.0"
+  sdk: "^3.6.0"
+  flutter: "^3.27.0"
+resolution: workspace
 
 dependencies:
   flutter:
@@ -125,6 +126,12 @@ void setup''',
       return;
     }
     String pubspec = File(join(current, 'pubspec.yaml')).readAsStringSync();
+    pubspec = pubspec.replaceAll(
+      RegExp(r'(^\n?dependencies)', multiLine: true),
+      '''  - apps/$appsName
+
+dependencies''',
+    );
     pubspec = pubspec.replaceAll(
       RegExp(r'(^\n?dev_dependencies)', multiLine: true),
       '''  $appsName:

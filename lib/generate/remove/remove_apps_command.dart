@@ -46,6 +46,10 @@ class RemoveAppsCommand extends Command {
     String pubspec = File(pathPubspec).readAsStringSync();
 
     pubspec = pubspec.replaceAll(
+      RegExp("\\s+- apps/${appsName.snakeCase}"),
+      '',
+    );
+    pubspec = pubspec.replaceAll(
       RegExp(
           "\\s+${appsName.snakeCase}:\\s+path: ./apps/${appsName.snakeCase}"),
       '',

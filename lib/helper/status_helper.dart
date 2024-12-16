@@ -5,28 +5,28 @@ import 'package:morpheme_cli/dependency_manager.dart';
 abstract class StatusHelper {
   static void success([String? message]) {
     if (message != null) {
-      print(message);
+      printMessage(message);
     }
-    print(green('SUCCESS'));
+    printMessage(green('SUCCESS'));
   }
 
   static void warning(String message) {
-    printerr(orange(message));
+    printerrMessage(orange(message));
   }
 
   static void failed(String message, {bool isExit = true, int statusExit = 1}) {
-    printerr(red(message));
-    printerr(red('FAILED'));
+    printerrMessage(red(message));
+    printerrMessage(red('FAILED'));
     if (isExit) {
       exit(statusExit);
     }
   }
 
   static void generated(String path) {
-    print('${green('generated')} $path');
+    printMessage('${green('generated')} $path');
   }
 
   static void refactor(String path) {
-    print('${green('refactor')} $path');
+    printMessage('${green('refactor')} $path');
   }
 }

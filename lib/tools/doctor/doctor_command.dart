@@ -15,54 +15,54 @@ class DoctorCommand extends Command {
   @override
   void run() async {
     if (which('flutter').found) {
-      print('${green('[✓]')} Flutter installed');
+      printMessage('${green('[✓]')} Flutter installed');
       await FlutterHelper.run('doctor');
     } else {
-      printerr('${red('[x]')} Flutter not installed');
-      printerr(
+      printerrMessage('${red('[x]')} Flutter not installed');
+      printerrMessage(
         'You can install flutter in https://docs.flutter.dev/get-started/install',
       );
     }
 
     if (which('flutterfire').found) {
-      print('${green('[✓]')} flutterfire installed');
+      printMessage('${green('[✓]')} flutterfire installed');
     } else {
-      printerr('${red('[x]')} flutterfire not installed');
-      printerr(
+      printerrMessage('${red('[x]')} flutterfire not installed');
+      printerrMessage(
         'You can install with \'dart pub global activate flutterfire_cli\'',
       );
     }
-    print('flutterfire use for \'morpheme firebase\' command');
+    printMessage('flutterfire use for \'morpheme firebase\' command');
 
     if (which('gherkin').found) {
-      print('${green('[✓]')} Gherkin installed');
+      printMessage('${green('[✓]')} Gherkin installed');
     } else {
-      printerr('${red('[x]')} Gherkin not installed');
-      printerr(
+      printerrMessage('${red('[x]')} Gherkin not installed');
+      printerrMessage(
         'You can install in https://github.com/morphemedesign/morpheme-flutter-cli/releases/tag/cucumber',
       );
     }
-    print('gherkin use for \'morpheme cucumber\' command');
+    printMessage('gherkin use for \'morpheme cucumber\' command');
 
     if (which('npm').found) {
-      print('${green('[✓]')} npm installed');
+      printMessage('${green('[✓]')} npm installed');
     } else {
-      printerr('${red('[x]')} npm not installed');
-      printerr(
+      printerrMessage('${red('[x]')} npm not installed');
+      printerrMessage(
         'You can follow installation in https://nodejs.org/en',
       );
     }
-    print(
+    printMessage(
         'npm use for create report integration test after \'morpheme cucumber\' command');
 
     if (which('lcov').found) {
-      print('${green('[✓]')} lcov installed');
+      printMessage('${green('[✓]')} lcov installed');
     } else {
-      printerr('${red('[x]')} lcov not installed');
-      printerr(
+      printerrMessage('${red('[x]')} lcov not installed');
+      printerrMessage(
         'You can follow installation in https://github.com/linux-test-project/lcov',
       );
     }
-    print('lcov use for \'morpheme coverage\' command');
+    printMessage('lcov use for \'morpheme coverage\' command');
   }
 }

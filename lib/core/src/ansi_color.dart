@@ -12,14 +12,14 @@ import 'ansi.dart';
 /// console.
 ///
 /// ```
-/// print(red('a dark message'));
+/// printMessage(red('a dark message'));
 /// ```
 /// The [text] to wrap.
 /// By default the color is [bold] however you can turn off bold
 /// by setting the [bold] argment to false:
 ///
 /// ```
-/// print(red('a dark message', bold: false));
+/// printMessage(red('a dark message', bold: false));
 /// ```
 ///
 /// [background] is the background color to use when printing the
@@ -42,14 +42,14 @@ String red(
 /// console.
 ///
 /// ```
-/// print(black('a dark message'));
+/// printMessage(black('a dark message'));
 /// ```
 /// The [text] to wrap.
 /// By default the color is [bold] however you can turn off bold
 /// by setting the [bold] argment to false:
 ///
 /// ```
-/// print(black('a dark message', bold: false));
+/// printMessage(black('a dark message', bold: false));
 /// ```
 ///
 /// [background] is the background color to use when printing the
@@ -72,14 +72,14 @@ String black(
 /// console.
 ///
 /// ```
-/// print(green('a dark message'));
+/// printMessage(green('a dark message'));
 /// ```
 /// The [text] to wrap.
 /// By default the color is [bold] however you can turn off bold
 /// by setting the [bold] argment to false:
 ///
 /// ```
-/// print(green('a dark message', bold: false));
+/// printMessage(green('a dark message', bold: false));
 /// ```
 ///
 /// [background] is the background color to use when printing the
@@ -102,14 +102,14 @@ String green(
 /// console.
 ///
 /// ```
-/// print(blue('a dark message'));
+/// printMessage(blue('a dark message'));
 /// ```
 /// The [text] to wrap.
 /// By default the color is [bold] however you can turn off bold
 /// by setting the [bold] argment to false:
 ///
 /// ```
-/// print(blue('a dark message', bold: false));
+/// printMessage(blue('a dark message', bold: false));
 /// ```
 ///
 /// [background] is the background color to use when printing the
@@ -132,14 +132,14 @@ String blue(
 /// console.
 ///
 /// ```
-/// print(yellow('a dark message'));
+/// printMessage(yellow('a dark message'));
 /// ```
 /// The [text] to wrap.
 /// By default the color is [bold] however you can turn off bold
 /// by setting the [bold] argment to false:
 ///
 /// ```
-/// print(yellow('a dark message', bold: false));
+/// printMessage(yellow('a dark message', bold: false));
 /// ```
 ///
 /// [background] is the background color to use when printing the
@@ -162,14 +162,14 @@ String yellow(
 /// console.
 ///
 /// ```
-/// print(magenta('a dark message'));
+/// printMessage(magenta('a dark message'));
 /// ```
 /// The [text] to wrap.
 /// By default the color is [bold] however you can turn off bold
 /// by setting the [bold] argment to false:
 ///
 /// ```
-/// print(magenta('a dark message', bold: false));
+/// printMessage(magenta('a dark message', bold: false));
 /// ```
 ///
 /// [background] is the background color to use when printing the
@@ -193,14 +193,14 @@ String magenta(
 /// console.
 ///
 /// ```
-/// print(cyan('a dark message'));
+/// printMessage(cyan('a dark message'));
 /// ```
 /// The [text] to wrap.
 /// By default the color is [bold] however you can turn off bold
 /// by setting the [bold] argment to false:
 ///
 /// ```
-/// print(cyan('a dark message', bold: false));
+/// printMessage(cyan('a dark message', bold: false));
 /// ```
 ///
 /// [background] is the background color to use when printing the
@@ -224,14 +224,14 @@ String cyan(
 /// console.
 ///
 /// ```
-/// print(white('a dark message'));
+/// printMessage(white('a dark message'));
 /// ```
 /// The [text] to wrap.
 /// By default the color is [bold] however you can turn off bold
 /// by setting the [bold] argment to false:
 ///
 /// ```
-/// print(white('a dark message', bold: false));
+/// printMessage(white('a dark message', bold: false));
 /// ```
 ///
 /// [background] is the background color to use when printing the
@@ -255,14 +255,14 @@ String white(
 /// console.
 ///
 /// ```
-/// print(orange('a dark message'));
+/// printMessage(orange('a dark message'));
 /// ```
 /// The [text] to wrap.
 /// By default the color is [bold] however you can turn off bold
 /// by setting the [bold] argment to false:
 ///
 /// ```
-/// print(orange('a dark message', bold: false));
+/// printMessage(orange('a dark message', bold: false));
 /// ```
 ///
 /// [background] is the background color to use when printing the
@@ -286,14 +286,14 @@ String orange(
 /// console.
 ///
 /// ```
-/// print(grey('a dark message'));
+/// printMessage(grey('a dark message'));
 /// ```
 /// The [text] to wrap.
 /// By default the color is [bold] however you can turn off bold
 /// by setting the [bold] argment to false:
 ///
 /// ```
-/// print(grey('a dark message', bold: false));
+/// printMessage(grey('a dark message', bold: false));
 /// ```
 ///
 /// [background] is the background color to use when printing the

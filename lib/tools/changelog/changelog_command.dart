@@ -43,6 +43,6 @@ class ChangelogCommand extends Command {
     if (exists(join(current, path))) {
       changelog = File(path).readAsStringSync();
     }
-    print(getLatestChangelog(changelog));
+    printMessage(getLatestChangelog(changelog));
   }
 }

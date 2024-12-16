@@ -7,6 +7,7 @@ export 'src/create.dart';
 export 'src/delete.dart';
 export 'src/find.dart';
 export 'src/is.dart';
+export 'src/loading.dart';
 export 'src/move.dart';
 export 'src/print.dart';
 export 'src/read.dart';

@@ -41,61 +41,77 @@ class CoverageCommand extends Command {
       await createCoverageHelperTest(path, packageName);
     }
 
-    await ModularHelper.coverage(concurrent: morphemeYaml.concurrent);
+    try {
+      await ModularHelper.coverage(concurrent: morphemeYaml.concurrent);
 
-    final pathCoverageLcov = 'coverage/lcov.info';
-    if (!exists(pathCoverageLcov)) {
-      touch(pathCoverageLcov, create: true);
-    }
-
-    for (var pathPubspec in list) {
-      final path = pathPubspec.replaceAll('/pubspec.yaml', '');
-      try {
-        delete('$path/$pathCoverageHelper');
-      } catch (e) {
-        StatusHelper.warning('$path/$pathCoverageHelper not exists!');
+      final pathCoverageLcov = 'coverage/lcov.info';
+      if (!exists(pathCoverageLcov)) {
+        touch(pathCoverageLcov, create: true);
       }
 
-      final pathReplace = path.replaceAll('$current/', '');
-      if (path != current) {
-        replace('$path/$pathCoverageLcov', 'SF:lib/', 'SF:$pathReplace/lib/');
+      for (var pathPubspec in list) {
+        final path = pathPubspec.replaceAll('/pubspec.yaml', '');
+        try {
+          delete('$path/$pathCoverageHelper');
+        } catch (e) {
+          StatusHelper.warning('$path/$pathCoverageHelper not exists!');
+        }
+
+        final pathReplace = path.replaceAll('$current/', '');
+        if (path != current) {
+          replace('$path/$pathCoverageLcov', 'SF:lib/', 'SF:$pathReplace/lib/');
+        }
+
+        read('$path/$pathCoverageLcov').forEach((line) {
+          pathCoverageLcov.append(line);
+        });
       }
 
-      read('$path/$pathCoverageLcov').forEach((line) {
-        pathCoverageLcov.append(line);
-      });
+      if (Platform.isWindows) {
+        printMessage(
+            'you must install perl and lcov then lcov remove file will be ignore to coverage manually & generate report to html manually.');
+      }
+
+      if (which('lcov').notfound) {
+        StatusHelper.failed(
+            'lcov not found, failed to remove ignore file to test.');
+      }
+
+      final lcovDir = morphemeYaml['coverage']['lcov_dir']
+          ?.toString()
+          .replaceAll('/', separator);
+      final outputHtmlDir = morphemeYaml['coverage']['output_html_dir']
+          ?.toString()
+          .replaceAll('/', separator);
+      final removeFile = (morphemeYaml['coverage']['remove'] as List).join(' ');
+
+      printMessage(
+          "lcov --remove $lcovDir $removeFile -o $lcovDir --ignore-errors unused");
+
+      await "lcov --remove $lcovDir $removeFile -o $lcovDir --ignore-errors unused"
+          .run;
+
+      if (which('genhtml').notfound) {
+        StatusHelper.failed('failed cannot generate report lcov html.');
+      }
+      await 'genhtml $lcovDir -o $outputHtmlDir'.run;
+
+      StatusHelper.success();
+    } catch (e) {
+      for (var pathPubspec in list) {
+        final path = pathPubspec.replaceAll('/pubspec.yaml', '');
+        try {
+          delete('$path/$pathCoverageHelper');
+        } catch (e) {
+          StatusHelper.warning('$path/$pathCoverageHelper not exists!');
+        }
+        try {
+          deleteDir('$path/coverage');
+        } catch (e) {
+          StatusHelper.warning('$path/coverage not exists!');
+        }
+      }
     }
-
-    if (Platform.isWindows) {
-      print(
-          'you must install perl and lcov then lcov remove file will be ignore to coverage manually & generate report to html manually.');
-    }
-
-    if (which('lcov').notfound) {
-      StatusHelper.failed(
-          'lcov not found, failed to remove ignore file to test.');
-    }
-
-    final lcovDir = morphemeYaml['coverage']['lcov_dir']
-        ?.toString()
-        .replaceAll('/', separator);
-    final outputHtmlDir = morphemeYaml['coverage']['output_html_dir']
-        ?.toString()
-        .replaceAll('/', separator);
-    final removeFile = (morphemeYaml['coverage']['remove'] as List).join(' ');
-
-    print(
-        "lcov --remove $lcovDir $removeFile -o $lcovDir --ignore-errors unused");
-
-    await "lcov --remove $lcovDir $removeFile -o $lcovDir --ignore-errors unused"
-        .run;
-
-    if (which('genhtml').notfound) {
-      StatusHelper.failed('failed cannot generate report lcov html.');
-    }
-    await 'genhtml $lcovDir -o $outputHtmlDir'.run;
-
-    StatusHelper.success();
   }
 
   Map<dynamic, dynamic> getYaml(String path) {
