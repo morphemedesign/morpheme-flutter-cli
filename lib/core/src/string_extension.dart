@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:morpheme_cli/core/src/commandline_converter.dart';
-import 'package:morpheme_cli/helper/helper.dart';
 
 import 'loading.dart';
 
@@ -33,8 +32,7 @@ extension StringExtension on String {
     final exitCode = await process.exitCode;
 
     if (exitCode > 0) {
-      StatusHelper.failed('$this has exit with code $exitCode',
-          statusExit: exitCode);
+      throw Exception('$this has exit with code $exitCode');
     }
 
     return exitCode;
@@ -72,8 +70,7 @@ extension StringExtension on String {
     final exitCode = await process.exitCode;
 
     if (exitCode > 0) {
-      StatusHelper.failed('$this has exit with code $exitCode',
-          statusExit: exitCode);
+      throw Exception('$this has exit with code $exitCode');
     }
     return exitCode;
   }

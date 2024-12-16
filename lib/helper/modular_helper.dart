@@ -78,7 +78,11 @@ abstract class ModularHelper {
             final isErrorMessage = element.$1;
             final line = element.$2;
 
-            if (line.isEmpty || line.contains(RegExp(r'\d{2}:\d{2}'))) continue;
+            if (line.isEmpty ||
+                line.contains(RegExp(r'\d{2}:\d{2}')) ||
+                RegExp(r'^(\s)+$').hasMatch(line)) {
+              continue;
+            }
 
             if (isErrorMessage) {
               printerrMessage(red(element.$2));

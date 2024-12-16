@@ -1,3 +1,7 @@
+## 2.0.2
+
+- adjust print message logs not show when modular called
+
 ## 2.0.1
 
 - adjust print message in loading helper and modular helper
