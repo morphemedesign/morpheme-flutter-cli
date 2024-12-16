@@ -16,6 +16,7 @@ abstract class ModularHelper {
     void Function(String line)? stdout,
     bool ignorePubWorkspaces = false,
   }) async {
+    Loading().stop();
     List<(bool, String)> logs = [];
 
     final workingDirectoryFlutter = find('pubspec.yaml', workingDirectory: '.')
@@ -42,6 +43,7 @@ abstract class ModularHelper {
 
     for (var e in workingDirectoryFlutter) {
       futures.add(() async {
+        Loading().start();
         final path = e.replaceAll(current, '.');
         try {
           printMessage('🚀 $path: ${commands.join(', ')}');
@@ -64,7 +66,10 @@ abstract class ModularHelper {
           }
           customCommand?.call(e);
           printMessage('✅  $path: ${commands.join(', ')}');
+
+          Loading().stop();
         } catch (e) {
+          Loading().stop();
           printMessage('❌  $path: ${commands.join(', ')}');
           printMessage('');
           printMessage('Logs:');
@@ -107,6 +112,8 @@ abstract class ModularHelper {
           .map((e) => Isolate.run(e));
       await Future.wait(isolate);
     }
+
+    Loading().stop();
   }
 
   static Future<void> runSequence(void Function(String path) runner) async {

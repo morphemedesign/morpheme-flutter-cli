@@ -1,3 +1,7 @@
+## 2.0.1
+
+- adjust print message in loading helper and modular helper
+
 ## 2.0.0
 
 - remove unused repository command

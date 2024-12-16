@@ -62,6 +62,10 @@ class Loading {
   }
 
   void printMessage(Object? message) {
+    if (RegExp(r'[\-\\|\/] Loading\.\.\.').hasMatch(message.toString())) {
+      return; // Prevent printing loading states
+    }
+
     if (_isRunning && !_isCiCdEnvironment) {
       // Temporarily stop the loading bar to print a clean message
       stdout.write('\r${' ' * 20}\r'); // Clear the current loading line
@@ -74,6 +78,10 @@ class Loading {
   }
 
   void printerrMessage(String? message) {
+    if (RegExp(r'[\-\\|\/] Loading\.\.\.').hasMatch(message.toString())) {
+      return; // Prevent printing loading states
+    }
+
     if (_isRunning && !_isCiCdEnvironment) {
       // Temporarily stop the loading bar to print a clean message
       stdout.write('\r${' ' * 20}\r'); // Clear the current loading line
