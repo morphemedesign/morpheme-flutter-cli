@@ -16,9 +16,6 @@ abstract class ModularHelper {
     void Function(String line)? stdout,
     bool ignorePubWorkspaces = false,
   }) async {
-    Loading().stop();
-    List<(bool, String)> logs = [];
-
     final workingDirectoryFlutter = find('pubspec.yaml', workingDirectory: '.')
         .toList()
         .where(
@@ -39,47 +36,85 @@ abstract class ModularHelper {
         .sorted((a, b) =>
             b.split(separator).length.compareTo(a.split(separator).length));
 
-    List<Future Function()> futures = [];
+    List<(String, Future<(String, bool, List<(bool, String)>)> Function())>
+        futures = [];
 
     for (var e in workingDirectoryFlutter) {
-      futures.add(() async {
-        Loading().start();
-        final path = e.replaceAll(current, '.');
-        try {
-          printMessage('🚀 $path: ${commands.join(', ')}');
-          for (var command in commands) {
-            await command.start(
-              workingDirectory: e,
-              showLog: false,
-              progressOut: (line) {
-                stdout?.call(line);
-                logs.add((false, line));
-              },
-              progressErr: (line) {
-                if (line.isEmpty) return;
-                if (line.contains('Waiting for another flutter command')) {
-                  return;
-                }
-                logs.add((true, line));
-              },
-            );
-          }
-          customCommand?.call(e);
-          printMessage('✅  $path: ${commands.join(', ')}');
+      final path = e.replaceAll(current, '.');
 
-          Loading().stop();
-        } catch (e) {
-          Loading().stop();
+      futures.add(
+        (
+          path,
+          () async {
+            final path = e.replaceAll(current, '.');
+            List<(bool, String)> logs = [];
+            bool isSuccess = false;
+
+            try {
+              for (var command in commands) {
+                await command.start(
+                  workingDirectory: e,
+                  showLog: false,
+                  progressOut: (line) {
+                    stdout?.call(line);
+                    logs.add((false, line));
+                  },
+                  progressErr: (line) {
+                    if (line.isEmpty) return;
+                    if (line.contains('Waiting for another flutter command')) {
+                      return;
+                    }
+                    logs.add((true, line));
+                  },
+                );
+              }
+              customCommand?.call(e);
+
+              isSuccess = true;
+            } catch (e) {
+              isSuccess = false;
+            }
+
+            return (path, isSuccess, logs);
+          }
+        ),
+      );
+    }
+
+    bool isAllExecutedSuccess = true;
+    int runnable = 0;
+    final length = futures.length;
+    printMessage('📦 Total Packages: $length');
+    printMessage('---------------------------------------');
+    for (runnable = 0; runnable < length; runnable += concurrent) {
+      int take =
+          runnable + concurrent > length ? length % concurrent : concurrent;
+
+      final isolate = futures.getRange(runnable, runnable + take).map((e) {
+        final path = e.$1;
+        printMessage('🚀 $path: ${commands.join(', ')}');
+
+        return Isolate.run<(String, bool, List<(bool, String)>)>(e.$2);
+      });
+
+      final results = await Future.wait(isolate);
+      for (var i = 0; i < results.length; i++) {
+        final path = results[i].$1;
+        final isSuccess = results[i].$2;
+        final logs = results[i].$3;
+        if (isSuccess) {
+          printMessage('✅  $path: ${commands.join(', ')}');
+        } else {
+          isAllExecutedSuccess = false;
           printMessage('❌  $path: ${commands.join(', ')}');
-          printMessage('');
-          printMessage('Logs:');
+          printMessage('📝  Logs: $path');
 
           for (var element in logs) {
             final isErrorMessage = element.$1;
             final line = element.$2;
 
             if (line.isEmpty ||
-                line.contains(RegExp(r'\d{2}:\d{2}')) ||
+                RegExp(r'^\d{2}:\d{2}\s+\+\d+:').hasMatch(line) ||
                 RegExp(r'^(\s)+$').hasMatch(line)) {
               continue;
             }
@@ -99,25 +134,13 @@ abstract class ModularHelper {
               printMessage(element.$2);
             }
           }
-          rethrow;
         }
-      });
+      }
     }
 
-    int runnable = 0;
-    final length = futures.length;
-    printMessage('📦 Total Packages: $length');
-    printMessage('---------------------------------------');
-    for (runnable = 0; runnable < length; runnable += concurrent) {
-      int take =
-          runnable + concurrent > length ? length % concurrent : concurrent;
-      final isolate = futures
-          .getRange(runnable, runnable + take)
-          .map((e) => Isolate.run(e));
-      await Future.wait(isolate);
+    if (!isAllExecutedSuccess) {
+      throw Exception('Some packages failed to execute');
     }
-
-    Loading().stop();
   }
 
   static Future<void> runSequence(void Function(String path) runner) async {
