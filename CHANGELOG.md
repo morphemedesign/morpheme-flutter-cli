@@ -1,3 +1,7 @@
+## 2.1.0
+
+- add parameter output in firebase command
+
 ## 2.0.3
 
 - adjust print message logs in modular helper

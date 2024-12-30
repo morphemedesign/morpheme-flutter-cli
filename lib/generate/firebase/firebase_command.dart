@@ -41,6 +41,7 @@ class FirebaseCommand extends Command {
       final project = firebase['project_id'];
       final token = firebase['token'];
       final platform = firebase['platform'];
+      final output = firebase['output'];
       final androidPackageName =
           firebase['android_package_name'] ?? flavor['ANDROID_APPLICATION_ID'];
       final iosBundleId =
@@ -53,11 +54,15 @@ class FirebaseCommand extends Command {
           ? ' --platforms="$platform"'
           : '';
       final argWebAppId =
-          webAppId is String && webAppId.isNotEmpty ? ' -w "$webAppId"`' : '';
+          webAppId is String && webAppId.isNotEmpty ? ' -w "$webAppId"' : '';
+      final argOutput =
+          output is String && output.isNotEmpty ? ' -o "$output"' : '';
 
       bool regenerate = true;
 
-      final pathFirebaseOptions = join(current, 'lib', 'firebase_options.dart');
+      final pathFirebaseOptions = output != null
+          ? join(current, output)
+          : join(current, 'lib', 'firebase_options.dart');
       if (exists(pathFirebaseOptions)) {
         final firebaseOptions = readFile(pathFirebaseOptions);
         if (RegExp('''projectId:(\\s+)?('|")$project('|")''')
@@ -68,7 +73,7 @@ class FirebaseCommand extends Command {
       }
 
       if (regenerate || argOverwrite) {
-        await 'flutterfire configure $argToken$argPlatform$argWebAppId -p "$project"  -a "$androidPackageName" -i "$iosBundleId" -m "$iosBundleId" -w "$androidPackageName" -x "$androidPackageName" -y'
+        await 'flutterfire configure $argToken$argPlatform$argWebAppId$argOutput -p "$project"  -a "$androidPackageName" -i "$iosBundleId" -m "$iosBundleId" -w "$androidPackageName" -x "$androidPackageName" -y'
             .run;
       }
     } else {
