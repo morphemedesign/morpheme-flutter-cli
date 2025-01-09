@@ -1,3 +1,8 @@
+## 2.2.0
+
+- support shorebird command
+- add shorebird command for release and patch
+
 ## 2.1.0
 
 - add parameter output in firebase command

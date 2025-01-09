@@ -64,5 +64,16 @@ class DoctorCommand extends Command {
       );
     }
     printMessage('lcov use for \'morpheme coverage\' command');
+
+    if (which('shorebird').found) {
+      printMessage('${green('[✓]')} shorebird installed');
+    } else {
+      printerrMessage('${red('[x]')} shorebird not installed');
+      printerrMessage(
+        'You can follow installation in https://docs.shorebird.dev/',
+      );
+    }
+    printMessage(
+        'shorebird use for flutter code push \'morpheme shorebird\' command');
   }
 }

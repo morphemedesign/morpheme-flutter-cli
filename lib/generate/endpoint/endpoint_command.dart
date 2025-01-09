@@ -142,6 +142,7 @@ class EndpointCommand extends Command {
     pathOutput.write(file.toString());
     StatusHelper.generated(pathOutput);
 
+    await ModularHelper.format([pathDir]);
     await ModularHelper.fix([pathDir]);
     await ModularHelper.format([pathDir]);
 

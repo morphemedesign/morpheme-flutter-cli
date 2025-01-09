@@ -400,10 +400,9 @@ import 'morpheme_color.dart';
       workingDirectory: join(pathColors, 'src'),
       types: [Find.file],
     ).toList();
-    pathLibraryColor.write('''library morpheme_colors;
-
-${fileLibraryColors.map((e) => "export 'src/${e.split(separator).last}';").join('\n')}
-''');
+    pathLibraryColor.write(fileLibraryColors
+        .map((e) => "export 'src/${e.split(separator).last}';")
+        .join('\n'));
 
     final pathLibraryTheme = join(pathThemes, 'morpheme_themes.dart');
     final fileLibraryThemes = find(
@@ -413,10 +412,9 @@ ${fileLibraryColors.map((e) => "export 'src/${e.split(separator).last}';").join(
       workingDirectory: join(pathThemes, 'src'),
       types: [Find.file],
     ).toList();
-    pathLibraryTheme.write('''library morpheme_themes;
-
-${fileLibraryThemes.map((e) => "export 'src/${e.split(separator).last}';").join('\n')}
-''');
+    pathLibraryTheme.write(fileLibraryThemes
+        .map((e) => "export 'src/${e.split(separator).last}';")
+        .join('\n'));
   }
 
   void init() {

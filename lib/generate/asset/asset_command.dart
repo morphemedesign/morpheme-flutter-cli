@@ -148,8 +148,6 @@ class AssetCommand extends Command {
 
     final pathOutput = join(current, morphemeAssets.outputDir, 'assets.dart');
 
-    pathOutput.write('library assets;\n');
-
     for (var item in items) {
       final nameWithExtension = item.split('/').last;
       pathOutput.append("export 'src/$nameWithExtension';");
