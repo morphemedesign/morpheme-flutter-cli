@@ -1,3 +1,7 @@
+## 2.3.1
+
+- fix firebase command using service account json using firebase_command.sh
+
 ## 2.3.0
 
 - support firebase command using service account json

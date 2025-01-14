@@ -82,16 +82,31 @@ class FirebaseCommand extends Command {
       final isCiCdEnvironment = Platform.environment.containsKey('CI') &&
           Platform.environment['CI'] == 'true';
 
-      if ((isCiCdEnvironment && enableCiUseServiceAccount) ||
-          !isCiCdEnvironment) {
-        if (serviceAccount?.isNotEmpty ?? false) {
-          'export GOOGLE_APPLICATION_CREDENTIALS="$serviceAccount"'.run;
-        }
+      final commandFlutterFire =
+          'flutterfire configure $argToken$argPlatform$argWebAppId$argOutput -p "$project"  -a "$androidPackageName" -i "$iosBundleId" -m "$iosBundleId" -w "$androidPackageName" -x "$androidPackageName" -y';
+
+      if ((isCiCdEnvironment && enableCiUseServiceAccount ||
+              !isCiCdEnvironment) &&
+          serviceAccount != null &&
+          serviceAccount.isNotEmpty &&
+          (regenerate || argOverwrite)) {
+        final filename = join(current, 'firebase_command.sh');
+
+        filename.write('''#!/bin/bash
+          
+export GOOGLE_APPLICATION_CREDENTIALS="$serviceAccount"
+
+$commandFlutterFire
+''');
+
+        await 'chmod +x $filename'.run;
+        await filename.run;
+
+        delete(filename);
       }
 
-      if (regenerate || argOverwrite) {
-        await 'flutterfire configure $argToken$argPlatform$argWebAppId$argOutput -p "$project"  -a "$androidPackageName" -i "$iosBundleId" -m "$iosBundleId" -w "$androidPackageName" -x "$androidPackageName" -y'
-            .run;
+      if ((serviceAccount?.isEmpty ?? true) && (regenerate || argOverwrite)) {
+        await commandFlutterFire.run;
       }
     } else {
       StatusHelper.failed(
