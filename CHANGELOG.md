@@ -1,3 +1,7 @@
+## 2.3.0
+
+- support firebase command using service account json
+
 ## 2.2.0
 
 - support shorebird command

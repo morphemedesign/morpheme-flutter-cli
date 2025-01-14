@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:morpheme_cli/constants.dart';
 import 'package:morpheme_cli/dependency_manager.dart';
 import 'package:morpheme_cli/extensions/extensions.dart';
@@ -47,6 +49,11 @@ class FirebaseCommand extends Command {
       final iosBundleId =
           firebase['ios_bundle_id'] ?? flavor['IOS_APPLICATION_ID'];
       final webAppId = firebase['web_app_id'];
+      final serviceAccount = firebase['service_account']?.toString();
+      final enableCiUseServiceAccount =
+          firebase['enable_ci_use_service_account'] is bool
+              ? firebase['enable_ci_use_service_account'] as bool
+              : false;
 
       final argToken =
           token is String && token.isNotEmpty ? ' -t "$token"' : '';
@@ -69,6 +76,16 @@ class FirebaseCommand extends Command {
             .hasMatch(firebaseOptions)) {
           regenerate = false;
           StatusHelper.generated('you already have lib/firebase_options.dart');
+        }
+      }
+
+      final isCiCdEnvironment = Platform.environment.containsKey('CI') &&
+          Platform.environment['CI'] == 'true';
+
+      if ((isCiCdEnvironment && enableCiUseServiceAccount) ||
+          !isCiCdEnvironment) {
+        if (serviceAccount?.isNotEmpty ?? false) {
+          'export GOOGLE_APPLICATION_CREDENTIALS="$serviceAccount"'.run;
         }
       }
 
