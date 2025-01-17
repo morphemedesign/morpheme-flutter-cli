@@ -82,13 +82,16 @@ class FirebaseCommand extends Command {
       final isCiCdEnvironment = Platform.environment.containsKey('CI') &&
           Platform.environment['CI'] == 'true';
 
+      final isExistServiceAccount = serviceAccount != null &&
+          serviceAccount.isNotEmpty &&
+          exists(serviceAccount);
+
       final commandFlutterFire =
           'flutterfire configure $argToken$argPlatform$argWebAppId$argOutput -p "$project"  -a "$androidPackageName" -i "$iosBundleId" -m "$iosBundleId" -w "$androidPackageName" -x "$androidPackageName" -y';
 
       if ((isCiCdEnvironment && enableCiUseServiceAccount ||
               !isCiCdEnvironment) &&
-          serviceAccount != null &&
-          serviceAccount.isNotEmpty &&
+          isExistServiceAccount &&
           (regenerate || argOverwrite)) {
         final filename = join(current, 'firebase_command.sh');
 
@@ -105,7 +108,7 @@ $commandFlutterFire
         delete(filename);
       }
 
-      if ((serviceAccount?.isEmpty ?? true) && (regenerate || argOverwrite)) {
+      if ((!isExistServiceAccount) && (regenerate || argOverwrite)) {
         await commandFlutterFire.run;
       }
     } else {
