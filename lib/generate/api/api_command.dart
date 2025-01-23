@@ -43,6 +43,7 @@ class ApiCommand extends Command {
         'multipart',
         'postMultipart',
         'patchMultipart',
+        'head',
       ],
       defaultsTo: 'post',
     );
@@ -50,6 +51,21 @@ class ApiCommand extends Command {
     argParser.addOption(
       'header',
       help: 'path file json additional header fetch api',
+    );
+    argParser.addOption(
+      'return-data',
+      abbr: 'r',
+      help:
+          'Specify the type of data to return from the API response. Options include: model, header, body_bytes, body_string, status_code, and raw.',
+      allowed: [
+        'model',
+        'header',
+        'body_bytes',
+        'body_string',
+        'status_code',
+        'raw',
+      ],
+      defaultsTo: 'model',
     );
     argParser.addFlag(
       'body-list',
@@ -91,6 +107,9 @@ class ApiCommand extends Command {
   String get category => Constants.generate;
 
   String projectName = '';
+  String returnData = 'model';
+
+  bool get isReturnDataModel => returnData == 'model';
 
   @override
   void run() async {
@@ -121,6 +140,7 @@ class ApiCommand extends Command {
     final bool? keepExpiredCache = argResults?['keep-expired-cache'] == null
         ? null
         : argResults?['keep-expired-cache'] == 'true';
+    returnData = argResults?['return-data'];
 
     String pathFeature = join(current, 'features', featureName);
     if (appsName != null) {
@@ -158,13 +178,19 @@ class ApiCommand extends Command {
       keepExpiredCache,
     );
     if (!json2dart) createDataModelBody(pathPage, pageName, apiName, bodyList);
-    if (!json2dart) createDataModelResponse(pathPage, pageName, apiName);
+    if (!json2dart && isReturnDataModel) {
+      createDataModelResponse(pathPage, pageName, apiName);
+    }
     createDataRepository(pathPage, pageName, apiName, bodyList, responseList);
-    if (!json2dart) createDomainEntity(pathPage, pageName, apiName);
+    if (!json2dart && isReturnDataModel) {
+      createDomainEntity(pathPage, pageName, apiName);
+    }
     createDomainRepository(pathPage, pageName, apiName, bodyList, responseList);
     createDomainUseCase(pathPage, pageName, apiName, bodyList, responseList);
     createPresentationBloc(pathPage, pageName, apiName, bodyList, responseList);
-    if (!json2dart) createMapper(pathPage, pageName, apiName);
+    if (!json2dart && isReturnDataModel) {
+      createMapper(pathPage, pageName, apiName);
+    }
 
     createPostLocator(pathPage, pageName, apiName);
 
@@ -184,18 +210,81 @@ class ApiCommand extends Command {
   }
 
   String getResponseClass(String apiClassName, bool responseList) {
-    if (responseList) {
-      return 'List<${apiClassName}Response>';
-    } else {
-      return '${apiClassName}Response';
+    switch (returnData) {
+      case 'header':
+        return 'Map<String, String>';
+      case 'body_bytes':
+        return 'Uint8List';
+      case 'body_string':
+        return 'String';
+      case 'status_code':
+        return 'int';
+      case 'raw':
+        return 'Response';
+      default:
+        if (responseList) {
+          return 'List<${apiClassName}Response>';
+        } else {
+          return '${apiClassName}Response';
+        }
+    }
+  }
+
+  String getResponseReturn(String apiClassName, bool responseList) {
+    switch (returnData) {
+      case 'header':
+        return 'return response.headers;';
+      case 'body_bytes':
+        return 'return response.bodyBytes;';
+      case 'body_string':
+        return 'return response.body;';
+      case 'status_code':
+        return 'return response.statusCode;';
+      case 'raw':
+        return 'return response;';
+      default:
+        if (responseList) {
+          return '''final mapResponse = jsonDecode(response.body);
+    return mapResponse is List
+        ? List.from(mapResponse.map((e) => ${apiClassName}Response.fromMap(e)))
+        : [${apiClassName}Response.fromMap(mapResponse)];''';
+        } else {
+          return 'return ${apiClassName}Response.fromJson(response.body);';
+        }
     }
   }
 
   String getEntityClass(String apiClassName, bool responseList) {
-    if (responseList) {
-      return 'List<${apiClassName}Entity>';
-    } else {
-      return '${apiClassName}Entity';
+    switch (returnData) {
+      case 'header':
+        return 'Map<String, String>';
+      case 'body_bytes':
+        return 'Uint8List';
+      case 'body_string':
+        return 'String';
+      case 'status_code':
+        return 'int';
+      case 'raw':
+        return 'Response';
+      default:
+        if (responseList) {
+          return 'List<${apiClassName}Entity>';
+        } else {
+          return '${apiClassName}Entity';
+        }
+    }
+  }
+
+  String getEntityReturn(String apiClassName, bool responseList) {
+    switch (returnData) {
+      case 'model':
+        if (responseList) {
+          return 'data.map((e) => e.toEntity()).toList()';
+        } else {
+          return 'data.toEntity()';
+        }
+      default:
+        return 'data';
     }
   }
 
@@ -247,12 +336,7 @@ class ApiCommand extends Command {
         : 'body: body.toMap()${isMultipart(method) ? '.map((key, value) => MapEntry(key, value.toString()))' : ''},${isMultipart(method) ? ' files: body.files,' : ''}';
 
     final responseClass = getResponseClass(apiClassName, responseList);
-    final responseImpl = responseList
-        ? '''final mapResponse = jsonDecode(response.body);
-    return mapResponse is List
-        ? List.from(mapResponse.map((e) => ${apiClassName}Response.fromMap(e)))
-        : [${apiClassName}Response.fromMap(mapResponse)];'''
-        : 'return ${apiClassName}Response.fromJson(response.body);';
+    final responseImpl = getResponseReturn(apiClassName, responseList);
 
     final convert =
         bodyList || responseList ? "import 'dart:convert';\n\n" : '';
@@ -270,11 +354,13 @@ class ApiCommand extends Command {
         : '${cacheStrategy.toParamCacheStrategy(ttl: ttl, keepExpiredCache: keepExpiredCache)},';
 
     if (!exists(join(path, '${pageName}_remote_data_source.dart'))) {
-      join(path, '${pageName}_remote_data_source.dart')
-          .write('''${convert}import 'package:core/core.dart';
+      join(path, '${pageName}_remote_data_source.dart').write(
+          '''${returnData == 'body_bytes' ? "import 'dart:typed_data';" : ''}
+
+${convert}import 'package:core/core.dart';
 
 import '../models/body/${apiName}_body.dart';
-import '../models/response/${apiName}_response.dart';
+${isReturnDataModel ? '''import '../models/response/${apiName}_response.dart';''' : ''}
 
 abstract class ${pageName.pascalCase}RemoteDataSource {
   Future<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,});
@@ -295,12 +381,21 @@ class ${pageName.pascalCase}RemoteDataSourceImpl implements ${pageName.pascalCas
       String data = File(join(path, '${pageName}_remote_data_source.dart'))
           .readAsStringSync();
 
+      final isNeedImportTypeData = returnData == 'body_bytes' &&
+          !RegExp(r'''import 'dart:typed_data';''').hasMatch(data);
+
+      if (isNeedImportTypeData) {
+        data = '''import 'dart:typed_data';
+        
+        $data''';
+      }
+
       data = data.replaceAll(
           RegExp(r"import\s?'package:core\/core.dart';\n?\n?", multiLine: true),
           '''import 'package:core/core.dart';
     
 import '../models/body/${apiName}_body.dart';
-import '../models/response/${apiName}_response.dart';''');
+${isReturnDataModel ? '''import '../models/response/${apiName}_response.dart';''' : ''}''');
 
       data = data.replaceAll(
           RegExp('abstract\\s?class\\s?${pageClassName}RemoteDataSource\\s?{',
@@ -421,19 +516,19 @@ class ${apiClassName}Response extends Equatable {
     final bodyClass = getBodyClass(apiClassName, bodyList);
     final entityClass = getEntityClass(apiClassName, responseList);
 
-    final entityImpl = responseList
-        ? 'data.map((e) => e.toEntity()).toList()'
-        : 'data.toEntity()';
+    final entityImpl = getEntityReturn(apiClassName, responseList);
 
     if (!exists(join(path, '${pageName}_repository_impl.dart'))) {
-      join(path, '${pageName}_repository_impl.dart')
-          .write('''import 'package:core/core.dart';
+      join(path, '${pageName}_repository_impl.dart').write(
+          '''${returnData == 'body_bytes' ? "import 'dart:typed_data';" : ''}
+          
+import 'package:core/core.dart';
 
-import '../../domain/entities/${apiName}_entity.dart';
+${isReturnDataModel ? '''import '../../domain/entities/${apiName}_entity.dart';''' : ''}
+${isReturnDataModel ? '''import '../../mapper.dart';''' : ''}
 import '../../domain/repositories/${pageName}_repository.dart';
 import '../datasources/${pageName}_remote_data_source.dart';
 import '../models/body/${apiName}_body.dart';
-import '../../mapper.dart';
 
 class ${pageName.pascalCase}RepositoryImpl implements ${pageName.pascalCase}Repository {
   ${pageName.pascalCase}RepositoryImpl({
@@ -463,13 +558,27 @@ class ${pageName.pascalCase}RepositoryImpl implements ${pageName.pascalCase}Repo
       final isDomainRepositoryAlready =
           RegExp(r'repository\.dart').hasMatch(data);
 
+      final isNeedMapper =
+          (RegExp(r'.toEntity()').hasMatch(data) || isReturnDataModel) &&
+              !RegExp(r'''import '../../mapper.dart';''').hasMatch(data);
+
+      final isNeedImportTypeData = returnData == 'body_bytes' &&
+          !RegExp(r'''import 'dart:typed_data';''').hasMatch(data);
+
+      if (isNeedImportTypeData) {
+        data = '''import 'dart:typed_data';
+        
+        $data''';
+      }
+
       data = data.replaceAll(
           RegExp(r"import\s?'package:core\/core.dart';\n?\n?", multiLine: true),
           '''import 'package:core/core.dart';
-          
+
+${isNeedMapper ? '''import '../../mapper.dart';''' : ''}          
 ${isDataDatasourceAlready ? '' : "import '../datasources/${pageName}_remote_data_source.dart';"}
 ${isDomainRepositoryAlready ? '' : "import '../../domain/repositories/${pageName}_repository.dart';"}
-import '../../domain/entities/${apiName}_entity.dart';
+${isReturnDataModel ? '''import '../../domain/entities/${apiName}_entity.dart';''' : ''}
 import '../models/body/${apiName}_body.dart';''');
 
       final isEmpty = RegExp(r'remoteDataSource;(\s+)?}(\s+)?}').hasMatch(data);
@@ -538,11 +647,13 @@ class ${apiClassName}Entity extends Equatable {
     final entityClass = getEntityClass(apiClassName, responseList);
 
     if (!exists(join(path, '${pageName}_repository.dart'))) {
-      join(path, '${pageName}_repository.dart')
-          .write('''import 'package:core/core.dart';
+      join(path, '${pageName}_repository.dart').write(
+          '''${returnData == 'body_bytes' ? "import 'dart:typed_data';" : ''}
+          
+import 'package:core/core.dart';
 
 import '../../data/models/body/${apiName}_body.dart';
-import '../entities/${apiName}_entity.dart';
+${isReturnDataModel ? '''import '../entities/${apiName}_entity.dart';''' : ''}
 
 abstract class ${pageName.pascalCase}Repository {
   Future<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,});
@@ -551,12 +662,21 @@ abstract class ${pageName.pascalCase}Repository {
       String data =
           File(join(path, '${pageName}_repository.dart')).readAsStringSync();
 
+      final isNeedImportTypeData = returnData == 'body_bytes' &&
+          !RegExp(r'''import 'dart:typed_data';''').hasMatch(data);
+
+      if (isNeedImportTypeData) {
+        data = '''import 'dart:typed_data';
+        
+        $data''';
+      }
+
       data = data.replaceAll(
           RegExp(r"import\s?'package:core\/core.dart';\n?\n?", multiLine: true),
           '''import 'package:core/core.dart';
 
 import '../../data/models/body/${apiName}_body.dart';
-import '../entities/${apiName}_entity.dart';''');
+${isReturnDataModel ? '''import '../entities/${apiName}_entity.dart';''' : ''}''');
 
       data = data.replaceAll(RegExp(r'}$', multiLine: true),
           '''  Future<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,});
@@ -585,11 +705,13 @@ import '../entities/${apiName}_entity.dart';''');
     final bodyClass = getBodyClass(apiClassName, bodyList);
     final entityClass = getEntityClass(apiClassName, responseList);
 
-    join(path, '${apiName}_use_case.dart')
-        .write('''import 'package:core/core.dart';
+    join(path, '${apiName}_use_case.dart').write(
+        '''${returnData == 'body_bytes' ? "import 'dart:typed_data';" : ''}
+        
+import 'package:core/core.dart';
 
 import '../../data/models/body/${apiName}_body.dart';
-import '../entities/${apiName}_entity.dart';
+${isReturnDataModel ? '''import '../entities/${apiName}_entity.dart';''' : ''}
 import '../repositories/${pageName}_repository.dart';
 
 class ${apiClassName}UseCase implements UseCase<$entityClass, $bodyClass> {
@@ -735,11 +857,14 @@ class Fetch$apiClassName extends ${apiClassName}Event {
   List<Object?> get props => [body, headers, extra,];
 }''');
 
-    join(path, '${apiName}_bloc.dart').write('''import 'package:core/core.dart';
+    join(path, '${apiName}_bloc.dart').write(
+        '''${returnData == 'body_bytes' ? "import 'dart:typed_data';" : ''}
+    
+import 'package:core/core.dart';
 import 'package:flutter/material.dart';
 
 import '../../../data/models/body/${apiName}_body.dart';
-import '../../../domain/entities/${apiName}_entity.dart';
+${isReturnDataModel ? '''import '../../../domain/entities/${apiName}_entity.dart';''' : ''}
 import '../../../domain/usecases/${apiName}_use_case.dart';
 
 part '${apiName}_event.dart';

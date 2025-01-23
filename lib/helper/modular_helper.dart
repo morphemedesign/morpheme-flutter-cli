@@ -143,6 +143,113 @@ abstract class ModularHelper {
     }
   }
 
+  static Future<void> executeCommand(
+    List<String> commands, {
+    int concurrent = defaultConcurrent,
+    void Function(String line)? stdout,
+    bool ignorePubWorkspaces = false,
+  }) async {
+    List<(String, Future<(String, bool, List<(bool, String)>)> Function())>
+        futures = [];
+
+    for (var command in commands) {
+      futures.add(
+        (
+          command,
+          () async {
+            List<(bool, String)> logs = [];
+            bool isSuccess = false;
+
+            try {
+              await command.start(
+                workingDirectory: '.',
+                showLog: false,
+                progressOut: (line) {
+                  stdout?.call(line);
+                  logs.add((false, line));
+                },
+                progressErr: (line) {
+                  if (line.isEmpty) return;
+                  if (line.contains('Waiting for another flutter command')) {
+                    return;
+                  }
+                  logs.add((true, line));
+                },
+              );
+
+              isSuccess = true;
+            } catch (e) {
+              isSuccess = false;
+            }
+
+            return (command, isSuccess, logs);
+          }
+        ),
+      );
+    }
+
+    bool isAllExecutedSuccess = true;
+    int runnable = 0;
+    final length = futures.length;
+    printMessage('📦 Total Command: $length');
+    printMessage('---------------------------------------');
+    for (runnable = 0; runnable < length; runnable += concurrent) {
+      int take =
+          runnable + concurrent > length ? length % concurrent : concurrent;
+
+      final isolate = futures.getRange(runnable, runnable + take).map((e) {
+        final command = e.$1;
+        printMessage('🚀 $command');
+
+        return Isolate.run<(String, bool, List<(bool, String)>)>(e.$2);
+      });
+
+      final results = await Future.wait(isolate);
+      for (var i = 0; i < results.length; i++) {
+        final command = results[i].$1;
+        final isSuccess = results[i].$2;
+        final logs = results[i].$3;
+        if (isSuccess) {
+          printMessage('✅  $command');
+        } else {
+          isAllExecutedSuccess = false;
+          printMessage('❌  $command');
+          printMessage('📝  Logs: $command');
+
+          for (var element in logs) {
+            final isErrorMessage = element.$1;
+            final line = element.$2;
+
+            if (line.isEmpty ||
+                RegExp(r'^\d{2}:\d{2}\s+\+\d+:').hasMatch(line) ||
+                RegExp(r'^(\s)+$').hasMatch(line)) {
+              continue;
+            }
+
+            if (isErrorMessage) {
+              printerrMessage(red(element.$2));
+              continue;
+            }
+
+            if (line.contains(RegExp(r'error'))) {
+              printMessage(red(line));
+            } else if (line.contains(RegExp(r'info'))) {
+              printMessage(blue(line));
+            } else if (line.contains(RegExp(r'warning'))) {
+              printMessage(orange(line));
+            } else {
+              printMessage(element.$2);
+            }
+          }
+        }
+      }
+    }
+
+    if (!isAllExecutedSuccess) {
+      throw Exception('Some packages failed to execute');
+    }
+  }
+
   static Future<void> runSequence(void Function(String path) runner) async {
     final workingDirectoryFlutter = find('pubspec.yaml', workingDirectory: '.')
         .toList()

@@ -1,3 +1,12 @@
+## 2.4.0
+
+- add argument method in api for head method
+- add argument return-data in api and json2dart
+- add json2dart generate for return data with allowed (model (default), header, body_bytes, body_string, status_code, raw)
+- fix unit test for generate with json2dart
+- add argument format in json2dart
+- add concurrent running for json2dart
+
 ## 2.3.2
 
 - fix firebase command using service account json using firebase_command.sh

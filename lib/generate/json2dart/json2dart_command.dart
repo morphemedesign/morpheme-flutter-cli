@@ -51,6 +51,10 @@ class Json2DartCommand extends Command {
       abbr: 'a',
       help: 'Generate spesific apps (Optional)',
     );
+    argParser.addFlag(
+      'format',
+      help: 'Format file dart generated.',
+    );
   }
 
   @override
@@ -69,6 +73,7 @@ class Json2DartCommand extends Command {
   bool isUnitTest = false;
   bool isOnlyUnitTest = false;
   bool isReplace = false;
+  bool isFormat = true;
   String? appsName;
   String? featureName;
   String? pageName;
@@ -86,6 +91,8 @@ class Json2DartCommand extends Command {
 
   List<String> fix = [];
   List<String> format = [];
+
+  bool isReturnDataModel(String returnData) => returnData == 'model';
 
   final regexDateTime =
       RegExp(r'"\d{4}-\d{2}-\d{2}(\s|T)?(\d{2}:\d{2}(:\d{2})?)?(\.\d+)?Z?"');
@@ -110,6 +117,8 @@ class Json2DartCommand extends Command {
       searchFileJson2Dart,
       workingDirectory: join(current, 'json2dart'),
     ).toList();
+
+    final listCommands = <String>[];
 
     for (var pathJson2Dart in workingDirectory) {
       if (!exists(pathJson2Dart)) {
@@ -142,6 +151,9 @@ class Json2DartCommand extends Command {
         }
         if (config['replace'] != null && config['replace'] is bool) {
           isReplace = config['replace'];
+        }
+        if (config['format'] != null && config['format'] is bool) {
+          isFormat = config['format'];
         }
       }
 
@@ -181,6 +193,13 @@ class Json2DartCommand extends Command {
               : null) ??
           isReplace ??
           false;
+      isFormat = (argResults?.arguments.firstWhereOrNull(
+                      (element) => element.contains('format')) !=
+                  null
+              ? argResults!['format']
+              : null) ??
+          isFormat ??
+          true;
       featureName = argResults?['feature-name'];
       pageName = argResults?['page-name'];
 
@@ -205,32 +224,54 @@ class Json2DartCommand extends Command {
           }
           await handleFeature(
               featurePath, featureName!, json2DartMap[featureName], appsName);
+
+          if (isFormat && format.isNotEmpty) {
+            printMessage('Execute morpheme format................');
+            await ModularHelper.format(format);
+          }
+          if (isFormat && fix.isNotEmpty) {
+            printMessage('Execute morpheme fix................');
+            await ModularHelper.fix(fix);
+          }
+          if (isFormat && format.isNotEmpty) {
+            printMessage('Execute morpheme format................');
+            await ModularHelper.format(format);
+          }
         }
       } else {
         for (var element in json2DartMap.entries) {
           final featureName = element.key;
-          final featureValue = element.value;
 
           final lastPathJson2Dart = pathJson2Dart.split(separator).last;
 
-          String featurePath = join(current, 'features', featureName);
           String? appsName = this.appsName;
           if (lastPathJson2Dart.contains('_')) {
             appsName = lastPathJson2Dart.split('_').first;
-            featurePath =
-                join(current, 'apps', appsName, 'features', featureName);
           }
-          await handleFeature(featurePath, featureName, featureValue, appsName);
+          listCommands.add(
+            'morpheme json2dart --feature-name $featureName '
+            '--morpheme-yaml $argMorphemeYaml '
+            '${appsName?.isNotEmpty ?? false ? '--apps-name $appsName' : ''} '
+            '${isApi ? '--api' : '--no-api'} '
+            '${isUnitTest ? '--unit-test' : '--no-unit-test'} '
+            '${isOnlyUnitTest ? '--only-unit-test' : '--no-only-unit-test'} '
+            '${isReplace ? '--replace' : '--no-replace'} '
+            '--no-endpoint '
+            '--no-format ',
+          );
         }
       }
     }
 
-    printMessage('Execute morpheme format................');
-    if (format.isNotEmpty) await ModularHelper.format(format);
-    printMessage('Execute morpheme fix................');
-    if (fix.isNotEmpty) await ModularHelper.fix(fix);
-    printMessage('Execute morpheme format................');
-    if (format.isNotEmpty) await ModularHelper.format(format);
+    if (listCommands.isNotEmpty) {
+      await ModularHelper.executeCommand(listCommands);
+      printMessage('Execute morpheme format................');
+      await ModularHelper.format([join(current, 'features')]);
+      printMessage('Execute morpheme fix................');
+      await ModularHelper.fix([join(current, 'features')]);
+      printMessage('Execute morpheme format................');
+      await ModularHelper.format([join(current, 'features')]);
+    }
 
     StatusHelper.success('morpheme json2dart');
   }
@@ -491,6 +532,8 @@ auth:
         keepExpiredCache = cacheStrategy['keep_expired_cache'];
       }
 
+      final returnData = apiValue['return_data'] ?? 'model';
+
       if (!isOnlyUnitTest) {
         await handleApi(
           featureName: featureName,
@@ -510,6 +553,7 @@ auth:
           ttl: ttl,
           keepExpiredCache: keepExpiredCache,
           appsName: appsName,
+          returnData: returnData,
         );
       }
 
@@ -551,6 +595,7 @@ auth:
           cacheStrategy: strategy,
           ttl: ttl,
           keepExpiredCache: keepExpiredCache,
+          returnData: returnData,
         );
         resultModelUnitTest.add(result);
       }
@@ -588,6 +633,7 @@ auth:
     required int? ttl,
     required bool? keepExpiredCache,
     required String? appsName,
+    required String returnData,
   }) async {
     if (body != null) {
       createDataModelBody(
@@ -600,7 +646,7 @@ auth:
       );
     }
 
-    if (response != null) {
+    if (response != null && isReturnDataModel(returnData)) {
       createDataModelResponse(pathPage, pageName, apiName, response);
       createDomainEntity(pathPage, pageName, apiName, response);
       appendMapper(pathPage, apiName, response);
@@ -617,7 +663,9 @@ auth:
     final argAppsName = appsName != null ? '-a "$appsName"' : '';
 
     if (isApi) {
-      await 'morpheme api $apiName -f $featureName -p $pageName  --json2dart --method=$method --path=$pathUrl ${header != null ? '--header=$header' : ''} $argBody $argResponse $argCacheStrategy $argAppsName'
+      printMessage(
+          'morpheme api $apiName -f $featureName -p $pageName -r $returnData --json2dart --method=$method --path=$pathUrl ${header != null ? '--header=$header' : ''} $argBody $argResponse $argCacheStrategy $argAppsName');
+      await 'morpheme api $apiName -f $featureName -p $pageName -r $returnData --json2dart --method=$method --path=$pathUrl ${header != null ? '--header=$header' : ''} $argBody $argResponse $argCacheStrategy $argAppsName'
           .run;
     }
   }
@@ -754,11 +802,19 @@ import 'package:core/core.dart';
   }
 
   void createMapper(String pathPage, Map map) {
-    final variable = map.keys;
+    final keys = map.keys;
     DirectoryHelper.createDir(pathPage);
     join(pathPage, 'mapper.dart').write(
-        '${variable.map((e) => """import 'data/models/response/${e.toString().snakeCase}_response.dart' as ${e.toString().snakeCase}_response;
-import 'domain/entities/${e.toString().snakeCase}_entity.dart' as ${e.toString().snakeCase}_entity""").join(';\n')};');
+      keys.map(
+        (e) {
+          if (isReturnDataModel(map[e]['return_data'] ?? 'model')) {
+            return """import 'data/models/response/${e.toString().snakeCase}_response.dart' as ${e.toString().snakeCase}_response;
+import 'domain/entities/${e.toString().snakeCase}_entity.dart' as ${e.toString().snakeCase}_entity;""";
+          }
+          return '';
+        },
+      ).join('\n'),
+    );
 
     StatusHelper.generated(join(pathPage, 'mapper.dart'));
   }
@@ -1454,6 +1510,7 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
     required String? cacheStrategy,
     required int? ttl,
     required bool? keepExpiredCache,
+    required String returnData,
   }) {
     Map<String, String> result = {};
 
@@ -1461,21 +1518,6 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
         'final url${apiName.pascalCase} = ${projectName.pascalCase}Endpoints.${apiName.camelCase}${appsName.pascalCase}${paramPath.isEmpty ? '' : '(${paramPath.map((e) => "'$e',").join()})'};';
 
     final bodyVariable = getBodyVariableUnitTest(apiName, body, '', paramPath);
-    final responseVariable = getResponseVariableUnitTest(
-      apiName,
-      response,
-      '',
-      suffix: 'Response',
-      variable: 'response',
-    );
-    final entityVariable = getResponseVariableUnitTest(
-      apiName,
-      response,
-      '',
-      suffix: 'Entity',
-      variable: 'entity',
-    );
-
     createDataModelBodyTest(
       pathTestPage,
       featureName,
@@ -1486,23 +1528,46 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
       body is List,
     );
 
-    final formattedJsonString = createJsonResponseTest(
-      pathTestPage,
-      featureName,
-      pageName,
-      apiName,
-      jsonResponse,
-    );
+    final responseVariable = isReturnDataModel(returnData)
+        ? getResponseVariableUnitTest(
+            apiName,
+            response,
+            '',
+            suffix: 'Response',
+            variable: 'response',
+          )
+        : '';
+    final entityVariable = isReturnDataModel(returnData)
+        ? getResponseVariableUnitTest(
+            apiName,
+            response,
+            '',
+            suffix: 'Entity',
+            variable: 'entity',
+          )
+        : '';
 
-    createDataModelResponseTest(
-      pathTestPage,
-      featureName,
-      pageName,
-      apiName,
-      formattedJsonString,
-      responseVariable,
-      response is List,
-    );
+    final formattedJsonString = isReturnDataModel(returnData)
+        ? createJsonResponseTest(
+            pathTestPage,
+            featureName,
+            pageName,
+            apiName,
+            jsonResponse,
+          )
+        : '';
+
+    if (isReturnDataModel(returnData)) {
+      createDataModelResponseTest(
+        pathTestPage,
+        featureName,
+        pageName,
+        apiName,
+        formattedJsonString,
+        responseVariable,
+        response is List,
+      );
+    }
 
     String? headers;
     if (pathHeader != null && exists(pathHeader)) {
@@ -1532,6 +1597,7 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
     result['cacheStrategy'] = cacheStrategy ?? '';
     result['ttl'] = ttl?.toString() ?? '';
     result['keepExpiredCache'] = keepExpiredCache?.toString() ?? '';
+    result['returnData'] = returnData;
 
     return result;
   }
@@ -1748,10 +1814,11 @@ Future<void> main() async {
         '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_import
 
 import 'dart:convert';
+${resultModelUnitTest.any((element) => element['returnData'] == 'body_bytes') ? '''import 'dart:typed_data';''' : ''}
         
 import 'package:${featureName.snakeCase}/$pageName/data/datasources/${pageName}_remote_data_source.dart';
 ${resultModelUnitTest.map((e) => '''import 'package:${featureName.snakeCase}/$pageName/data/models/body/${e['apiName']?.snakeCase}_body.dart' as body_${e['apiName']?.snakeCase};
-import 'package:${featureName.snakeCase}/$pageName/data/models/response/${e['apiName']?.snakeCase}_response.dart' as response_${e['apiName']?.snakeCase};''').join('\n')}
+${isReturnDataModel(e['returnData']!) ? '''import 'package:${featureName.snakeCase}/$pageName/data/models/response/${e['apiName']?.snakeCase}_response.dart' as response_${e['apiName']?.snakeCase};''' : ''}''').join('\n')}
 import 'package:core/core.dart';
 import 'package:dev_dependency_manager/dev_dependency_manager.dart';
 
@@ -1764,8 +1831,7 @@ Future<void> main() async {
   late ${pageName.pascalCase}RemoteDataSource remoteDataSource;
 
   ${resultModelUnitTest.map((e) => '''${e['endpoint']}
-  ${getConstOrFinalValue(e['body'] ?? '')} body${e['apiName']?.pascalCase} = ${e['body']}
-  ${getConstOrFinalValue(e['response'] ?? '')} response${e['apiName']?.pascalCase} = ${e['response']}''').join('\n')}
+  ${getConstOrFinalValue(e['body'] ?? '')} body${e['apiName']?.pascalCase} = ${e['body']}''').join('\n')}
 
   setUp(() {
     http = MockMorphemeHttp();
@@ -1775,6 +1841,7 @@ Future<void> main() async {
   ${resultModelUnitTest.map((e) {
       final className = e['apiName']?.pascalCase;
       final methodName = e['apiName']?.camelCase;
+      final returnData = e['returnData'] ?? 'model';
 
       final isMultipart =
           e['method']?.toLowerCase().contains('multipart') ?? false;
@@ -1800,17 +1867,28 @@ Future<void> main() async {
           ? ''
           : '${cacheStrategy.toParamCacheStrategy(ttl: ttl, keepExpiredCache: keepExpiredCache)},';
 
+      final expectSuccess = switch (returnData) {
+        'header' => '''expect(result, isA<Map<String, String>>());''',
+        'body_bytes' => '''expect(result, isA<Uint8List>());''',
+        'body_string' => '''expect(result, isA<String>());''',
+        'status_code' => '''expect(result, isA<int>());''',
+        'raw' => '''expect(result, isA<Response>());''',
+        'model' =>
+          '''expect(result, isA<${'response_${className?.snakeCase}'}.${className}Response>());''',
+        _ => "''",
+      };
+
       return '''group('$className Api Remote Data Source', () {
     test(
       'should peform fetch & return response',
       () async {
         // arrange
-        when(() => http.$httpMethod(url$className, body: $body$header$paramCacheStrategy)).thenAnswer((_) async => Response(readJsonFile('test/${pageName}_test/json/${e['apiName']?.snakeCase}_success.json'), 200));
+        when(() => http.$httpMethod(url$className, body: $body$header$paramCacheStrategy)).thenAnswer((_) async => Response('{}', 200));
         // act
         final result = await remoteDataSource.$methodName(body$className);
         // assert
         verify(() => http.$httpMethod(url$className, body: $body$header$paramCacheStrategy));
-        expect(result, equals(response$className));
+        $expectSuccess
       },
     );
 
@@ -1916,12 +1994,14 @@ Future<void> main() async {
     DirectoryHelper.createDir(path);
     join(path, '${pageName}_repository_impl_test.dart').write(
         '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+
+${resultModelUnitTest.any((element) => element['returnData'] == 'body_bytes') ? '''import 'dart:typed_data';''' : ''}
         
 import 'package:$featureName/$pageName/data/datasources/${pageName}_remote_data_source.dart';
 import 'package:$featureName/$pageName/data/repositories/${pageName}_repository_impl.dart';
 ${resultModelUnitTest.map((e) => '''import 'package:$featureName/$pageName/data/models/body/${e['apiName']?.snakeCase}_body.dart' as body_${e['apiName']?.snakeCase};
-import 'package:$featureName/$pageName/data/models/response/${e['apiName']?.snakeCase}_response.dart' as response_${e['apiName']?.snakeCase};
-import 'package:$featureName/$pageName/domain/entities/${e['apiName']?.snakeCase}_entity.dart' as entity_${e['apiName']?.snakeCase};''').join('\n')}
+${isReturnDataModel(e['returnData']!) ? '''import 'package:$featureName/$pageName/data/models/response/${e['apiName']?.snakeCase}_response.dart' as response_${e['apiName']?.snakeCase};
+import 'package:$featureName/$pageName/domain/entities/${e['apiName']?.snakeCase}_entity.dart' as entity_${e['apiName']?.snakeCase};''' : ''}''').join('\n')}
 import 'package:core/core.dart';
 import 'package:dev_dependency_manager/dev_dependency_manager.dart';
 
@@ -1941,22 +2021,46 @@ Future<void> main() async {
   ${resultModelUnitTest.map((e) {
       final className = e['apiName']?.pascalCase;
       final methodName = e['apiName']?.camelCase;
+      final returnData = e['returnData'] ?? 'model';
+
+      final responseMock = switch (returnData) {
+        'header' => '{}',
+        'body_bytes' => 'Uint8List(0)',
+        'body_string' => "''",
+        'status_code' => '200',
+        'raw' => 'Response(\'\' , 200)',
+        _ => "response_${className?.snakeCase}.${className}Response()",
+      };
+
+      final expectSuccess = switch (returnData) {
+        'header' =>
+          '''expect(result, isA<Right<MorphemeFailure, Map<String, String>>>(),);''',
+        'body_bytes' =>
+          '''expect(result, isA<Right<MorphemeFailure, Uint8List>>(),);''',
+        'body_string' =>
+          '''expect(result, isA<Right<MorphemeFailure, String>>(),);''',
+        'status_code' =>
+          '''expect(result, isA<Right<MorphemeFailure, int>>(),);''',
+        'raw' =>
+          '''expect(result, isA<Right<MorphemeFailure, Response>>(),);''',
+        'model' =>
+          '''expect(result, isA<Right<MorphemeFailure, entity_${className?.snakeCase}.${className}Entity>>(),);''',
+        _ => "''",
+      };
 
       return '''group('$className Api Repository', () {
     ${getConstOrFinalValue(e['body'] ?? '')} body${e['apiName']?.pascalCase} = ${e['body']}
-    ${getConstOrFinalValue(e['response'] ?? '')} response${e['apiName']?.pascalCase} = ${e['response']}
-    ${getConstOrFinalValue(e['entity'] ?? '')} entity${e['apiName']?.pascalCase} = ${e['entity']}
 
     test(
         'should return response data when the call to remote data source is successful',
         () async {
       // arrange
-      when(() => mockRemoteDatasource.$methodName(body$className)).thenAnswer((_) async => response$className);
+      when(() => mockRemoteDatasource.$methodName(body$className)).thenAnswer((_) async => $responseMock);
       // act
       final result = await repository.$methodName(body$className);
       // assert
       verify(() => mockRemoteDatasource.$methodName(body$className));
-      expect(result, equals(Right(entity$className)));
+      $expectSuccess
     });
 
     test(
@@ -2142,13 +2246,41 @@ Future<void> main() async {
       final apiName = e['apiName'];
       final className = apiName?.pascalCase;
       final methodName = apiName?.camelCase;
+      final returnData = e['returnData'] ?? 'model';
+
+      final responseMock = switch (returnData) {
+        'header' => '{}',
+        'body_bytes' => 'Uint8List(0)',
+        'body_string' => "''",
+        'status_code' => '200',
+        'raw' => 'Response(\'\' , 200)',
+        _ => "entity_${className?.snakeCase}.${className}Entity()",
+      };
+
+      final expectSuccess = switch (returnData) {
+        'header' =>
+          '''expect(result, isA<Right<MorphemeFailure, Map<String, String>>>(),);''',
+        'body_bytes' =>
+          '''expect(result, isA<Right<MorphemeFailure, Uint8List>>(),);''',
+        'body_string' =>
+          '''expect(result, isA<Right<MorphemeFailure, String>>(),);''',
+        'status_code' =>
+          '''expect(result, isA<Right<MorphemeFailure, int>>(),);''',
+        'raw' =>
+          '''expect(result, isA<Right<MorphemeFailure, Response>>(),);''',
+        'model' =>
+          '''expect(result, isA<Right<MorphemeFailure, entity_${className?.snakeCase}.${className}Entity>>(),);''',
+        _ => "''",
+      };
 
       join(path, '${apiName?.snakeCase}_use_case_test.dart').write(
           '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+
+${returnData == 'body_bytes' ? '''import 'dart:typed_data';''' : ''}
           
 import 'package:$featureName/$pageName/domain/repositories/${pageName}_repository.dart';
 import 'package:$featureName/$pageName/data/models/body/${apiName?.snakeCase}_body.dart' as body_${e['apiName']?.snakeCase};
-import 'package:$featureName/$pageName/domain/entities/${apiName?.snakeCase}_entity.dart' as entity_${e['apiName']?.snakeCase};
+${isReturnDataModel(returnData) ? '''import 'package:$featureName/$pageName/domain/entities/${apiName?.snakeCase}_entity.dart' as entity_${e['apiName']?.snakeCase};''' : ''}
 import 'package:$featureName/$pageName/domain/usecases/${apiName?.snakeCase}_use_case.dart';
 import 'package:core/core.dart';
 import 'package:dev_dependency_manager/dev_dependency_manager.dart';
@@ -2165,18 +2297,17 @@ Future<void> main() async {
   });
 
   ${getConstOrFinalValue(e['body'] ?? '')} body${e['apiName']?.pascalCase} = ${e['body']}
-  ${getConstOrFinalValue(e['entity'] ?? '')} entity${e['apiName']?.pascalCase} = ${e['entity']}
 
   test(
     'Should fetch entity for the body from the repository',
     () async {
       // arrange
       when(() => mockRepository.$methodName(body$className))
-          .thenAnswer((_) async => Right(entity$className));
+          .thenAnswer((_) async => Right($responseMock));
       // act
       final result = await usecase(body$className);
       // assert
-      expect(result, Right(entity$className));
+      $expectSuccess
       verify(() => mockRepository.$methodName(body$className));
       verifyNoMoreInteractions(mockRepository);
     },
@@ -2200,12 +2331,24 @@ Future<void> main() async {
     for (var e in resultModelUnitTest) {
       final apiName = e['apiName'];
       final className = apiName?.pascalCase;
+      final returnData = e['returnData'] ?? 'model';
+
+      final responseMock = switch (returnData) {
+        'header' => '{}',
+        'body_bytes' => 'Uint8List(0)',
+        'body_string' => "''",
+        'status_code' => '200',
+        'raw' => 'Response(\'\' , 200)',
+        _ => "entity_${className?.snakeCase}.${className}Entity()",
+      };
 
       join(path, '${apiName?.snakeCase}_bloc_test.dart').write(
           '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+
+${resultModelUnitTest.any((element) => element['returnData'] == 'body_bytes') ? '''import 'dart:typed_data';''' : ''}
           
 import 'package:$featureName/$pageName/data/models/body/${apiName?.snakeCase}_body.dart' as body_${e['apiName']?.snakeCase};
-import 'package:$featureName/$pageName/domain/entities/${apiName?.snakeCase}_entity.dart' as entity_${e['apiName']?.snakeCase};
+${isReturnDataModel(returnData) ? '''import 'package:$featureName/$pageName/domain/entities/${apiName?.snakeCase}_entity.dart' as entity_${e['apiName']?.snakeCase};''' : ''}
 import 'package:$featureName/$pageName/domain/usecases/${apiName?.snakeCase}_use_case.dart';
 import 'package:$featureName/$pageName/presentation/bloc/${apiName?.snakeCase}/${apiName?.snakeCase}_bloc.dart';
 import 'package:core/core.dart';
@@ -2232,7 +2375,6 @@ Future<void> main() async {
 
   group('$className Bloc', () {
     ${getConstOrFinalValue(e['body'] ?? '')} body${e['apiName']?.pascalCase} = ${e['body']}
-    ${getConstOrFinalValue(e['entity'] ?? '')} entity${e['apiName']?.pascalCase} = ${e['entity']}
 
     const timeoutFailed = TimeoutFailure('TimoutFailure');
     const internalFailed = InternalFailure('InternalFailure');
@@ -2264,7 +2406,7 @@ Future<void> main() async {
     blocTest<${className}Bloc, ${className}State>(
       'should get data from the subject use case',
       setUp: () {
-        when(() => mockUseCase(body$className)).thenAnswer((_) async => Right(entity$className));
+        when(() => mockUseCase(body$className)).thenAnswer((_) async => Right($responseMock));
       },
       verify: (bloc) {
         mockUseCase(body$className);
@@ -2276,7 +2418,7 @@ Future<void> main() async {
     blocTest<${className}Bloc, ${className}State>(
       'should emit [Loading, Success] when data is gotten successfully',
       setUp: () {
-        when(() => mockUseCase(body$className)).thenAnswer((_) async => Right(entity$className));
+        when(() => mockUseCase(body$className)).thenAnswer((_) async => Right($responseMock));
       },
       verify: (bloc) {
         mockUseCase(body$className);
@@ -2285,7 +2427,7 @@ Future<void> main() async {
       act: (bloc) => bloc.add(Fetch$className(body$className)),
       expect: () => [
         ${className}Loading(body$className, null, null),
-        ${className}Success(body$className, null, entity$className, null),
+        ${className}Success(body$className, null, $responseMock, null),
       ],
     );
 
@@ -2455,12 +2597,14 @@ Future<void> main() async {
         '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
         
 import 'package:$featureName/$pageName/mapper.dart';
-${resultModelUnitTest.map((e) => '''import 'package:$featureName/$pageName/data/models/response/${e['apiName']?.snakeCase}_response.dart' as response_${e['apiName']?.snakeCase};
-import 'package:$featureName/$pageName/domain/entities/${e['apiName']?.snakeCase}_entity.dart' as entity_${e['apiName']?.snakeCase};''').join('\n')}
+${resultModelUnitTest.map((e) => isReturnDataModel(e['returnData']!) ? '''import 'package:$featureName/$pageName/data/models/response/${e['apiName']?.snakeCase}_response.dart' as response_${e['apiName']?.snakeCase};
+import 'package:$featureName/$pageName/domain/entities/${e['apiName']?.snakeCase}_entity.dart' as entity_${e['apiName']?.snakeCase};''' : '').join('\n')}
 import 'package:dev_dependency_manager/dev_dependency_manager.dart';
 
 Future<void> main() async {
   ${resultModelUnitTest.map((e) {
+      if (!isReturnDataModel(e['returnData']!)) return '';
+
       final className = e['apiName']?.pascalCase;
       final isResponseList = e['isResponseList'] == 'true';
 
