@@ -874,6 +874,7 @@ class ${apiClassName}Bloc extends Bloc<${apiClassName}Event, ${apiClassName}Stat
   ${apiClassName}Bloc({
     required this.useCase,
   }) : super(${apiClassName}Initial()) {
+    if(isClosed) return;
     on<Fetch$apiClassName>((event, emit) async {
       emit(${apiClassName}Loading(event.body, event.headers, event.extra,));
       final result = await useCase(event.body, headers: event.headers,);
