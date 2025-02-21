@@ -1,3 +1,7 @@
+## 2.4.1
+
+- prevent fetching from closed Bloc
+
 ## 2.4.0
 
 - add argument method in api for head method
@@ -86,7 +90,7 @@
 
 ## 1.12.15
 
-- same datetime format response 
+- same datetime format response
 
 ## 1.12.10
 
@@ -211,6 +215,7 @@
 ## 1.8.2
 
 - add argument flavor for ic_launcher command
+
 ## 1.8.2
 
 - add argument flavor for ic_launcher command
