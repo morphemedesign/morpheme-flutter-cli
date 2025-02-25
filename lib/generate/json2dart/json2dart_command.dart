@@ -1858,7 +1858,7 @@ Future<void> main() async {
           ? null
           : e['keepExpiredCache'] == 'true';
 
-      final paramCacheStrategy = cacheStrategy == null
+      final paramCacheStrategy = cacheStrategy == null || isMultipart
           ? ''
           : '${cacheStrategy.toParamCacheStrategy(ttl: ttl, keepExpiredCache: keepExpiredCache)},';
 
