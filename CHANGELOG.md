@@ -1,3 +1,7 @@
+## 2.4.2
+
+- fix json to dart conversion logic in json2dart_command.dart
+
 ## 2.4.1
 
 - prevent fetching from closed Bloc

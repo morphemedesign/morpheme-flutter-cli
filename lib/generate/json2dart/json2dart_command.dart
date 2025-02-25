@@ -1315,8 +1315,6 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
   ]) {
     final variable = key.camelCase;
     if (value is Map) {
-      final keys = value.keys;
-
       final apiClassName = ModelClassNameHelper.getClassName(
         listClassNameUnitTest,
         suffix,
@@ -1327,21 +1325,27 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
         parentList,
       );
 
-      for (var e in keys) {
-        if (value[e] is Map) {
-          ModelClassNameHelper.getClassName(listClassNameUnitTest, suffix,
-              e.toString().pascalCase, false, false, apiClassName, parentList);
-        }
-      }
+      List<String> children = [];
 
-      for (var e in keys) {
-        final list = value[e];
-        if (list is List && list.isNotEmpty && list.first is Map) {
-          ModelClassNameHelper.getClassName(listClassNameUnitTest, suffix,
-              e.toString().pascalCase, false, false, apiClassName, parentList);
+      value.forEach((key, child) {
+        if (child is Map) {
+          children.add(getValueUnitTest(key.toString(), child, suffix,
+              apiClassName, asImport, parentList));
         }
-      }
-      return '$variable: $asImport.$apiClassName(${keys.map((e) => getValueUnitTest(e.toString(), value[e], suffix, apiClassName, asImport, parentList)).join(',')})';
+      });
+      value.forEach((key, child) {
+        if (child is List) {
+          children.add(getValueUnitTest(key.toString(), child, suffix,
+              apiClassName, asImport, parentList));
+        }
+      });
+      value.forEach((key, child) {
+        if (child is! List && child is! Map) {
+          children.add(getValueUnitTest(key.toString(), child, suffix,
+              apiClassName, asImport, parentList));
+        }
+      });
+      return '$variable: $asImport.$apiClassName(${children.join(',')})';
     }
     if (value is List) {
       if (value.isNotEmpty) {
@@ -1360,40 +1364,31 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
           final parentOfChild =
               parentList != null ? parentList + apiClassName : apiClassName;
 
-          for (var e in value.first.keys) {
-            if (value.first[e] is Map) {
-              ModelClassNameHelper.getClassName(
-                listClassNameUnitTest,
-                suffix,
-                e.toString().pascalCase,
-                false,
-                false,
-                apiClassName,
-                parentOfChild,
-              );
-            }
-          }
-
-          for (var e in value.first.keys) {
-            final list = value.first[e];
-            if (list is List && list.isNotEmpty && list.first is Map) {
-              ModelClassNameHelper.getClassName(
-                listClassNameUnitTest,
-                suffix,
-                e.toString().pascalCase,
-                false,
-                false,
-                apiClassName,
-                parentOfChild,
-              );
-            }
-          }
-
           for (var element in value) {
-            final item = element as Map;
-            final keys = item.keys;
-            list +=
-                '$asImport.$apiClassName(${keys.map((e) => getValueUnitTest(e.toString(), element[e], suffix, apiClassName, asImport, parentOfChild)).join(',')}),';
+            List<String> children = [];
+
+            final value = element as Map;
+
+            value.forEach((key, child) {
+              if (child is Map) {
+                children.add(getValueUnitTest(key.toString(), child, suffix,
+                    apiClassName, asImport, parentOfChild));
+              }
+            });
+            value.forEach((key, child) {
+              if (child is List) {
+                children.add(getValueUnitTest(key.toString(), child, suffix,
+                    apiClassName, asImport, parentOfChild));
+              }
+            });
+            value.forEach((key, child) {
+              if (child is! List && child is! Map) {
+                children.add(getValueUnitTest(key.toString(), child, suffix,
+                    apiClassName, asImport, parentOfChild));
+              }
+            });
+
+            list += '$asImport.$apiClassName(${children.join(',')}),';
           }
           list += ']';
           return '$variable: $list';

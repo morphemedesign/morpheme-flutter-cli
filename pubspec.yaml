@@ -1,6 +1,6 @@
 name: morpheme_cli
 description: "Morpheme CLI Boost productivity with modular project creation, API generation & folder structuring tools. Simplify Flutter dev! #Flutter #CLI"
-version: 2.4.1
+version: 2.4.2
 homepage: https://morpheme.design/
 repository: https://github.com/morphemedesign/morpheme-flutter-cli
 
