@@ -1,3 +1,7 @@
+## 2.5.1
+
+- enhance template test command with additional mock bloc tests and imports
+
 ## 2.5.0
 
 - feat add TemplateTestCommand for generating template test code from json2dart.yaml

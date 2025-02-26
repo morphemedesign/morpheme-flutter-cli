@@ -169,25 +169,23 @@ class TemplateTestCommand extends Command {
   ) {
     final path = join(dir, '${pageName}_cubit_test.dart');
 
-    final template =
-        '''import 'package:dev_dependency_manager/dev_dependency_manager.dart';
+    final template = '''import 'package:core/core.dart';
+import 'package:dev_dependency_manager/dev_dependency_manager.dart';
 import 'package:${featureName.snakeCase}/${pageName.snakeCase}/presentation/cubit/${pageName.snakeCase}_cubit.dart';
 ${json2DartMap.keys.map(
       (e) {
         final feature = featureName.snakeCase;
         final page = featureName.snakeCase;
         final api = e.toString().snakeCase;
-        return '''import 'package:$feature/$page/presentation/bloc/$api/${api}_bloc.dart';''';
+        return '''import 'package:$feature/$page/data/models/body/${api}_body.dart';
+import 'package:$feature/$page/presentation/bloc/$api/${api}_bloc.dart';''';
       },
     ).join('\n')}
 
 ${json2DartMap.keys.map(
       (e) {
         final api = e.toString().pascalCase;
-        return '''class Mock${api}Bloc extends Mock implements ${api}Bloc {
-  @override
-  Future<void> close() async {}
-}''';
+        return '''class Mock${api}Bloc extends Mock implements ${api}Bloc {}''';
       },
     ).join('\n\n')}
 
@@ -209,11 +207,18 @@ void main() {
     registerSetUpAll();
   });
 
-  setUp(() {
+  setUp(() async {
     ${json2DartMap.keys.map(
       (e) {
         final api = e.toString().pascalCase;
         return '''    mock${api}Bloc = Mock${api}Bloc();''';
+      },
+    ).join('\n')}
+
+    ${json2DartMap.keys.map(
+      (e) {
+        final api = e.toString().pascalCase;
+        return '''    when(() => mock${api}Bloc.close()).thenAnswer((_) async {});''';
       },
     ).join('\n')}
 
@@ -223,6 +228,28 @@ void main() {
         return '''${api.camelCase}Bloc: mock${api}Bloc,''';
       },
     ).join('\n')});
+
+     ${json2DartMap.keys.map(
+      (e) {
+        final api = e.toString().pascalCase;
+        final path = json2DartMap[e]['path']?.toString();
+        final regExp = RegExp(r':\w+');
+
+        final parameters = <String>[];
+
+        if (path?.isNotEmpty ?? false) {
+          final matchAll = regExp.allMatches(path!);
+
+          for (final match in matchAll) {
+            parameters.add(match.group(0)?.replaceAll(':', '') ?? '');
+          }
+        }
+
+        return '''    registerFallbackValue(Fetch$api(${api}Body(${parameters.isEmpty ? '' : parameters.map((e) => "${e.camelCase}: '${e.paramCase}',").join('\n')}),),);''';
+      },
+    ).join('\n')}
+
+
   });
 
   tearDown(() async {
@@ -237,6 +264,50 @@ void main() {
 
   test('initial state should be ${pageName.pascalCase}StateCubit', () {
     expect(cubit.state, isA<${pageName.pascalCase}StateCubit>());
+  });
+
+  test('should provide the correct number of BlocProviders', () {
+    final blocProviders = cubit.blocProviders(mockContext);
+
+    ${json2DartMap.keys.map(
+      (e) {
+        final api = e.toString().pascalCase;
+        return '''expect(
+      blocProviders.whereType<BlocProvider<${api}Bloc>>().length,
+      1,
+      reason: 'There should be exactly one BlocProvider for ${api}Bloc',
+    );''';
+      },
+    ).join('\n')}
+  });
+
+  test('should provide the correct number of BlocListener', () {
+    final blocProviders = cubit.blocListeners(mockContext);
+
+    ${json2DartMap.keys.map(
+      (e) {
+        final api = e.toString().pascalCase;
+        return '''expect(
+      blocProviders
+          .whereType<BlocListener<${api}Bloc, ${api}State>>()
+          .length,
+      isIn([0, 1]),
+      reason: 'There should be exactly one BlocListener for ${api}Bloc',
+    );''';
+      },
+    ).join('\n')}
+    
+  });
+
+  test('should close all Blocs when cubit is closed', () async {
+    await cubit.close();
+
+    ${json2DartMap.keys.map(
+      (e) {
+        final api = e.toString().pascalCase;
+        return '''    verify(() => mock${api}Bloc.close()).called(1);''';
+      },
+    ).join('\n')}
   });
 
    // your test here
