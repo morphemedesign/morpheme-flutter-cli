@@ -1,3 +1,7 @@
+## 2.5.0
+
+- feat add TemplateTestCommand for generating template test code from json2dart.yaml
+
 ## 2.4.3
 
 - fix enhance cache strategy handling for multipart requests in json2dart_command.dart

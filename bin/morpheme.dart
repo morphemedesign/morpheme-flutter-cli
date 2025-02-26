@@ -4,6 +4,7 @@ import 'package:morpheme_cli/build_app/build_command.dart';
 import 'package:morpheme_cli/build_app/prebuild_command.dart';
 import 'package:morpheme_cli/dependency_manager.dart';
 import 'package:morpheme_cli/generate/generate.dart';
+import 'package:morpheme_cli/generate/test/template_test_command.dart';
 import 'package:morpheme_cli/project/project.dart';
 import 'package:morpheme_cli/shorebird/shorebird_command.dart';
 import 'package:morpheme_cli/tools/tools.dart';
@@ -29,7 +30,7 @@ void main(List<String> arguments) async {
     ..addCommand(PreBuildCommand())
     ..addCommand(AppsCommand())
     ..addCommand(RemoveAppsCommand())
-    ..addCommand(ShorebirdCommand())
+    ..addCommand(TemplateTestCommand())
     //* Project
     ..addCommand(CreateCommand())
     ..addCommand(GetCommand())
@@ -48,6 +49,7 @@ void main(List<String> arguments) async {
     ..addCommand(FixCommand())
     //* Build
     ..addCommand(BuildCommand())
+    ..addCommand(ShorebirdCommand())
     //* Tools
     ..addCommand(RenameCommand())
     ..addCommand(ChangelogCommand())
@@ -65,7 +67,7 @@ void main(List<String> arguments) async {
   try {
     final results = runner.argParser.parse(arguments);
     if (results.wasParsed('version')) {
-      printMessage('Morpheme CLI 2.4.3');
+      printMessage('Morpheme CLI 2.5.0');
       exit(0);
     }
   } catch (e) {
