@@ -175,7 +175,7 @@ import 'package:${featureName.snakeCase}/${pageName.snakeCase}/presentation/cubi
 ${json2DartMap.keys.map(
       (e) {
         final feature = featureName.snakeCase;
-        final page = featureName.snakeCase;
+        final page = pageName.snakeCase;
         final api = e.toString().snakeCase;
         return '''import 'package:$feature/$page/data/models/body/${api}_body.dart';
 import 'package:$feature/$page/presentation/bloc/$api/${api}_bloc.dart';''';

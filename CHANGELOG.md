@@ -1,3 +1,9 @@
+## 2.6.0
+
+- feat add RemoveTestCommand for deleting specific test helpers 
+- enhance TestCommand with app, feature, and page options
+- enhance CoverageCommand with app, feature, and page options
+
 ## 2.5.1
 
 - enhance template test command with additional mock bloc tests and imports

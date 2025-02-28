@@ -250,11 +250,17 @@ abstract class ModularHelper {
     }
   }
 
-  static Future<void> runSequence(void Function(String path) runner) async {
+  static Future<void> runSequence(
+    void Function(String path) runner, {
+    bool ignorePubWorkspaces = false,
+  }) async {
     final workingDirectoryFlutter = find('pubspec.yaml', workingDirectory: '.')
         .toList()
         .where(
           (element) {
+            if (ignorePubWorkspaces) {
+              return true;
+            }
             final resolution = 'resolution';
 
             final yaml = YamlHelper.loadFileYaml(element);
@@ -341,8 +347,12 @@ abstract class ModularHelper {
         concurrent: concurrent,
         ignorePubWorkspaces: true,
       );
-  static Future<void> test({int concurrent = defaultConcurrent}) => execute(
-        ['${FlutterHelper.getCommandFlutter()} test --no-pub'],
+  static Future<void> test(
+          {int concurrent = defaultConcurrent, bool isCoverage = false}) =>
+      execute(
+        [
+          '${FlutterHelper.getCommandFlutter()} test test/bundle_test.dart --no-pub ${isCoverage ? '--coverage' : ''}'
+        ],
         concurrent: concurrent,
         ignorePubWorkspaces: true,
       );
