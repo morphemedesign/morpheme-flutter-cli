@@ -583,7 +583,10 @@ auth:
           pageName: pageName,
           pathPage: pathPage,
           apiName: apiName,
-          jsonBody: pathBody != null ? File(pathBody).readAsStringSync() : '{}',
+          jsonBody: pathBody != null
+              ? File(pathBody).readAsStringSync().replaceAll(
+                  RegExp(r'''('|")\w+('|")(\s+)?:(\s+)?null(\s+)?,'''), '')
+              : '{}',
           jsonResponse: pathResponse != null
               ? File(pathResponse).readAsStringSync()
               : '{}',
