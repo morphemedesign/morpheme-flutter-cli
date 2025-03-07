@@ -189,6 +189,13 @@ ${json2DartMap.keys.map(
       },
     ).join('\n\n')}
 
+class Mock${pageName.pascalCase}Page extends Mock implements ${pageName.pascalCase}Page {
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return super.toString();
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -266,50 +273,55 @@ void main() {
     expect(cubit.state, isA<${pageName.pascalCase}StateCubit>());
   });
 
-  test('should provide the correct number of BlocProviders', () {
-    final blocProviders = cubit.blocProviders(mockContext);
+  group('blocProviders', (){
+    test('should provide the correct number of BlocProviders', () {
+      final blocProviders = cubit.blocProviders(mockContext);
 
-    ${json2DartMap.keys.map(
+      ${json2DartMap.keys.map(
       (e) {
         final api = e.toString().pascalCase;
         return '''expect(
-      blocProviders.whereType<BlocProvider<${api}Bloc>>().length,
-      1,
-      reason: 'There should be exactly one BlocProvider for ${api}Bloc',
-    );''';
+        blocProviders.whereType<BlocProvider<${api}Bloc>>().length,
+        1,
+        reason: 'There should be exactly one BlocProvider for ${api}Bloc',
+      );''';
       },
     ).join('\n')}
+    });
   });
 
-  test('should provide the correct number of BlocListener', () {
-    final blocProviders = cubit.blocListeners(mockContext);
+  group('blocListeners', (){
+    test('should provide the correct number of BlocListener', () {
+      final blocProviders = cubit.blocListeners(mockContext);
 
-    ${json2DartMap.keys.map(
+      ${json2DartMap.keys.map(
       (e) {
         final api = e.toString().pascalCase;
         return '''expect(
-      blocProviders
-          .whereType<BlocListener<${api}Bloc, ${api}State>>()
-          .length,
-      isIn([0, 1]),
-      reason: 'There should be exactly one BlocListener for ${api}Bloc',
-    );''';
+        blocProviders
+            .whereType<BlocListener<${api}Bloc, ${api}State>>()
+            .length,
+        isIn([0, 1]),
+        reason: 'There should be exactly one BlocListener for ${api}Bloc',
+      );''';
       },
     ).join('\n')}
-    
+      
+    });
   });
 
-  test('should close all Blocs when cubit is closed', () async {
-    await cubit.close();
+  group('dispose', (){
+    test('should close all Blocs when cubit is closed', () async {
+      await cubit.close();
 
-    ${json2DartMap.keys.map(
+      ${json2DartMap.keys.map(
       (e) {
         final api = e.toString().pascalCase;
         return '''    verify(() => mock${api}Bloc.close()).called(1);''';
       },
     ).join('\n')}
+    });
   });
-
    // your test here
 }
 ''';

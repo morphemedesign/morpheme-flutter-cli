@@ -1,3 +1,7 @@
+## 2.6.2
+
+- feat enhance template test command with mock page class and improved bloc provider tests
+
 ## 2.6.0
 
 - feat add RemoveTestCommand for deleting specific test helpers 
