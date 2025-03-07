@@ -170,7 +170,9 @@ class TemplateTestCommand extends Command {
     final path = join(dir, '${pageName}_cubit_test.dart');
 
     final template = '''import 'package:core/core.dart';
+import 'package:flutter/material.dart';
 import 'package:dev_dependency_manager/dev_dependency_manager.dart';
+import 'package:${featureName.snakeCase}/${pageName.snakeCase}/presentation/pages/${pageName.snakeCase}_page.dart';
 import 'package:${featureName.snakeCase}/${pageName.snakeCase}/presentation/cubit/${pageName.snakeCase}_cubit.dart';
 ${json2DartMap.keys.map(
       (e) {

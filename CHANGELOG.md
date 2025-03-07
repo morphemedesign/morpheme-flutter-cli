@@ -1,3 +1,7 @@
+## 2.6.3
+
+fix add Flutter material import and update template test command for page integration
+
 ## 2.6.2
 
 - feat enhance template test command with mock page class and improved bloc provider tests
