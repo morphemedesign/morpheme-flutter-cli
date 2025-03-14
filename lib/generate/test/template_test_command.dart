@@ -40,6 +40,21 @@ class TemplateTestCommand extends Command {
     final featureName = argResults?['feature-name']?.toString().snakeCase ?? '';
     final pageName = argResults?['page-name']?.toString().snakeCase ?? '';
 
+    if (!exists(
+      join(
+        current,
+        'features',
+        featureName,
+        'lib',
+        pageName,
+      ),
+    )) {
+      StatusHelper.failed(
+        'Feature or page not found, please check your feature or page name',
+      );
+      return;
+    }
+
     final searchFileJson2Dart = appsName?.isNotEmpty ?? false
         ? '${appsName}_json2dart.yaml'
         : 'json2dart.yaml';
@@ -75,16 +90,8 @@ class TemplateTestCommand extends Command {
 
       Map map = json2DartMap[featureName] ?? {};
 
-      if (map.isEmpty) {
-        StatusHelper.failed('Feature not found in json2dart.yaml');
-        return;
-      }
-
-      map = map[pageName] ?? {};
-
-      if (map.isEmpty) {
-        StatusHelper.failed('Page not found in json2dart.yaml');
-        return;
+      if (map.isNotEmpty) {
+        map = map[pageName] ?? {};
       }
 
       createDataTest(pathTestPage, featureName, pageName);
@@ -289,18 +296,20 @@ void main() {
       );''';
       },
     ).join('\n')}
+
+    ${json2DartMap.isEmpty ? 'expect(blocProviders, isEmpty);' : ''}
     });
   });
 
   group('blocListeners', (){
     test('should provide the correct number of BlocListener', () {
-      final blocProviders = cubit.blocListeners(mockContext);
+      final blocListeners = cubit.blocListeners(mockContext);
 
       ${json2DartMap.keys.map(
       (e) {
         final api = e.toString().pascalCase;
         return '''expect(
-        blocProviders
+        blocListeners
             .whereType<BlocListener<${api}Bloc, ${api}State>>()
             .length,
         isIn([0, 1]),
@@ -309,21 +318,23 @@ void main() {
       },
     ).join('\n')}
       
+      ${json2DartMap.isEmpty ? 'expect(blocListeners, isEmpty);' : ''}
     });
   });
 
-  group('dispose', (){
+  ${json2DartMap.isEmpty ? '' : '''group('dispose', (){
     test('should close all Blocs when cubit is closed', () async {
       await cubit.close();
 
       ${json2DartMap.keys.map(
-      (e) {
-        final api = e.toString().pascalCase;
-        return '''    verify(() => mock${api}Bloc.close()).called(1);''';
-      },
-    ).join('\n')}
+                (e) {
+                  final api = e.toString().pascalCase;
+                  return '''    verify(() => mock${api}Bloc.close()).called(1);''';
+                },
+              ).join('\n')}
     });
-  });
+  });'''}
+
    // your test here
 }
 ''';

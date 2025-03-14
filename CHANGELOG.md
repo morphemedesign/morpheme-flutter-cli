@@ -1,3 +1,7 @@
+## 2.6.4
+
+fix: streamline feature and page validation in template test command and improve bloc listener checks
+
 ## 2.6.3
 
 fix add Flutter material import and update template test command for page integration
