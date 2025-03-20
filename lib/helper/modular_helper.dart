@@ -342,11 +342,6 @@ abstract class ModularHelper {
         ['${FlutterHelper.getCommandFlutter()} pub get'],
         concurrent: concurrent,
       );
-  static Future<void> coverage({int concurrent = defaultConcurrent}) => execute(
-        ['${FlutterHelper.getCommandFlutter()} test --coverage --no-pub'],
-        concurrent: concurrent,
-        ignorePubWorkspaces: true,
-      );
   static Future<void> test(
           {int concurrent = defaultConcurrent, bool isCoverage = false}) =>
       execute(

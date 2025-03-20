@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:morpheme_cli/build_app/build_command.dart';
 import 'package:morpheme_cli/build_app/prebuild_command.dart';
+import 'package:morpheme_cli/core/src/log.dart';
 import 'package:morpheme_cli/dependency_manager.dart';
 import 'package:morpheme_cli/generate/generate.dart';
 import 'package:morpheme_cli/generate/remove/remove_test_command.dart';
@@ -11,6 +12,8 @@ import 'package:morpheme_cli/shorebird/shorebird_command.dart';
 import 'package:morpheme_cli/tools/tools.dart';
 
 void main(List<String> arguments) async {
+  clearLog();
+
   final runner = CommandRunner('morpheme',
       'Morpheme CLI Boost productivity with modular project creation, API generation & folder structuring tools. Simplify Flutter dev! #Flutter #CLI')
     //* Generate
@@ -69,7 +72,7 @@ void main(List<String> arguments) async {
   try {
     final results = runner.argParser.parse(arguments);
     if (results.wasParsed('version')) {
-      printMessage('Morpheme CLI 2.6.4 ');
+      printMessage('Morpheme CLI 2.6.5 ');
       exit(0);
     }
   } catch (e) {

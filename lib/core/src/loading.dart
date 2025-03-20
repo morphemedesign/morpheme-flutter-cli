@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:morpheme_cli/core/src/log.dart';
+
 import 'print.dart';
 
 void printMessage(String? message) {
@@ -71,6 +73,7 @@ class Loading {
       stdout.write('\r${' ' * 20}\r'); // Clear the current loading line
     }
     print(message);
+    appendLogToFile(message.toString());
     if (_isRunning && !_isCiCdEnvironment) {
       // Resume the loading bar after printing the message
       _update();
@@ -87,6 +90,7 @@ class Loading {
       stdout.write('\r${' ' * 20}\r'); // Clear the current loading line
     }
     printerr(message);
+    appendLogToFile(message.toString());
     if (_isRunning && !_isCiCdEnvironment) {
       // Resume the loading bar after printing the message
       _update();

@@ -224,6 +224,10 @@ void main() {
   });
 
   setUp(() async {
+    // this method is called before each test for register all dependencies
+    // you can delete this if you don't need it
+    registerSetUp();
+
     ${json2DartMap.keys.map(
       (e) {
         final api = e.toString().pascalCase;
@@ -270,6 +274,10 @@ void main() {
 
   tearDown(() async {
     cubit.dispose();
+
+    // this method is called before each test for register all dependencies
+    // you can delete this if you don't need it
+    registerTearDown();
   });
 
   tearDownAll(() {

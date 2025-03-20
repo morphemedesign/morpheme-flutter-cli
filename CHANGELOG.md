@@ -1,3 +1,8 @@
+## 2.6.5
+
+feat: add logging functionality to Loading class by appending messages to a log file
+fix: add registerSetUp and registerTearDown in template test command
+
 ## 2.6.4
 
 fix: streamline feature and page validation in template test command and improve bloc listener checks
