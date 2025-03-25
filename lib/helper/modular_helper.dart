@@ -14,6 +14,7 @@ abstract class ModularHelper {
     int concurrent = defaultConcurrent,
     void Function(String)? customCommand,
     void Function(String line)? stdout,
+    void Function(String line)? stdoutErr,
     bool ignorePubWorkspaces = false,
   }) async {
     final workingDirectoryFlutter = find('pubspec.yaml', workingDirectory: '.')
@@ -64,6 +65,7 @@ abstract class ModularHelper {
                     if (line.contains('Waiting for another flutter command')) {
                       return;
                     }
+                    stdoutErr?.call(line);
                     logs.add((true, line));
                   },
                 );
@@ -147,6 +149,7 @@ abstract class ModularHelper {
     List<String> commands, {
     int concurrent = defaultConcurrent,
     void Function(String line)? stdout,
+    void Function(String line)? stdoutErr,
     bool ignorePubWorkspaces = false,
   }) async {
     List<(String, Future<(String, bool, List<(bool, String)>)> Function())>
@@ -173,6 +176,7 @@ abstract class ModularHelper {
                   if (line.contains('Waiting for another flutter command')) {
                     return;
                   }
+                  stdoutErr?.call(line);
                   logs.add((true, line));
                 },
               );
@@ -342,15 +346,28 @@ abstract class ModularHelper {
         ['${FlutterHelper.getCommandFlutter()} pub get'],
         concurrent: concurrent,
       );
-  static Future<void> test(
-          {int concurrent = defaultConcurrent, bool isCoverage = false}) =>
-      execute(
-        [
-          '${FlutterHelper.getCommandFlutter()} test test/bundle_test.dart --no-pub ${isCoverage ? '--coverage' : ''}'
-        ],
-        concurrent: concurrent,
-        ignorePubWorkspaces: true,
-      );
+  static Future<void> test({
+    int concurrent = defaultConcurrent,
+    bool isCoverage = false,
+    String? reporter,
+    String? fileReporter,
+    void Function(String line)? stdout,
+    void Function(String line)? stdoutErr,
+  }) {
+    final argReporter = reporter != null ? '--reporter $reporter' : '';
+    final argFileReporter =
+        reporter != null ? '--file-reporter $fileReporter' : '';
+    return execute(
+      [
+        '${FlutterHelper.getCommandFlutter()} test test/bundle_test.dart --no-pub ${isCoverage ? '--coverage' : ''} $argReporter $argFileReporter'
+      ],
+      concurrent: concurrent,
+      ignorePubWorkspaces: true,
+      stdout: stdout,
+      stdoutErr: stdoutErr,
+    );
+  }
+
   static Future<void> upgrade({int concurrent = defaultConcurrent}) => execute(
         [
           '${FlutterHelper.getCommandFlutter()} packages upgrade',

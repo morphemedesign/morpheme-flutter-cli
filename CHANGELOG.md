@@ -1,3 +1,7 @@
+## 2.7.0
+
+feat: add reporter and output file reporter options to TestCommand and CoverageCommand for customizable test result reporting
+
 ## 2.6.5
 
 feat: add logging functionality to Loading class by appending messages to a log file

@@ -23,6 +23,32 @@ class CoverageCommand extends Command {
       abbr: 'p',
       help: 'Test with spesific page (optional)',
     );
+    argParser.addOption(
+      'reporter',
+      abbr: 'r',
+      help:
+          '''Set how to print test results. If unset, value will default to either compact or expanded.
+
+          [compact]                                          A single line, updated continuously (the default).
+          [expanded]                                         A separate line for each update. May be preferred when logging to a file or in continuous integration.
+          [failures-only]                                    A separate line for failing tests, with no output for passing tests.
+          [github]                                           A custom reporter for GitHub Actions (the default reporter when running on GitHub Actions).
+          [json]                                             A machine-readable format. See: https://dart.dev/go/test-docs/json_reporter.md
+          [silent]                                           A reporter with no output. May be useful when only the exit code is meaningful.''',
+      allowed: [
+        'compact',
+        'expanded',
+        'failures-only',
+        'github',
+        'json',
+        'silent',
+      ],
+    );
+    argParser.addOption(
+      'file-reporter',
+      help: '''Enable an additional reporter writing test results to a file.
+                                                             Should be in the form <reporter>:<filepath>, Example: "json:reports/tests.json".''',
+    );
   }
 
   @override
@@ -47,8 +73,15 @@ class CoverageCommand extends Command {
     final argFeature = feature != null ? '-f $feature' : '';
     final argPage = page != null ? '-p $page' : '';
 
+    final String? reporter = argResults?['reporter'];
+    final argReporter = reporter != null ? '--reporter $reporter' : '';
+
+    final String? fileReporter = argResults?['file-reporter'];
+    final argFileReporter =
+        fileReporter != null ? '--file-reporter $fileReporter' : '';
+
     final command =
-        'morpheme test --morpheme-yaml $argMorphemeYaml $argApps $argFeature $argPage --coverage';
+        'morpheme test --morpheme-yaml $argMorphemeYaml $argApps $argFeature $argPage --coverage $argReporter $argFileReporter';
 
     await command.run;
 

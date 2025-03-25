@@ -27,6 +27,32 @@ class TestCommand extends Command {
       help: 'Run test with coverage',
       defaultsTo: false,
     );
+    argParser.addOption(
+      'reporter',
+      abbr: 'r',
+      help:
+          '''Set how to print test results. If unset, value will default to either compact or expanded.
+
+          [compact]                                          A single line, updated continuously (the default).
+          [expanded]                                         A separate line for each update. May be preferred when logging to a file or in continuous integration.
+          [failures-only]                                    A separate line for failing tests, with no output for passing tests.
+          [github]                                           A custom reporter for GitHub Actions (the default reporter when running on GitHub Actions).
+          [json]                                             A machine-readable format. See: https://dart.dev/go/test-docs/json_reporter.md
+          [silent]                                           A reporter with no output. May be useful when only the exit code is meaningful.''',
+      allowed: [
+        'compact',
+        'expanded',
+        'failures-only',
+        'github',
+        'json',
+        'silent',
+      ],
+    );
+    argParser.addOption(
+      'file-reporter',
+      help: '''Enable an additional reporter writing test results to a file.
+                                                             Should be in the form <reporter>:<filepath>, Example: "json:reports/tests.json".''',
+    );
   }
 
   @override
@@ -53,6 +79,13 @@ class TestCommand extends Command {
 
     final bool? isCoverage = argResults?['coverage'] as bool?;
     final argCoverage = isCoverage ?? false ? '--coverage' : '';
+
+    final String? reporter = argResults?['reporter'];
+    final argReporter = reporter != null ? '--reporter $reporter' : '';
+
+    final String? fileReporter = argResults?['file-reporter'];
+    final argFileReporter =
+        fileReporter != null ? '--file-reporter $fileReporter' : '';
 
     if (apps == null && feature == null && page == null) {
       await ModularHelper.runSequence(
@@ -128,19 +161,21 @@ class TestCommand extends Command {
     if (page != null) {
       workingDirCoverage = join(current, 'features', feature);
       await FlutterHelper.start(
-        'test test/${page}_test/bundle_test.dart --no-pub $argCoverage',
+        'test test/${page}_test/bundle_test.dart --no-pub $argCoverage $argReporter $argFileReporter',
         workingDirectory: workingDirCoverage,
       );
     } else if (feature != null) {
       workingDirCoverage = join(current, 'features', feature);
       await FlutterHelper.start(
-        'test test/bundle_test.dart --no-pub $argCoverage',
+        'test test/bundle_test.dart --no-pub $argCoverage $argReporter $argFileReporter',
         workingDirectory: join(current, 'features', feature),
       );
     } else {
       await ModularHelper.test(
         concurrent: yaml.concurrent,
         isCoverage: isCoverage ?? false,
+        reporter: reporter,
+        fileReporter: fileReporter,
       );
     }
 
