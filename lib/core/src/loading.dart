@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:morpheme_cli/core/src/is.dart';
 import 'package:morpheme_cli/core/src/log.dart';
 
 import 'print.dart';
@@ -18,9 +19,7 @@ class Loading {
   static final Loading _instance = Loading._internal();
 
   // Private constructor
-  Loading._internal()
-      : _isCiCdEnvironment = Platform.environment.containsKey('CI') &&
-            Platform.environment['CI'] == 'true';
+  Loading._internal();
 
   // Factory constructor
   factory Loading() {
@@ -32,10 +31,8 @@ class Loading {
   bool _isRunning = false;
   final List<String> _loadingStates = ['-', '\\', '|', '/'];
 
-  final bool _isCiCdEnvironment;
-
   void start() {
-    if (_isRunning || _isCiCdEnvironment) {
+    if (_isRunning || isCiCdEnvironment) {
       return; // Prevent starting multiple timers
     }
 
@@ -46,7 +43,7 @@ class Loading {
   }
 
   void _update() {
-    if (!_isRunning || _isCiCdEnvironment) return;
+    if (!_isRunning || isCiCdEnvironment) return;
 
     // Move to the next loading state
     _progress = (_progress + 1) % _loadingStates.length;
@@ -55,7 +52,7 @@ class Loading {
   }
 
   void stop() {
-    if (!_isRunning || _isCiCdEnvironment) return;
+    if (!_isRunning || isCiCdEnvironment) return;
 
     stdout.write('\r${' ' * 20}\r'); // Clear the current loading line
 
@@ -68,13 +65,13 @@ class Loading {
       return; // Prevent printing loading states
     }
 
-    if (_isRunning && !_isCiCdEnvironment) {
+    if (_isRunning && !isCiCdEnvironment) {
       // Temporarily stop the loading bar to print a clean message
       stdout.write('\r${' ' * 20}\r'); // Clear the current loading line
     }
     print(message);
     appendLogToFile(message.toString());
-    if (_isRunning && !_isCiCdEnvironment) {
+    if (_isRunning && !isCiCdEnvironment) {
       // Resume the loading bar after printing the message
       _update();
     }
@@ -85,13 +82,13 @@ class Loading {
       return; // Prevent printing loading states
     }
 
-    if (_isRunning && !_isCiCdEnvironment) {
+    if (_isRunning && !isCiCdEnvironment) {
       // Temporarily stop the loading bar to print a clean message
       stdout.write('\r${' ' * 20}\r'); // Clear the current loading line
     }
     printerr(message);
     appendLogToFile(message.toString());
-    if (_isRunning && !_isCiCdEnvironment) {
+    if (_isRunning && !isCiCdEnvironment) {
       // Resume the loading bar after printing the message
       _update();
     }

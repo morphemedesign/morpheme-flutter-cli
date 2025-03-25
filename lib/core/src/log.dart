@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:morpheme_cli/dependency_manager.dart';
 
 void clearLog() {
+  if (isCiCdEnvironment) return;
+
   final logFile = File(join(current, 'morpheme_log.txt'));
   logFile.writeAsStringSync('');
 }

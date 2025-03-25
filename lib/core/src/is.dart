@@ -24,3 +24,7 @@ bool isLink(String path) {
   final fromType = FileSystemEntity.typeSync(path, followLinks: false);
   return fromType == FileSystemEntityType.link;
 }
+
+bool get isCiCdEnvironment =>
+    Platform.environment.containsKey('CI') &&
+    Platform.environment['CI'] == 'true';

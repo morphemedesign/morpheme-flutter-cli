@@ -1,3 +1,7 @@
+## 2.7.2
+
+fix: prevent log clearing in CI/CD environments
+
 ## 2.7.1
 
 fix: correct file reporter argument check in ModularHelper class
