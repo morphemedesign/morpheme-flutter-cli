@@ -356,7 +356,7 @@ abstract class ModularHelper {
   }) {
     final argReporter = reporter != null ? '--reporter $reporter' : '';
     final argFileReporter =
-        reporter != null ? '--file-reporter $fileReporter' : '';
+        fileReporter != null ? '--file-reporter $fileReporter' : '';
     return execute(
       [
         '${FlutterHelper.getCommandFlutter()} test test/bundle_test.dart --no-pub ${isCoverage ? '--coverage' : ''} $argReporter $argFileReporter'

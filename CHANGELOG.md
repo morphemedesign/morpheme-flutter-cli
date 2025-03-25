@@ -1,3 +1,7 @@
+## 2.7.1
+
+fix: correct file reporter argument check in ModularHelper class
+
 ## 2.7.0
 
 feat: add reporter and output file reporter options to TestCommand and CoverageCommand for customizable test result reporting
