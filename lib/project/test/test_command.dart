@@ -271,12 +271,12 @@ Future<void> main() async {
     required String workingDirectory,
     bool isDeleteRootCoverageFirst = false,
   }) {
-    final pathLcovRoot = join(current, 'coverage', 'lcov.info');
-    if (!exists(pathLcovRoot)) {
-      touch(pathLcovRoot, create: true);
+    final pathMergeLcovRoot = join(current, 'coverage', 'merge_lcov.info');
+    if (!exists(pathMergeLcovRoot)) {
+      touch(pathMergeLcovRoot, create: true);
     } else if (isDeleteRootCoverageFirst) {
-      delete(pathLcovRoot);
-      touch(pathLcovRoot, create: true);
+      delete(pathMergeLcovRoot);
+      touch(pathMergeLcovRoot, create: true);
     }
 
     final pathLcov = find(
@@ -286,16 +286,19 @@ Future<void> main() async {
       workingDirectory: workingDirectory,
     ).toList();
 
-    pathLcov.remove(pathLcovRoot);
-
     for (var path in pathLcov) {
-      final pathReplace = path
+      final splitPathLcov = path.split(separator);
+      final newFileName = 'merge_${splitPathLcov.removeLast()}';
+      final newPathFileLcov = '${splitPathLcov.join(separator)}/$newFileName';
+      copy(path, newPathFileLcov, overwrite: true);
+      final pathReplace = newPathFileLcov
           .replaceAll('$current/', '')
+          .replaceAll(RegExp(r'(\/)?coverage\/merge_lcov.info(\/)?'), '')
           .replaceAll(RegExp(r'(\/)?coverage\/lcov.info(\/)?'), '');
 
-      replace(path, RegExp(r'SF:lib\/'), 'SF:$pathReplace/lib/');
+      replace(newPathFileLcov, RegExp(r'SF:lib\/'), 'SF:$pathReplace/lib/');
 
-      pathLcovRoot.append(readFile(path));
+      pathMergeLcovRoot.append(readFile(newPathFileLcov));
     }
   }
 }

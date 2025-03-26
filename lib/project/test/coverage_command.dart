@@ -102,8 +102,8 @@ class CoverageCommand extends Command {
           'lcov not found, failed to remove ignore file to test.');
     }
 
-    final lcovDir = morphemeYaml['coverage']['lcov_dir']
-        ?.toString()
+    final lcovDir = join(current, 'coverage', 'merge_lcov.info')
+        .toString()
         .replaceAll('/', separator);
     final outputHtmlDir = morphemeYaml['coverage']['output_html_dir']
         ?.toString()

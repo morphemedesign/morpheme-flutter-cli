@@ -1,3 +1,7 @@
+## 2.7.3
+
+fix: update coverage command to use merge_lcov.info for coverage reporting
+
 ## 2.7.2
 
 fix: prevent log clearing in CI/CD environments
