@@ -1,3 +1,8 @@
+## 3.0.0
+
+feat!: update ${apiClassName}Bloc to extend MorphemeBloc instead of Bloc
+fix: streamline asset command output handling library file
+
 ## 2.7.3
 
 fix: update coverage command to use merge_lcov.info for coverage reporting

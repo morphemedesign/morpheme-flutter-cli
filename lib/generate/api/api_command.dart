@@ -870,11 +870,10 @@ import '../../../domain/usecases/${apiName}_use_case.dart';
 part '${apiName}_event.dart';
 part '${apiName}_state.dart';
 
-class ${apiClassName}Bloc extends Bloc<${apiClassName}Event, ${apiClassName}State> {
+class ${apiClassName}Bloc extends MorphemeBloc<${apiClassName}Event, ${apiClassName}State> {
   ${apiClassName}Bloc({
     required this.useCase,
   }) : super(${apiClassName}Initial()) {
-    if(isClosed) return;
     on<Fetch$apiClassName>((event, emit) async {
       emit(${apiClassName}Loading(event.body, event.headers, event.extra,));
       final result = await useCase(event.body, headers: event.headers,);
