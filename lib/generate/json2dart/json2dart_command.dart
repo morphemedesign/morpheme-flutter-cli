@@ -776,9 +776,10 @@ import 'package:core/core.dart';
   ]) {
     final variable = map.keys;
     if (variable.isEmpty && paramPath.isEmpty) {
-      return 'const $apiClassName(${isMultipart ? '{ this.files }' : ''});';
+      return 'const $apiClassName(${isMultipart ? '{ this.rawBody,  this.files }' : '{ this.rawBody }'});';
     }
     return '''const $apiClassName({
+    this.rawBody,
     ${isMultipart ? 'this.files,' : ''}
     ${paramPath.map((e) => 'required this.${e.camelCase},').join('    \n')}
     ${variable.map((e) => 'this.${e.toString().camelCase},').join('    \n')}
@@ -860,9 +861,11 @@ import 'domain/entities/${e.toString().snakeCase}_entity.dart' as ${e.toString()
     String parent, [
     bool isMultipart = false,
     List<String> paramPath = const [],
+    String rawVariable = '',
   ]) {
     final variable = map.keys;
     return '''${isMultipart ? 'final Map<String, List<File>>? files;' : ''}
+    ${rawVariable.isNotEmpty ? rawVariable : ''}
     ${paramPath.map((e) => 'final String ${e.camelCase};').join('\n')}
     ${variable.map((e) => 'final ${getTypeVariable(e, map[e], suffix, listClassName, parent)}${getTypeVariable(e, map[e], suffix, listClassName, parent) != 'dynamic' ? '?' : ''} ${e.toString().camelCase}').join(';  \n')}${variable.isNotEmpty ? ';' : ''}''';
   }
@@ -871,15 +874,16 @@ import 'domain/entities/${e.toString().snakeCase}_entity.dart' as ${e.toString()
     Map map, [
     bool isMultipart = false,
     List<String> paramPath = const [],
+    String rawVariable = '',
   ]) {
     final variable = map.keys;
 
     if (variable.isEmpty && paramPath.isEmpty && !isMultipart) {
       return '''@override
-  List<Object?> get props => [];''';
+  List<Object?> get props => [${rawVariable.isNotEmpty ? rawVariable : ''}];''';
     }
     return '''@override
-  List<Object?> get props => [${isMultipart ? 'files,' : ''} ${paramPath.isEmpty ? '' : paramPath.map((e) => '${e.camelCase},').join()} ${variable.map((e) => '${e.toString().camelCase},').join()}];''';
+  List<Object?> get props => [${rawVariable.isNotEmpty ? rawVariable : ''} ${isMultipart ? 'files,' : ''} ${paramPath.isEmpty ? '' : paramPath.map((e) => '${e.camelCase},').join()} ${variable.map((e) => '${e.toString().camelCase},').join()}];''';
   }
 
   String getVariableToMap(String key, dynamic value) {
@@ -937,6 +941,7 @@ import 'domain/entities/${e.toString().snakeCase}_entity.dart' as ${e.toString()
     final variable = map.keys;
     return '''Map<String, dynamic> toMap() {
     return {
+      if (rawBody?.isNotEmpty ?? false) ...rawBody ?? {},
       ${variable.map((e) => "if (${e.toString().camelCase} != null)  '${e.toString()}': ${getVariableToMapBody(e, map[e])}").join(',      \n')}${variable.isNotEmpty ? ',' : ''}
     };
   }''';
@@ -1021,11 +1026,11 @@ import 'domain/entities/${e.toString().snakeCase}_entity.dart' as ${e.toString()
     final classString = '''class $apiClassName extends Equatable {
   ${setConstractorBody(apiClassName, map, isMultipart, paramPath)}
 
-  ${setTypeData(map, suffix, listClassNameBody, apiClassName, isMultipart, paramPath)}
+  ${setTypeData(map, suffix, listClassNameBody, apiClassName, isMultipart, paramPath, '  final Map<String, dynamic>? rawBody;')}
 
   ${toMapBody(map)}
 
-  ${setPropsEquatable(map, isMultipart, paramPath)}
+  ${setPropsEquatable(map, isMultipart, paramPath, 'rawBody,')}
 }
 ${map.keys.map((e) => map[e] is Map ? getBodyClass(suffix, e.toString().pascalCase, apiClassName, map[e], false) : '').join()}
 ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).isEmpty ? '' : (map[e] as List).first is! Map ? '' : getBodyClass(suffix, e.toString().pascalCase, apiClassName, (map[e] as List).first, false) : '').join()}

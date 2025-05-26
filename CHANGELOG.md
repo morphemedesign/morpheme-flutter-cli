@@ -1,3 +1,7 @@
+## 3.1.0
+
+feat: enhance json2dart command to support rawBody parameter and update props handling
+
 ## 3.0.0
 
 feat!: update ${apiClassName}Bloc to extend MorphemeBloc instead of Bloc
