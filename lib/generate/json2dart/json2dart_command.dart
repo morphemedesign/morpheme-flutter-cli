@@ -97,6 +97,25 @@ class Json2DartCommand extends Command {
   final regexDateTime =
       RegExp(r'"\d{4}-\d{2}-\d{2}(\s|T)?(\d{2}:\d{2}(:\d{2})?)?(\.\d+)?Z?"');
 
+  T whenMethodHttp<T>(
+    String method, {
+    required T Function() onStream,
+    required T Function() onFuture,
+  }) {
+    switch (method) {
+      case 'getSse':
+      case 'postSse':
+      case 'putSse':
+      case 'patchSse':
+      case 'deleteSse':
+        return onStream();
+      // case 'download':
+      //   return onDownload();
+      default:
+        return onFuture();
+    }
+  }
+
   @override
   void run() async {
     if (argResults?.rest.firstOrNull == 'init') {
@@ -1662,7 +1681,7 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
     final path = join(pathTestPage, 'data', 'models', 'body');
     DirectoryHelper.createDir(path);
     join(path, '${apiName.snakeCase}_body_test.dart').write(
-        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable
         
 import 'package:core/core.dart';
 import 'package:dev_dependency_manager/dev_dependency_manager.dart';
@@ -1696,7 +1715,7 @@ Future<void> main() async {
     DirectoryHelper.createDir(path);
 
     join(path, '${apiName.snakeCase}_response_test.dart').write(
-        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable
 
 ${isResponseList ? "import 'dart:convert';" : ''}
         
@@ -1814,7 +1833,7 @@ Future<void> main() async {
     final path = join(pathTestPage, 'data', 'datasources');
     DirectoryHelper.createDir(path);
     join(path, '${pageName}_remote_data_source_test.dart').write(
-        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_import
+        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_import, unused_local_variable
 
 import 'dart:convert';
 ${resultModelUnitTest.any((element) => element['returnData'] == 'body_bytes') ? '''import 'dart:typed_data';''' : ''}
@@ -1880,6 +1899,16 @@ Future<void> main() async {
           '''expect(result, isA<${'response_${className?.snakeCase}'}.${className}Response>());''',
         _ => "''",
       };
+
+      final isCreateTest = whenMethodHttp<bool>(
+        httpMethod ?? '',
+        onStream: () => false,
+        onFuture: () => true,
+      );
+
+      if (!isCreateTest) {
+        return '';
+      }
 
       return '''group('$className Api Remote Data Source', () {
     test(
@@ -1996,7 +2025,7 @@ Future<void> main() async {
     final path = join(pathTestPage, 'data', 'repositories');
     DirectoryHelper.createDir(path);
     join(path, '${pageName}_repository_impl_test.dart').write(
-        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable
 
 ${resultModelUnitTest.any((element) => element['returnData'] == 'body_bytes') ? '''import 'dart:typed_data';''' : ''}
         
@@ -2050,6 +2079,24 @@ Future<void> main() async {
           '''expect(result, isA<Right<MorphemeFailure, entity_${className?.snakeCase}.${className}Entity>>(),);''',
         _ => "''",
       };
+
+      final isMultipart =
+          e['method']?.toLowerCase().contains('multipart') ?? false;
+      final httpMethod = isMultipart
+          ? e['method'] == 'multipart'
+              ? 'postMultipart'
+              : e['method']
+          : e['method'];
+
+      final isCreateTest = whenMethodHttp<bool>(
+        httpMethod ?? '',
+        onStream: () => false,
+        onFuture: () => true,
+      );
+
+      if (!isCreateTest) {
+        return '';
+      }
 
       return '''group('$className Api Repository', () {
     ${getConstOrFinalValue(e['body'] ?? '')} body${e['apiName']?.pascalCase} = ${e['body']}
@@ -2276,8 +2323,26 @@ Future<void> main() async {
         _ => "''",
       };
 
+      final isMultipart =
+          e['method']?.toLowerCase().contains('multipart') ?? false;
+      final httpMethod = isMultipart
+          ? e['method'] == 'multipart'
+              ? 'postMultipart'
+              : e['method']
+          : e['method'];
+
+      final isCreateTest = whenMethodHttp<bool>(
+        httpMethod ?? '',
+        onStream: () => false,
+        onFuture: () => true,
+      );
+
+      if (!isCreateTest) {
+        continue;
+      }
+
       join(path, '${apiName?.snakeCase}_use_case_test.dart').write(
-          '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+          '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable
 
 ${returnData == 'body_bytes' ? '''import 'dart:typed_data';''' : ''}
           
@@ -2345,8 +2410,26 @@ Future<void> main() async {
         _ => "entity_${className?.snakeCase}.${className}Entity()",
       };
 
+      final isMultipart =
+          e['method']?.toLowerCase().contains('multipart') ?? false;
+      final httpMethod = isMultipart
+          ? e['method'] == 'multipart'
+              ? 'postMultipart'
+              : e['method']
+          : e['method'];
+
+      final isCreateTest = whenMethodHttp<bool>(
+        httpMethod ?? '',
+        onStream: () => false,
+        onFuture: () => true,
+      );
+
+      if (!isCreateTest) {
+        continue;
+      }
+
       join(path, '${apiName?.snakeCase}_bloc_test.dart').write(
-          '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+          '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable
 
 ${resultModelUnitTest.any((element) => element['returnData'] == 'body_bytes') ? '''import 'dart:typed_data';''' : ''}
           
@@ -2597,7 +2680,7 @@ Future<void> main() async {
     final path = pathTestPage;
     DirectoryHelper.createDir(path);
     join(path, 'mapper_test.dart').write(
-        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable
         
 import 'package:$featureName/$pageName/mapper.dart';
 ${resultModelUnitTest.map((e) => isReturnDataModel(e['returnData']!) ? '''import 'package:$featureName/$pageName/data/models/response/${e['apiName']?.snakeCase}_response.dart' as response_${e['apiName']?.snakeCase};

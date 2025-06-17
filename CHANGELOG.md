@@ -1,3 +1,7 @@
+## 3.2.0
+
+feat: add support for SSE and download methods in ApiCommand, enhancing response handling and stream management
+
 ## 3.1.0
 
 feat: enhance json2dart command to support rawBody parameter and update props handling

@@ -44,6 +44,12 @@ class ApiCommand extends Command {
         'postMultipart',
         'patchMultipart',
         'head',
+        'getSse',
+        'postSse',
+        'putSse',
+        'patchSse',
+        'deleteSse',
+        'download',
       ],
       defaultsTo: 'post',
     );
@@ -110,6 +116,39 @@ class ApiCommand extends Command {
   String returnData = 'model';
 
   bool get isReturnDataModel => returnData == 'model';
+
+  String flutterClassOfMethod(String method) {
+    switch (method) {
+      case 'getSse':
+      case 'postSse':
+      case 'putSse':
+      case 'patchSse':
+      case 'deleteSse':
+        return 'Stream';
+      default:
+        return 'Future';
+    }
+  }
+
+  String whenMethod(
+    String method, {
+    required String Function() onStream,
+    required String Function() onFuture,
+    // required String Function() onDownload,
+  }) {
+    switch (method) {
+      case 'getSse':
+      case 'postSse':
+      case 'putSse':
+      case 'patchSse':
+      case 'deleteSse':
+        return onStream();
+      // case 'download':
+      //   return onDownload();
+      default:
+        return onFuture();
+    }
+  }
 
   @override
   void run() async {
@@ -181,13 +220,17 @@ class ApiCommand extends Command {
     if (!json2dart && isReturnDataModel) {
       createDataModelResponse(pathPage, pageName, apiName);
     }
-    createDataRepository(pathPage, pageName, apiName, bodyList, responseList);
+    createDataRepository(
+        pathPage, pageName, apiName, method, bodyList, responseList);
     if (!json2dart && isReturnDataModel) {
       createDomainEntity(pathPage, pageName, apiName);
     }
-    createDomainRepository(pathPage, pageName, apiName, bodyList, responseList);
-    createDomainUseCase(pathPage, pageName, apiName, bodyList, responseList);
-    createPresentationBloc(pathPage, pageName, apiName, bodyList, responseList);
+    createDomainRepository(
+        pathPage, pageName, apiName, method, bodyList, responseList);
+    createDomainUseCase(
+        pathPage, pageName, apiName, method, bodyList, responseList);
+    createPresentationBloc(
+        pathPage, pageName, apiName, method, bodyList, responseList);
     if (!json2dart && isReturnDataModel) {
       createMapper(pathPage, pageName, apiName);
     }
@@ -252,6 +295,26 @@ class ApiCommand extends Command {
           return 'return ${apiClassName}Response.fromJson(response.body);';
         }
     }
+  }
+
+  String getStreamResponseReturn(String apiClassName, bool responseList) {
+    final data = switch (returnData) {
+      // 'header' => 'yield response.headers;',
+      // 'body_bytes' => 'yield response.bodyBytes;',
+      'body_string' => 'yield response;',
+      // 'status_code' => 'yield response.statusCode;',
+      'raw' => 'yield response;',
+      _ => responseList
+          ? '''final mapResponse = jsonDecode(response);
+    yiled mapResponse is List
+        ? List.from(mapResponse.map((e) => ${apiClassName}Response.fromMap(e)))
+        : [${apiClassName}Response.fromMap(mapResponse)];'''
+          : 'yield ${apiClassName}Response.fromJson(response);'
+    };
+
+    return '''    await for (final response in responses) {
+      $data
+    }''';
   }
 
   String getEntityClass(String apiClassName, bool responseList) {
@@ -336,7 +399,11 @@ class ApiCommand extends Command {
         : 'body: body.toMap()${isMultipart(method) ? '.map((key, value) => MapEntry(key, value.toString()))' : ''},${isMultipart(method) ? ' files: body.files,' : ''}';
 
     final responseClass = getResponseClass(apiClassName, responseList);
-    final responseImpl = getResponseReturn(apiClassName, responseList);
+    final responseImpl = whenMethod(
+      method,
+      onStream: () => getStreamResponseReturn(apiClassName, responseList),
+      onFuture: () => getResponseReturn(apiClassName, responseList),
+    );
 
     final convert =
         bodyList || responseList ? "import 'dart:convert';\n\n" : '';
@@ -363,7 +430,7 @@ import '../models/body/${apiName}_body.dart';
 ${isReturnDataModel ? '''import '../models/response/${apiName}_response.dart';''' : ''}
 
 abstract class ${pageName.pascalCase}RemoteDataSource {
-  Future<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,});
+  ${flutterClassOfMethod(method)}<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,});
 }
 
 class ${pageName.pascalCase}RemoteDataSourceImpl implements ${pageName.pascalCase}RemoteDataSource {
@@ -372,10 +439,21 @@ class ${pageName.pascalCase}RemoteDataSourceImpl implements ${pageName.pascalCas
   final MorphemeHttp http;
 
   @override
-  Future<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
+  ${whenMethod(
+        method,
+        onStream: () {
+          return '''${flutterClassOfMethod(method)}<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async* {
+    final responses = http.$apiMethod($apiEndpoint, $bodyImpl${headers ?? 'headers: headers,'});
+    $responseImpl
+  }''';
+        },
+        onFuture: () {
+          return '''${flutterClassOfMethod(method)}<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
     final response = await http.$apiMethod($apiEndpoint, $bodyImpl${headers ?? 'headers: headers,'}$apiCacheStrategy);
     $responseImpl
-  }
+  }''';
+        },
+      )}
 }''');
     } else {
       String data = File(join(path, '${pageName}_remote_data_source.dart'))
@@ -401,7 +479,7 @@ ${isReturnDataModel ? '''import '../models/response/${apiName}_response.dart';''
           RegExp('abstract\\s?class\\s?${pageClassName}RemoteDataSource\\s?{',
               multiLine: true),
           '''abstract class ${pageClassName}RemoteDataSource {
-  Future<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,});''');
+  ${flutterClassOfMethod(method)}<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,});''');
 
       final isEmpty =
           RegExp(r'final MorphemeHttp http;(\s+)?}(\s+)?}').hasMatch(data);
@@ -409,9 +487,18 @@ ${isReturnDataModel ? '''import '../models/response/${apiName}_response.dart';''
       data = data.replaceAll(RegExp(r'}(\s+)?}'), '''${isEmpty ? '' : '}'}
 
   @override
-  Future<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
-    final response = await http.$apiMethod($apiEndpoint, $bodyImpl${headers ?? 'headers: headers,'}$apiCacheStrategy);
-    $responseImpl
+  ${flutterClassOfMethod(method)}<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
+    ${whenMethod(
+        method,
+        onStream: () {
+          return '''final response = http.$apiMethod($apiEndpoint, $bodyImpl${headers ?? 'headers: headers,'});
+    $responseImpl''';
+        },
+        onFuture: () {
+          return '''final response = await http.$apiMethod($apiEndpoint, $bodyImpl${headers ?? 'headers: headers,'}$apiCacheStrategy);
+    $responseImpl''';
+        },
+      )}
   }
 }''');
 
@@ -504,6 +591,7 @@ class ${apiClassName}Response extends Equatable {
     String pathPage,
     String pageName,
     String apiName,
+    String method,
     bool bodyList,
     bool responseList,
   ) {
@@ -538,7 +626,27 @@ class ${pageName.pascalCase}RepositoryImpl implements ${pageName.pascalCase}Repo
   final ${pageName.pascalCase}RemoteDataSource remoteDataSource;
 
   @override
-  Future<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
+  ${whenMethod(
+        method,
+        onStream: () {
+          return '''${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async* {
+    try {
+      final response = remoteDataSource.$apiMethodName(
+        body,
+        headers: headers,
+      );
+      await for (final data in response) {
+        yield Right($entityImpl);
+      }
+    } on MorphemeException catch (e) {
+      yield Left(e.toMorphemeFailure());
+    } catch (e) {
+      yield Left(InternalFailure(e.toString()));
+    }
+  }''';
+        },
+        onFuture: () {
+          return '''${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
     try {
       final data = await remoteDataSource.$apiMethodName(body, headers: headers,);
       return Right($entityImpl);
@@ -547,7 +655,9 @@ class ${pageName.pascalCase}RepositoryImpl implements ${pageName.pascalCase}Repo
     } catch (e) {
       return Left(InternalFailure(e.toString()));
     }
-  }
+  }''';
+        },
+      )}
 }''');
     } else {
       String data = File(join(path, '${pageName}_repository_impl.dart'))
@@ -587,16 +697,38 @@ import '../models/body/${apiName}_body.dart';''');
           data.replaceAll(RegExp(r'}(\s+)?}(\s+)?}'), '''${isEmpty ? '' : '}}'}
 
   @override
-  Future<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
+  ${whenMethod(
+        method,
+        onStream: () {
+          return '''${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async* {
     try {
-        final data = await remoteDataSource.$apiMethodName(body, headers: headers);
-        return Right($entityImpl);
+      final response = remoteDataSource.$apiMethodName(
+        body,
+        headers: headers,
+      );
+      await for (final data in response) {
+        yield Right($entityImpl);
+      }
     } on MorphemeException catch (e) {
-        return Left(e.toMorphemeFailure());
+      yield Left(e.toMorphemeFailure());
     } catch (e) {
-        return Left(InternalFailure(e.toString()));
+      yield Left(InternalFailure(e.toString()));
     }
-  }
+  }''';
+        },
+        onFuture: () {
+          return '''${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
+    try {
+      final data = await remoteDataSource.$apiMethodName(body, headers: headers,);
+      return Right($entityImpl);
+    } on MorphemeException catch (e) {
+      return Left(e.toMorphemeFailure());
+    } catch (e) {
+      return Left(InternalFailure(e.toString()));
+    }
+  }''';
+        },
+      )}
 }''');
 
       join(path, '${pageName}_repository_impl.dart').write(data);
@@ -634,6 +766,7 @@ class ${apiClassName}Entity extends Equatable {
     String pathPage,
     String pageName,
     String apiName,
+    String method,
     bool bodyList,
     bool responseList,
   ) {
@@ -656,7 +789,7 @@ import '../../data/models/body/${apiName}_body.dart';
 ${isReturnDataModel ? '''import '../entities/${apiName}_entity.dart';''' : ''}
 
 abstract class ${pageName.pascalCase}Repository {
-  Future<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,});
+  ${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,});
 }''');
     } else {
       String data =
@@ -679,7 +812,7 @@ import '../../data/models/body/${apiName}_body.dart';
 ${isReturnDataModel ? '''import '../entities/${apiName}_entity.dart';''' : ''}''');
 
       data = data.replaceAll(RegExp(r'}$', multiLine: true),
-          '''  Future<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,});
+          '''  ${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,});
 }''');
 
       join(path, '${pageName}_repository.dart').write(data);
@@ -692,6 +825,7 @@ ${isReturnDataModel ? '''import '../entities/${apiName}_entity.dart';''' : ''}''
     String pathPage,
     String pageName,
     String apiName,
+    String method,
     bool bodyList,
     bool responseList,
   ) {
@@ -714,7 +848,11 @@ import '../../data/models/body/${apiName}_body.dart';
 ${isReturnDataModel ? '''import '../entities/${apiName}_entity.dart';''' : ''}
 import '../repositories/${pageName}_repository.dart';
 
-class ${apiClassName}UseCase implements UseCase<$entityClass, $bodyClass> {
+class ${apiClassName}UseCase implements ${whenMethod(
+      method,
+      onStream: () => 'StreamUseCase',
+      onFuture: () => 'UseCase',
+    )}<$entityClass, $bodyClass> {
   ${apiClassName}UseCase({
     required this.repository,
   });
@@ -722,7 +860,7 @@ class ${apiClassName}UseCase implements UseCase<$entityClass, $bodyClass> {
   final ${pageClassName}Repository repository;
 
   @override
-  Future<Either<MorphemeFailure, $entityClass>> call($bodyClass body,{Map<String, String>? headers,}) {
+  ${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> call($bodyClass body,{Map<String, String>? headers,}) {
     return repository.$apiMethodName(body, headers: headers);
   }
 }''');
@@ -734,6 +872,7 @@ class ${apiClassName}UseCase implements UseCase<$entityClass, $bodyClass> {
     String pathPage,
     String pageName,
     String apiName,
+    String method,
     bool bodyList,
     bool responseList,
   ) {
@@ -876,13 +1015,29 @@ class ${apiClassName}Bloc extends MorphemeBloc<${apiClassName}Event, ${apiClassN
   }) : super(${apiClassName}Initial()) {
     on<Fetch$apiClassName>((event, emit) async {
       emit(${apiClassName}Loading(event.body, event.headers, event.extra,));
-      final result = await useCase(event.body, headers: event.headers,);
+      ${whenMethod(
+      method,
+      onStream: () {
+        return '''final results = useCase(event.body, headers: event.headers,);
+      await for (final result in results) {
+        emit(
+          result.fold(
+            (failure) => ${apiClassName}Failed(event.body, event.headers, failure, event.extra,),
+            (success) => ${apiClassName}Success(event.body, event.headers, success, event.extra,),
+          ),
+        );
+      }''';
+      },
+      onFuture: () {
+        return '''final result = await useCase(event.body, headers: event.headers,);
       emit(
         result.fold(
           (failure) => ${apiClassName}Failed(event.body, event.headers, failure, event.extra,),
           (success) => ${apiClassName}Success(event.body, event.headers, success, event.extra,),
         ),
-      );
+      );''';
+      },
+    )}
     });
   }
 
