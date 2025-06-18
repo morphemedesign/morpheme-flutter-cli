@@ -1,5 +1,9 @@
 ## 3.3.2
 
+feat: implement completer for asynchronous handling in ${apiClassName}Bloc, ensuring proper event completion and stream management
+
+## 3.3.2
+
 refactor: streamline cancellation handling in ${apiClassName}Bloc by simplifying emitted state and enhancing event processing
 
 ## 3.3.1

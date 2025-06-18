@@ -1164,6 +1164,7 @@ class ${apiClassName}Bloc extends MorphemeBloc<${apiClassName}Event, ${apiClassN
       method,
       onStream: () {
         return '''final results = useCase(event.body, headers: event.headers,);
+      final completer = Completer();
       final List<$entityClass> buffer = [];
       _streamSubscription = results.listen(
         (result) {
@@ -1196,6 +1197,7 @@ class ${apiClassName}Bloc extends MorphemeBloc<${apiClassName}Event, ${apiClassN
               event.extra,
             ),
           );
+          completer.complete();
         },
         onDone: () {
           emit(
@@ -1206,8 +1208,10 @@ class ${apiClassName}Bloc extends MorphemeBloc<${apiClassName}Event, ${apiClassN
               event.extra,
             ),
           );
+          completer.complete();
         },
       );
+      await completer.future;
     });
     on<Cancel$apiClassName>((event, emit) async {
       _streamSubscription?.cancel();
