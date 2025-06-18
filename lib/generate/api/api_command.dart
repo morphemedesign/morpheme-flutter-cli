@@ -273,6 +273,27 @@ class ApiCommand extends Command {
     }
   }
 
+  String getStreamResponseClass(String apiClassName, bool responseList) {
+    switch (returnData) {
+      case 'header':
+        return 'Map<String, String>';
+      case 'body_bytes':
+        return 'Uint8List';
+      case 'body_string':
+        return 'String';
+      case 'status_code':
+        return 'int';
+      case 'raw':
+        return 'String';
+      default:
+        if (responseList) {
+          return 'List<${apiClassName}Response>';
+        } else {
+          return '${apiClassName}Response';
+        }
+    }
+  }
+
   String getResponseReturn(String apiClassName, bool responseList) {
     switch (returnData) {
       case 'header':
@@ -398,7 +419,11 @@ class ApiCommand extends Command {
         ? 'body: jsonEncode(body.map((e) => e.toMap()).toList()),'
         : 'body: body.toMap()${isMultipart(method) ? '.map((key, value) => MapEntry(key, value.toString()))' : ''},${isMultipart(method) ? ' files: body.files,' : ''}';
 
-    final responseClass = getResponseClass(apiClassName, responseList);
+    final responseClass = whenMethod(
+      method,
+      onStream: () => getStreamResponseClass(apiClassName, responseList),
+      onFuture: () => getResponseClass(apiClassName, responseList),
+    );
     final responseImpl = whenMethod(
       method,
       onStream: () => getStreamResponseReturn(apiClassName, responseList),
@@ -420,6 +445,23 @@ class ApiCommand extends Command {
         ? ''
         : '${cacheStrategy.toParamCacheStrategy(ttl: ttl, keepExpiredCache: keepExpiredCache)},';
 
+    final methodOfDataSource = '''@override
+  ${whenMethod(
+      method,
+      onStream: () {
+        return '''${flutterClassOfMethod(method)}<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async* {
+    final responses = http.$apiMethod($apiEndpoint, $bodyImpl${headers ?? 'headers: headers,'});
+    $responseImpl
+  }''';
+      },
+      onFuture: () {
+        return '''${flutterClassOfMethod(method)}<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
+    final response = await http.$apiMethod($apiEndpoint, $bodyImpl${headers ?? 'headers: headers,'}$apiCacheStrategy);
+    $responseImpl
+  }''';
+      },
+    )}''';
+
     if (!exists(join(path, '${pageName}_remote_data_source.dart'))) {
       join(path, '${pageName}_remote_data_source.dart').write(
           '''${returnData == 'body_bytes' ? "import 'dart:typed_data';" : ''}
@@ -438,22 +480,7 @@ class ${pageName.pascalCase}RemoteDataSourceImpl implements ${pageName.pascalCas
 
   final MorphemeHttp http;
 
-  @override
-  ${whenMethod(
-        method,
-        onStream: () {
-          return '''${flutterClassOfMethod(method)}<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async* {
-    final responses = http.$apiMethod($apiEndpoint, $bodyImpl${headers ?? 'headers: headers,'});
-    $responseImpl
-  }''';
-        },
-        onFuture: () {
-          return '''${flutterClassOfMethod(method)}<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
-    final response = await http.$apiMethod($apiEndpoint, $bodyImpl${headers ?? 'headers: headers,'}$apiCacheStrategy);
-    $responseImpl
-  }''';
-        },
-      )}
+  $methodOfDataSource
 }''');
     } else {
       String data = File(join(path, '${pageName}_remote_data_source.dart'))
@@ -481,26 +508,11 @@ ${isReturnDataModel ? '''import '../models/response/${apiName}_response.dart';''
           '''abstract class ${pageClassName}RemoteDataSource {
   ${flutterClassOfMethod(method)}<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,});''');
 
-      final isEmpty =
-          RegExp(r'final MorphemeHttp http;(\s+)?}(\s+)?}').hasMatch(data);
+      data = data.replaceAll(RegExp(r'}(\s+)?$', multiLine: false), '');
 
-      data = data.replaceAll(RegExp(r'}(\s+)?}'), '''${isEmpty ? '' : '}'}
-
-  @override
-  ${flutterClassOfMethod(method)}<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
-    ${whenMethod(
-        method,
-        onStream: () {
-          return '''final response = http.$apiMethod($apiEndpoint, $bodyImpl${headers ?? 'headers: headers,'});
-    $responseImpl''';
-        },
-        onFuture: () {
-          return '''final response = await http.$apiMethod($apiEndpoint, $bodyImpl${headers ?? 'headers: headers,'}$apiCacheStrategy);
-    $responseImpl''';
-        },
-      )}
-  }
-}''');
+      data = '''$data
+      $methodOfDataSource
+}''';
 
       join(path, '${pageName}_remote_data_source.dart').write(data);
     }
@@ -606,6 +618,40 @@ class ${apiClassName}Response extends Equatable {
 
     final entityImpl = getEntityReturn(apiClassName, responseList);
 
+    final methodOfDataRepository = '''@override
+  ${whenMethod(
+      method,
+      onStream: () {
+        return '''${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async* {
+    try {
+      final response = remoteDataSource.$apiMethodName(
+        body,
+        headers: headers,
+      );
+      await for (final data in response) {
+        yield Right($entityImpl);
+      }
+    } on MorphemeException catch (e) {
+      yield Left(e.toMorphemeFailure());
+    } catch (e) {
+      yield Left(InternalFailure(e.toString()));
+    }
+  }''';
+      },
+      onFuture: () {
+        return '''${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
+    try {
+      final data = await remoteDataSource.$apiMethodName(body, headers: headers,);
+      return Right($entityImpl);
+    } on MorphemeException catch (e) {
+      return Left(e.toMorphemeFailure());
+    } catch (e) {
+      return Left(InternalFailure(e.toString()));
+    }
+  }''';
+      },
+    )}''';
+
     if (!exists(join(path, '${pageName}_repository_impl.dart'))) {
       join(path, '${pageName}_repository_impl.dart').write(
           '''${returnData == 'body_bytes' ? "import 'dart:typed_data';" : ''}
@@ -625,39 +671,7 @@ class ${pageName.pascalCase}RepositoryImpl implements ${pageName.pascalCase}Repo
 
   final ${pageName.pascalCase}RemoteDataSource remoteDataSource;
 
-  @override
-  ${whenMethod(
-        method,
-        onStream: () {
-          return '''${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async* {
-    try {
-      final response = remoteDataSource.$apiMethodName(
-        body,
-        headers: headers,
-      );
-      await for (final data in response) {
-        yield Right($entityImpl);
-      }
-    } on MorphemeException catch (e) {
-      yield Left(e.toMorphemeFailure());
-    } catch (e) {
-      yield Left(InternalFailure(e.toString()));
-    }
-  }''';
-        },
-        onFuture: () {
-          return '''${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
-    try {
-      final data = await remoteDataSource.$apiMethodName(body, headers: headers,);
-      return Right($entityImpl);
-    } on MorphemeException catch (e) {
-      return Left(e.toMorphemeFailure());
-    } catch (e) {
-      return Left(InternalFailure(e.toString()));
-    }
-  }''';
-        },
-      )}
+  $methodOfDataRepository
 }''');
     } else {
       String data = File(join(path, '${pageName}_repository_impl.dart'))
@@ -696,39 +710,7 @@ import '../models/body/${apiName}_body.dart';''');
       data =
           data.replaceAll(RegExp(r'}(\s+)?}(\s+)?}'), '''${isEmpty ? '' : '}}'}
 
-  @override
-  ${whenMethod(
-        method,
-        onStream: () {
-          return '''${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async* {
-    try {
-      final response = remoteDataSource.$apiMethodName(
-        body,
-        headers: headers,
-      );
-      await for (final data in response) {
-        yield Right($entityImpl);
-      }
-    } on MorphemeException catch (e) {
-      yield Left(e.toMorphemeFailure());
-    } catch (e) {
-      yield Left(InternalFailure(e.toString()));
-    }
-  }''';
-        },
-        onFuture: () {
-          return '''${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
-    try {
-      final data = await remoteDataSource.$apiMethodName(body, headers: headers,);
-      return Right($entityImpl);
-    } on MorphemeException catch (e) {
-      return Left(e.toMorphemeFailure());
-    } catch (e) {
-      return Left(InternalFailure(e.toString()));
-    }
-  }''';
-        },
-      )}
+  $methodOfDataRepository
 }''');
 
       join(path, '${pageName}_repository_impl.dart').write(data);
@@ -892,17 +874,47 @@ abstract class ${apiClassName}State extends Equatable {
   bool get isLoading => this is ${apiClassName}Loading;
   bool get isFailed => this is ${apiClassName}Failed;
   bool get isSuccess => this is ${apiClassName}Success;
+  bool get isCanceled => this is ${apiClassName}Canceled;
+  ${whenMethod(
+      method,
+      onStream: () {
+        return '''bool get isStream => this is ${apiClassName}Stream;
+  bool get isPaused => this is ${apiClassName}Paused;
+  bool get isResumed => this is ${apiClassName}Resumed;''';
+      },
+      onFuture: () => '',
+    )}
 
   bool get isNotInitial => this is! ${apiClassName}Initial;
   bool get isNotLoading => this is! ${apiClassName}Loading;
   bool get isNotFailed => this is! ${apiClassName}Failed;
   bool get isNotSuccess => this is! ${apiClassName}Success;
+  bool get isNotCanceled => this is! ${apiClassName}Canceled;
+  ${whenMethod(
+      method,
+      onStream: () {
+        return '''bool get isNotStream => this is! ${apiClassName}Stream;
+  bool get isNotPaused => this is! ${apiClassName}Paused;
+  bool get isNotResumed => this is! ${apiClassName}Resumed;''';
+      },
+      onFuture: () => '',
+    )}
 
   void when({
     void Function(${apiClassName}Initial state)? onInitial,
     void Function(${apiClassName}Loading state)? onLoading,
     void Function(${apiClassName}Failed state)? onFailed,
     void Function(${apiClassName}Success state)? onSuccess,
+    void Function(${apiClassName}Canceled state)? onCanceled,
+    ${whenMethod(
+      method,
+      onStream: () {
+        return '''void Function(${apiClassName}Stream state)? onStream,
+  void Function(${apiClassName}Paused state)? onPaused,
+  void Function(${apiClassName}Resumed state)? onResumed,''';
+      },
+      onFuture: () => '',
+    )}
   }) {
     final state = this;
     if (state is ${apiClassName}Initial) {
@@ -913,7 +925,21 @@ abstract class ${apiClassName}State extends Equatable {
       onFailed?.call(state);
     } else if (state is ${apiClassName}Success) {
       onSuccess?.call(state);
-    }
+    } else if (state is ${apiClassName}Canceled) {
+      onCanceled?.call(state);
+    } ${whenMethod(
+      method,
+      onStream: () {
+        return '''else if (state is ${apiClassName}Stream) {
+      onStream?.call(state);
+    } else if (state is ${apiClassName}Paused) {
+      onPaused?.call(state);
+    } else if (state is ${apiClassName}Resumed) {
+      onResumed?.call(state);
+    }''';
+      },
+      onFuture: () => '',
+    )}
   }
 
   Widget builder({
@@ -921,6 +947,16 @@ abstract class ${apiClassName}State extends Equatable {
     Widget Function(${apiClassName}Loading state)? onLoading,
     Widget Function(${apiClassName}Failed state)? onFailed,
     Widget Function(${apiClassName}Success state)? onSuccess,
+    Widget Function(${apiClassName}Canceled state)? onCanceled,
+    ${whenMethod(
+      method,
+      onStream: () {
+        return '''Widget Function(${apiClassName}Stream state)? onStream,
+   Widget Function(${apiClassName}Paused state)? onPaused,
+   Widget Function(${apiClassName}Resumed state)? onResumed,''';
+      },
+      onFuture: () => '',
+    )}
     Widget Function(${apiClassName}State state)? onStateBuilder,
   }) {
     final state = this;
@@ -934,7 +970,22 @@ abstract class ${apiClassName}State extends Equatable {
       return onFailed?.call(state) ?? defaultWidget;
     } else if (state is ${apiClassName}Success) {
       return onSuccess?.call(state) ?? defaultWidget;
-    } else {
+    } else if (state is ${apiClassName}Canceled) {
+      return onCanceled?.call(state) ?? defaultWidget;
+    } ${whenMethod(
+      method,
+      onStream: () {
+        return '''else if (state is ${apiClassName}Stream) {
+      return onStream?.call(state) ?? defaultWidget;
+    } else if (state is ${apiClassName}Paused) {
+      return onPaused?.call(state) ?? defaultWidget;
+    } else if (state is ${apiClassName}Resumed) {
+      return onResumed?.call(state) ?? defaultWidget;
+    }''';
+      },
+      onFuture: () => '',
+    )}
+    else {
       return defaultWidget;
     }
   }
@@ -956,18 +1007,6 @@ class ${apiClassName}Loading extends ${apiClassName}State {
   List<Object?> get props => [body, headers, extra,];
 }
 
-class ${apiClassName}Success extends ${apiClassName}State {
-  ${apiClassName}Success(this.body, this.headers, this.data, this.extra,);
-
-  final $bodyClass body;
-  final Map<String, String>? headers;
-  final $entityClass data;
-  final dynamic extra;
-
-  @override
-  List<Object?> get props => [body, headers, data, extra,];
-}
-
 class ${apiClassName}Failed extends ${apiClassName}State {
   ${apiClassName}Failed(this.body, this.headers, this.failure, this.extra,);
 
@@ -978,7 +1017,82 @@ class ${apiClassName}Failed extends ${apiClassName}State {
 
   @override
   List<Object?> get props => [body, headers, failure, extra,];
-}''');
+}
+
+class ${apiClassName}Canceled extends ${apiClassName}State {
+  ${apiClassName}Canceled(this.body, this.headers, this.extra,);
+
+  final $bodyClass body;
+  final Map<String, String>? headers;
+  final dynamic extra;
+
+  @override
+  List<Object?> get props => [body, headers, extra,];
+}
+
+${whenMethod(
+      method,
+      onStream: () {
+        return '''class ${apiClassName}Stream extends ${apiClassName}State {
+  ${apiClassName}Stream(this.body, this.headers, this.data, this.extra,);
+
+  final $bodyClass body;
+  final Map<String, String>? headers;
+  final $entityClass data;
+  final dynamic extra;
+
+  @override
+  List<Object?> get props => [body, headers, data, extra,];
+}
+
+class ${apiClassName}Paused extends ${apiClassName}State {
+  ${apiClassName}Paused(this.body, this.headers, this.extra,);
+
+  final $bodyClass body;
+  final Map<String, String>? headers;
+  final dynamic extra;
+
+  @override
+  List<Object?> get props => [body, headers, extra,];
+}
+
+class ${apiClassName}Resumed extends ${apiClassName}State {
+  ${apiClassName}Resumed(this.body, this.headers, this.extra,);
+
+  final $bodyClass body;
+  final Map<String, String>? headers;
+  final dynamic extra;
+
+  @override
+  List<Object?> get props => [body, headers, extra,];
+}
+
+class ${apiClassName}Success extends ${apiClassName}State {
+  ${apiClassName}Success(this.body, this.headers, this.data, this.extra,);
+
+  final $bodyClass body;
+  final Map<String, String>? headers;
+  final List<$entityClass> data;
+  final dynamic extra;
+
+  @override
+  List<Object?> get props => [body, headers, data, extra,];
+}''';
+      },
+      onFuture: () =>
+          '''class ${apiClassName}Success extends ${apiClassName}State {
+  ${apiClassName}Success(this.body, this.headers, this.data, this.extra,);
+
+  final $bodyClass body;
+  final Map<String, String>? headers;
+  final $entityClass data;
+  final dynamic extra;
+
+  @override
+  List<Object?> get props => [body, headers, data, extra,];
+}''',
+    )}
+''');
 
     join(path, '${apiName}_event.dart').write('''part of '${apiName}_bloc.dart';
 
@@ -994,10 +1108,47 @@ class Fetch$apiClassName extends ${apiClassName}Event {
 
   @override
   List<Object?> get props => [body, headers, extra,];
-}''');
+}
 
-    join(path, '${apiName}_bloc.dart').write(
-        '''${returnData == 'body_bytes' ? "import 'dart:typed_data';" : ''}
+class Cancel$apiClassName extends ${apiClassName}Event {
+  Cancel$apiClassName({this.extra});
+
+  final dynamic extra;
+
+  @override
+  List<Object?> get props => [extra];
+}
+
+${whenMethod(
+      method,
+      onStream: () {
+        return '''class Pause$apiClassName extends ${apiClassName}Event {
+  Pause$apiClassName({this.extra});
+
+  final dynamic extra;
+
+  @override
+  List<Object?> get props => [extra];
+}
+
+class Resume$apiClassName extends ${apiClassName}Event {
+  Resume$apiClassName({this.extra});
+
+  final dynamic extra;
+
+  @override
+  List<Object?> get props => [extra];
+}''';
+      },
+      onFuture: () => '',
+    )}''');
+
+    join(path, '${apiName}_bloc.dart').write('''${whenMethod(
+      method,
+      onStream: () => "import 'dart:async';",
+      onFuture: () => '',
+    )}
+${returnData == 'body_bytes' ? "import 'dart:typed_data';" : ''}
     
 import 'package:core/core.dart';
 import 'package:flutter/material.dart';
@@ -1019,17 +1170,70 @@ class ${apiClassName}Bloc extends MorphemeBloc<${apiClassName}Event, ${apiClassN
       method,
       onStream: () {
         return '''final results = useCase(event.body, headers: event.headers,);
-      await for (final result in results) {
-        emit(
-          result.fold(
-            (failure) => ${apiClassName}Failed(event.body, event.headers, failure, event.extra,),
-            (success) => ${apiClassName}Success(event.body, event.headers, success, event.extra,),
-          ),
-        );
-      }''';
+      final List<$entityClass> buffer = [];
+      _streamSubscription = results.listen(
+        (result) {
+          emit(
+            result.fold(
+              (failure) => ${apiClassName}Failed(
+                event.body,
+                event.headers,
+                failure,
+                event.extra,
+              ),
+              (success) {
+                buffer.add(success);
+                return ${apiClassName}Stream(
+                  event.body,
+                  event.headers,
+                  success,
+                  event.extra,
+                );
+              },
+            ),
+          );
+        },
+        onError: (error) {
+          emit(
+            ${apiClassName}Failed(
+              event.body,
+              event.headers,
+              InternalFailure('An unexpected error occurred: \$error'),
+              event.extra,
+            ),
+          );
+        },
+        onDone: () {
+          emit(
+            ${apiClassName}Success(
+              event.body,
+              event.headers,
+              buffer,
+              event.extra,
+            ),
+          );
+        },
+      );''';
       },
       onFuture: () {
-        return '''final result = await useCase(event.body, headers: event.headers,);
+        return '''_cancelableOperation = CancelableOperation.fromFuture(
+        useCase(
+          event.body,
+          headers: event.headers,
+        ),
+      );
+      final result = await _cancelableOperation?.valueOrCancellation();
+
+      if (result == null) {
+        emit(
+          ${apiClassName}Canceled(
+            event.body,
+            event.headers,
+            event.extra,
+          ),
+        );
+        return;
+      }
       emit(
         result.fold(
           (failure) => ${apiClassName}Failed(event.body, event.headers, failure, event.extra,),
@@ -1042,6 +1246,30 @@ class ${apiClassName}Bloc extends MorphemeBloc<${apiClassName}Event, ${apiClassN
   }
 
   final ${apiClassName}UseCase useCase;
+
+  ${whenMethod(
+      method,
+      onStream: () {
+        return '''StreamSubscription<Either<MorphemeFailure, $entityClass>>? _streamSubscription;
+
+  @override
+  Future<void> close() {
+    _streamSubscription?.cancel();
+    _streamSubscription = null;
+    return super.close();
+  }''';
+      },
+      onFuture: () {
+        return '''CancelableOperation<Either<MorphemeFailure, $entityClass>>? _cancelableOperation;
+  
+  @override
+  Future<void> close() {
+    _cancelableOperation?.cancel();
+    _cancelableOperation = null;
+    return super.close();
+  }''';
+      },
+    )}
 }''');
 
     StatusHelper.generated(join(path, '${apiName}_state.dart'));

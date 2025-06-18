@@ -1,3 +1,7 @@
+## 3.3.0
+
+feat: enhance ApiCommand to support additional response types and state management, including cancellation and streaming capabilities
+
 ## 3.2.0
 
 feat: add support for SSE and download methods in ApiCommand, enhancing response handling and stream management
