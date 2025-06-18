@@ -1020,14 +1020,12 @@ class ${apiClassName}Failed extends ${apiClassName}State {
 }
 
 class ${apiClassName}Canceled extends ${apiClassName}State {
-  ${apiClassName}Canceled(this.body, this.headers, this.extra,);
+  ${apiClassName}Canceled(this.extra);
 
-  final $bodyClass body;
-  final Map<String, String>? headers;
   final dynamic extra;
 
   @override
-  List<Object?> get props => [body, headers, extra,];
+  List<Object?> get props => [extra];
 }
 
 ${whenMethod(
@@ -1046,25 +1044,21 @@ ${whenMethod(
 }
 
 class ${apiClassName}Paused extends ${apiClassName}State {
-  ${apiClassName}Paused(this.body, this.headers, this.extra,);
+  ${apiClassName}Paused(this.extra);
 
-  final $bodyClass body;
-  final Map<String, String>? headers;
   final dynamic extra;
 
   @override
-  List<Object?> get props => [body, headers, extra,];
+  List<Object?> get props => [extra];
 }
 
 class ${apiClassName}Resumed extends ${apiClassName}State {
-  ${apiClassName}Resumed(this.body, this.headers, this.extra,);
+  ${apiClassName}Resumed(this.extra);
 
-  final $bodyClass body;
-  final Map<String, String>? headers;
   final dynamic extra;
 
   @override
-  List<Object?> get props => [body, headers, extra,];
+  List<Object?> get props => [extra];
 }
 
 class ${apiClassName}Success extends ${apiClassName}State {
@@ -1213,7 +1207,21 @@ class ${apiClassName}Bloc extends MorphemeBloc<${apiClassName}Event, ${apiClassN
             ),
           );
         },
-      );''';
+      );
+    });
+    on<Cancel$apiClassName>((event, emit) async {
+      _streamSubscription?.cancel();
+      _streamSubscription = null;
+      emit(${apiClassName}Canceled(event.extra));
+    });
+    on<Pause$apiClassName>((event, emit) async {
+      _streamSubscription?.pause();
+      emit(${apiClassName}Paused(event.extra));
+    });
+    on<Resume$apiClassName>((event, emit) async {
+      _streamSubscription?.resume();
+      emit(${apiClassName}Resumed(event.extra));
+    });''';
       },
       onFuture: () {
         return '''_cancelableOperation = CancelableOperation.fromFuture(
@@ -1239,10 +1247,16 @@ class ${apiClassName}Bloc extends MorphemeBloc<${apiClassName}Event, ${apiClassN
           (failure) => ${apiClassName}Failed(event.body, event.headers, failure, event.extra,),
           (success) => ${apiClassName}Success(event.body, event.headers, success, event.extra,),
         ),
-      );''';
+      );
+    });
+    on<Cancel$apiClassName>((event, emit) {
+      _cancelableOperation?.cancel();
+      _cancelableOperation = null;
+      emit(${apiClassName}Canceled(event.extra));
+    });''';
       },
     )}
-    });
+    
   }
 
   final ${apiClassName}UseCase useCase;

@@ -1,3 +1,7 @@
+## 3.3.1
+
+refactor: simplify state classes in ApiCommand by removing body and headers, and enhance event handling for cancellation, pause, and resume actions
+
 ## 3.3.0
 
 feat: enhance ApiCommand to support additional response types and state management, including cancellation and streaming capabilities
