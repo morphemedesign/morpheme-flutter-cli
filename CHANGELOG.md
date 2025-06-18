@@ -1,3 +1,7 @@
+## 3.3.2
+
+refactor: streamline cancellation handling in ${apiClassName}Bloc by simplifying emitted state and enhancing event processing
+
 ## 3.3.1
 
 refactor: simplify state classes in ApiCommand by removing body and headers, and enhance event handling for cancellation, pause, and resume actions

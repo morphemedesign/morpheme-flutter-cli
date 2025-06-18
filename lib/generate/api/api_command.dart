@@ -1233,13 +1233,7 @@ class ${apiClassName}Bloc extends MorphemeBloc<${apiClassName}Event, ${apiClassN
       final result = await _cancelableOperation?.valueOrCancellation();
 
       if (result == null) {
-        emit(
-          ${apiClassName}Canceled(
-            event.body,
-            event.headers,
-            event.extra,
-          ),
-        );
+        emit(${apiClassName}Canceled(event.extra));
         return;
       }
       emit(
@@ -1249,7 +1243,7 @@ class ${apiClassName}Bloc extends MorphemeBloc<${apiClassName}Event, ${apiClassN
         ),
       );
     });
-    on<Cancel$apiClassName>((event, emit) {
+    on<Cancel$apiClassName>((event, emit) async {
       _cancelableOperation?.cancel();
       _cancelableOperation = null;
       emit(${apiClassName}Canceled(event.extra));
