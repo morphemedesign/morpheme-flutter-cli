@@ -1,4 +1,8 @@
-## 3.3.2
+## 3.3.4
+
+fix: update shorebird_helper to correctly retrieve flutter_version from the shorebird map
+
+## 3.3.3
 
 feat: implement completer for asynchronous handling in ${apiClassName}Bloc, ensuring proper event completion and stream management
 

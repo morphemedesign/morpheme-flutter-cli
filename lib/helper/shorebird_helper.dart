@@ -8,7 +8,7 @@ abstract class ShorebirdHelper {
   ) {
     final yaml = YamlHelper.loadFileYaml(pathMorphemeYaml);
     final Map<dynamic, dynamic> mapShorebird = yaml['shorebird'] ?? {};
-    final flutterVersion = yaml['flutter_version'];
+    final flutterVersion = mapShorebird['flutter_version'];
     final Map<dynamic, dynamic>? mapFlavor =
         mapShorebird['flavor'][flavor] ?? {};
     return (flutterVersion, mapFlavor);
