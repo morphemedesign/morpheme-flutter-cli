@@ -8,6 +8,12 @@ class RunCommand extends Command {
     argParser.addFlagDebug(defaultsTo: true);
     argParser.addFlagProfile();
     argParser.addFlagRelease(defaultsTo: false);
+    argParser.addFlag(
+      'command-only',
+      abbr: 'c',
+      help: 'Run only the command without executing it',
+      defaultsTo: false,
+    );
 
     argParser.addOptionFlavor(defaultsTo: Constants.dev);
     argParser.addOptionTarget();
@@ -34,6 +40,7 @@ class RunCommand extends Command {
     final argMorphemeYaml = argResults.getOptionMorphemeYaml();
     final argGenerateL10n = argResults.getFlagGenerateL10n();
     final deviceId = argResults.getDeviceId();
+    final commandOnly = argResults?['command-only'] as bool;
 
     YamlHelper.validateMorphemeYaml(argMorphemeYaml);
 
@@ -50,6 +57,13 @@ class RunCommand extends Command {
       dartDefines.add('${Constants.dartDefine} "$key=$value"');
     });
     String mode = argResults.getMode();
+
+    if (commandOnly) {
+      printMessage(
+        'flutter run -t $argTarget ${dartDefines.join(' ')} $mode $deviceId',
+      );
+      return;
+    }
 
     await FlutterHelper.run(
       'run -t $argTarget ${dartDefines.join(' ')} $mode $deviceId',

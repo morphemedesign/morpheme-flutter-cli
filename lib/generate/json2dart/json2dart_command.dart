@@ -1824,6 +1824,19 @@ Future<void> main() async {
     return formattedJsonString;
   }
 
+  bool isSse(String method) {
+    switch (method) {
+      case 'getSse':
+      case 'postSse':
+      case 'putSse':
+      case 'patchSse':
+      case 'deleteSse':
+        return true;
+      default:
+        return false;
+    }
+  }
+
   void createDataDataSourceTest(
     String pathTestPage,
     String featureName,
@@ -1867,6 +1880,7 @@ Future<void> main() async {
 
       final isMultipart =
           e['method']?.toLowerCase().contains('multipart') ?? false;
+      final isSse = e['method']?.toLowerCase().contains('sse') ?? false;
       final httpMethod = isMultipart
           ? e['method'] == 'multipart'
               ? 'postMultipart'
@@ -1885,9 +1899,9 @@ Future<void> main() async {
           ? null
           : e['keepExpiredCache'] == 'true';
 
-      final paramCacheStrategy = cacheStrategy == null || isMultipart
+      final paramCacheStrategy = isSse || isMultipart
           ? ''
-          : '${cacheStrategy.toParamCacheStrategy(ttl: ttl, keepExpiredCache: keepExpiredCache)},';
+          : '${cacheStrategy.toParamCacheStrategyTest(ttl: ttl, keepExpiredCache: keepExpiredCache)},';
 
       final expectSuccess = switch (returnData) {
         'header' => '''expect(result, isA<Map<String, String>>());''',

@@ -376,6 +376,23 @@ class ApiCommand extends Command {
     return method.toLowerCase().contains('multipart');
   }
 
+  bool isSse(String method) {
+    switch (method) {
+      case 'getSse':
+      case 'postSse':
+      case 'putSse':
+      case 'patchSse':
+      case 'deleteSse':
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  bool isApplyCacheStrategy(String method) {
+    return !isMultipart(method) && !isSse(method);
+  }
+
   void createDataDataSource(
     String pathPage,
     String appsName,
@@ -441,9 +458,9 @@ class ApiCommand extends Command {
     final apiEndpoint = paramPath.isEmpty
         ? '${projectName.pascalCase}Endpoints.$apiMethodName${appsName.pascalCase}'
         : '${projectName.pascalCase}Endpoints.$apiMethodName${appsName.pascalCase}(${paramPath.map((e) => 'body.${e.camelCase}').join(',')})';
-    final apiCacheStrategy = cacheStrategy == null || isMultipart(method)
-        ? ''
-        : '${cacheStrategy.toParamCacheStrategy(ttl: ttl, keepExpiredCache: keepExpiredCache)},';
+    String apiCacheStrategy = isApplyCacheStrategy(method)
+        ? '${cacheStrategy.toParamCacheStrategy(ttl: ttl, keepExpiredCache: keepExpiredCache)},'
+        : '';
 
     final methodOfDataSource = '''@override
   ${whenMethod(
@@ -455,7 +472,7 @@ class ApiCommand extends Command {
   }''';
       },
       onFuture: () {
-        return '''${flutterClassOfMethod(method)}<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
+        return '''${flutterClassOfMethod(method)}<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers, ${isApplyCacheStrategy(method) ? 'CacheStrategy? cacheStrategy,' : ''}}) async {
     final response = await http.$apiMethod($apiEndpoint, $bodyImpl${headers ?? 'headers: headers,'}$apiCacheStrategy);
     $responseImpl
   }''';
@@ -472,7 +489,7 @@ import '../models/body/${apiName}_body.dart';
 ${isReturnDataModel ? '''import '../models/response/${apiName}_response.dart';''' : ''}
 
 abstract class ${pageName.pascalCase}RemoteDataSource {
-  ${flutterClassOfMethod(method)}<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,});
+  ${flutterClassOfMethod(method)}<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers, ${isApplyCacheStrategy(method) ? 'CacheStrategy? cacheStrategy,' : ''}});
 }
 
 class ${pageName.pascalCase}RemoteDataSourceImpl implements ${pageName.pascalCase}RemoteDataSource {
@@ -506,7 +523,7 @@ ${isReturnDataModel ? '''import '../models/response/${apiName}_response.dart';''
           RegExp('abstract\\s?class\\s?${pageClassName}RemoteDataSource\\s?{',
               multiLine: true),
           '''abstract class ${pageClassName}RemoteDataSource {
-  ${flutterClassOfMethod(method)}<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers,});''');
+  ${flutterClassOfMethod(method)}<$responseClass> $apiMethodName($bodyClass body,{Map<String, String>? headers, ${isApplyCacheStrategy(method) ? 'CacheStrategy? cacheStrategy,' : ''}});''');
 
       data = data.replaceAll(RegExp(r'}(\s+)?$', multiLine: false), '');
 
@@ -639,9 +656,9 @@ class ${apiClassName}Response extends Equatable {
   }''';
       },
       onFuture: () {
-        return '''${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,}) async {
+        return '''${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers, ${isApplyCacheStrategy(method) ? 'CacheStrategy? cacheStrategy,' : ''}}) async {
     try {
-      final data = await remoteDataSource.$apiMethodName(body, headers: headers,);
+      final data = await remoteDataSource.$apiMethodName(body, headers: headers, ${isApplyCacheStrategy(method) ? 'cacheStrategy: cacheStrategy,' : ''});
       return Right($entityImpl);
     } on MorphemeException catch (e) {
       return Left(e.toMorphemeFailure());
@@ -771,7 +788,7 @@ import '../../data/models/body/${apiName}_body.dart';
 ${isReturnDataModel ? '''import '../entities/${apiName}_entity.dart';''' : ''}
 
 abstract class ${pageName.pascalCase}Repository {
-  ${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,});
+  ${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers, ${isApplyCacheStrategy(method) ? 'CacheStrategy? cacheStrategy,' : ''}});
 }''');
     } else {
       String data =
@@ -794,7 +811,7 @@ import '../../data/models/body/${apiName}_body.dart';
 ${isReturnDataModel ? '''import '../entities/${apiName}_entity.dart';''' : ''}''');
 
       data = data.replaceAll(RegExp(r'}$', multiLine: true),
-          '''  ${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers,});
+          '''  ${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> $apiMethodName($bodyClass body,{Map<String, String>? headers, ${isApplyCacheStrategy(method) ? 'CacheStrategy? cacheStrategy,' : ''}});
 }''');
 
       join(path, '${pageName}_repository.dart').write(data);
@@ -842,8 +859,8 @@ class ${apiClassName}UseCase implements ${whenMethod(
   final ${pageClassName}Repository repository;
 
   @override
-  ${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> call($bodyClass body,{Map<String, String>? headers,}) {
-    return repository.$apiMethodName(body, headers: headers);
+  ${flutterClassOfMethod(method)}<Either<MorphemeFailure, $entityClass>> call($bodyClass body,{Map<String, String>? headers, ${isApplyCacheStrategy(method) ? 'CacheStrategy? cacheStrategy,' : ''}}) {
+    return repository.$apiMethodName(body, headers: headers, ${isApplyCacheStrategy(method) ? 'cacheStrategy: cacheStrategy,' : ''});
   }
 }''');
 
@@ -1094,14 +1111,15 @@ class ${apiClassName}Success extends ${apiClassName}State {
 abstract class ${apiClassName}Event extends Equatable {}
 
 class Fetch$apiClassName extends ${apiClassName}Event {
-  Fetch$apiClassName(this.body, {this.headers, this.extra,});
+  Fetch$apiClassName(this.body, {this.headers, this.extra, ${isApplyCacheStrategy(method) ? 'this.cacheStrategy,' : ''}});
 
   final $bodyClass body;
   final Map<String, String>? headers;
   final dynamic extra;
+  ${isApplyCacheStrategy(method) ? 'final CacheStrategy? cacheStrategy;' : ''}
 
   @override
-  List<Object?> get props => [body, headers, extra,];
+  List<Object?> get props => [body, headers, extra, ${isApplyCacheStrategy(method) ? 'cacheStrategy,' : ''}];
 }
 
 class Cancel$apiClassName extends ${apiClassName}Event {
@@ -1232,6 +1250,7 @@ class ${apiClassName}Bloc extends MorphemeBloc<${apiClassName}Event, ${apiClassN
         useCase(
           event.body,
           headers: event.headers,
+          ${isApplyCacheStrategy(method) ? 'cacheStrategy: event.cacheStrategy,' : ''}
         ),
       );
       final result = await _cancelableOperation?.valueOrCancellation();

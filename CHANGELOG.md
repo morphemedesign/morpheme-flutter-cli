@@ -1,3 +1,8 @@
+## 3.4.0
+
+- feat: add support for SSE methods and cache strategy handling in ApiCommand, improving API method flexibility and response management
+- feat: add 'command-only' flag to RunCommand for previewing commands without execution
+
 ## 3.3.4
 
 fix: update shorebird_helper to correctly retrieve flutter_version from the shorebird map
