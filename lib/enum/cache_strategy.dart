@@ -16,9 +16,9 @@ extension CacheStrategyExtension on CacheStrategy? {
       return '';
     }
     if (this == CacheStrategy.justAsync) {
-      return 'cacheStrategy: ${this?.value.pascalCase}Strategy()';
+      return 'cacheStrategy: ${this?.value.pascalCase}Strategy(),';
     }
-    return 'cacheStrategy: ${this?.value.pascalCase}Strategy(${ttl == null ? '' : 'ttlValue: const Duration(minutes: $ttl)'}${keepExpiredCache == null ? '' : ttl == null ? '' : ', keepExpiredCache: $keepExpiredCache'}${ttl != null || keepExpiredCache != null ? ',' : ''})';
+    return 'cacheStrategy: ${this?.value.pascalCase}Strategy(${ttl == null ? '' : 'ttlValue: const Duration(minutes: $ttl)'}${keepExpiredCache == null ? '' : ttl == null ? '' : ', keepExpiredCache: $keepExpiredCache'}${ttl != null || keepExpiredCache != null ? ',' : ''}),';
   }
 }
 

@@ -1901,7 +1901,8 @@ Future<void> main() async {
 
       final paramCacheStrategy = isSse || isMultipart
           ? ''
-          : '${cacheStrategy.toParamCacheStrategyTest(ttl: ttl, keepExpiredCache: keepExpiredCache)},';
+          : cacheStrategy.toParamCacheStrategyTest(
+              ttl: ttl, keepExpiredCache: keepExpiredCache);
 
       final expectSuccess = switch (returnData) {
         'header' => '''expect(result, isA<Map<String, String>>());''',

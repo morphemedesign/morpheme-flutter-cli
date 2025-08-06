@@ -1,3 +1,7 @@
+## 3.4.1
+
+- fix: correct formatting in cache strategy string representation and json2dart command parameter handling
+
 ## 3.4.0
 
 - feat: add support for SSE methods and cache strategy handling in ApiCommand, improving API method flexibility and response management
