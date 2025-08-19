@@ -1,3 +1,7 @@
+## 3.5.1
+
+- fix: improve null safety in copyWith method of json2dart command by conditionally adding nullable types
+
 ## 3.5.0
 
 chore: update dependencies and versioning in pubspec files, enhance command handling, and improve code formatting

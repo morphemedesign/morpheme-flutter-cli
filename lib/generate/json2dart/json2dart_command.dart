@@ -1085,7 +1085,10 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
   ${setTypeData(map, suffix, listClassNameEntity, apiClassName)}
 
   $apiClassName copyWith({
-    ${map.keys.map((e) => '${getTypeVariable(e, map[e], suffix, listClassNameEntity, apiClassName)}? ${e.toString().camelCase},').join('\n    ')}
+    ${map.keys.map((e) {
+      final typeVariable = getTypeVariable(e, map[e], suffix, listClassNameEntity, apiClassName);
+      return '$typeVariable${typeVariable != 'dynamic' ? '?': ''} ${e.toString().camelCase},';
+    }).join('\n    ')}
   }) {
     return $apiClassName(
       ${map.keys.map((e) => '${e.toString().camelCase}: ${e.toString().camelCase} ?? this.${e.toString().camelCase},').join('\n      ')}
