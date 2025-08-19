@@ -115,7 +115,7 @@ class EndpointCommand extends Command {
 
                   if (parameters.isEmpty) {
                     data =
-                        "static Uri ${apiKey.toString().camelCase}${appsName.pascalCase} = ${isHttp ? 'Uri.parse' : '_createUri${baseUrl.toString().pascalCase}'}('$pathUrl');";
+                        "static Uri ${apiKey.toString().camelCase}${appsName.pascalCase} = ${isHttp ? 'Uri.parse' : '_createUri${baseUrl.toString().pascalCase}'}('$pathUrl',);";
                   } else {
                     final parameterString =
                         parameters.map((e) => 'String ${e.camelCase},').join();

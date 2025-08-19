@@ -1,3 +1,13 @@
+## 3.5.0
+
+chore: update dependencies and versioning in pubspec files, enhance command handling, and improve code formatting
+
+- bump version to 3.5.0 in pubspec.yaml
+- update dependencies: args, yaml_writer, archive, intl, and lints
+- fix trailing commas in generated code
+- streamline command argument handling in page_command.dart
+- adjust localization command for output consistency
+
 ## 3.4.1
 
 - fix: correct formatting in cache strategy string representation and json2dart command parameter handling

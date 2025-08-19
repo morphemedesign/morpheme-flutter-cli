@@ -217,7 +217,7 @@ class ${className}Cubit extends MorphemeCubit<${className}StateCubit> {
   }
 
   @override
-  void initArgument<Page>(BuildContext context, Page widget) {
+  void initArgument<T>(BuildContext context, T widget) {
     super.initArgument(context, widget);
     if(widget is! ${className}Page) return;
   }
@@ -228,8 +228,8 @@ class ${className}Cubit extends MorphemeCubit<${className}StateCubit> {
   }
 
   @override
-  void didUpdateWidget<Page>(
-      BuildContext context, Page oldWidget, Page widget) {
+  void didUpdateWidget<T>(
+      BuildContext context, T oldWidget, T widget) {
     if (oldWidget is! ${className}Page || widget is! ${className}Page) return;
   }
 
