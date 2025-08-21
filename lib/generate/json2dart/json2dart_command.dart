@@ -1086,8 +1086,9 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
 
   $apiClassName copyWith({
     ${map.keys.map((e) {
-      final typeVariable = getTypeVariable(e, map[e], suffix, listClassNameEntity, apiClassName);
-      return '$typeVariable${typeVariable != 'dynamic' ? '?': ''} ${e.toString().camelCase},';
+      final typeVariable =
+          getTypeVariable(e, map[e], suffix, listClassNameEntity, apiClassName);
+      return '$typeVariable${typeVariable != 'dynamic' ? '?' : ''} ${e.toString().camelCase},';
     }).join('\n    ')}
   }) {
     return $apiClassName(
@@ -1671,7 +1672,7 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
     final path = join(pathTestPage, 'data', 'models', 'body');
     DirectoryHelper.createDir(path);
     join(path, '${apiName.snakeCase}_body_test.dart').write(
-        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, require_trailing_commas
+        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, require_trailing_commas, prefer_single_quotes, prefer_double_quotes
         
 import 'package:core/core.dart';
 import 'package:dev_dependency_manager/dev_dependency_manager.dart';
@@ -1689,7 +1690,9 @@ Future<void> main() async {
   });
 }''');
 
-    StatusHelper.generated(join(path, '${pageName}_body_test.dart'));
+    StatusHelper.generated(
+      join(path, '${pageName}_body_test.dart'),
+    );
   }
 
   void createDataModelResponseTest(
@@ -1705,7 +1708,7 @@ Future<void> main() async {
     DirectoryHelper.createDir(path);
 
     join(path, '${apiName.snakeCase}_response_test.dart').write(
-        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, require_trailing_commas
+        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, require_trailing_commas, prefer_single_quotes, prefer_double_quotes
 
 ${isResponseList ? "import 'dart:convert';" : ''}
         
@@ -1836,7 +1839,7 @@ Future<void> main() async {
     final path = join(pathTestPage, 'data', 'datasources');
     DirectoryHelper.createDir(path);
     join(path, '${pageName}_remote_data_source_test.dart').write(
-        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_import, unused_local_variable, require_trailing_commas
+        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_import, unused_local_variable, require_trailing_commas, prefer_single_quotes, prefer_double_quotes
 
 import 'dart:convert';
 ${resultModelUnitTest.any((element) => element['returnData'] == 'body_bytes') ? '''import 'dart:typed_data';''' : ''}
@@ -2030,7 +2033,7 @@ Future<void> main() async {
     final path = join(pathTestPage, 'data', 'repositories');
     DirectoryHelper.createDir(path);
     join(path, '${pageName}_repository_impl_test.dart').write(
-        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, require_trailing_commas
+        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, require_trailing_commas, prefer_single_quotes, prefer_double_quotes
 
 ${resultModelUnitTest.any((element) => element['returnData'] == 'body_bytes') ? '''import 'dart:typed_data';''' : ''}
         
@@ -2347,7 +2350,7 @@ Future<void> main() async {
       }
 
       join(path, '${apiName?.snakeCase}_use_case_test.dart').write(
-          '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, require_trailing_commas
+          '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, require_trailing_commas, prefer_single_quotes, prefer_double_quotes
 
 ${returnData == 'body_bytes' ? '''import 'dart:typed_data';''' : ''}
           
@@ -2434,7 +2437,7 @@ Future<void> main() async {
       }
 
       join(path, '${apiName?.snakeCase}_bloc_test.dart').write(
-          '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, require_trailing_commas
+          '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, require_trailing_commas, prefer_single_quotes, prefer_double_quotes
 
 ${resultModelUnitTest.any((element) => element['returnData'] == 'body_bytes') ? '''import 'dart:typed_data';''' : ''}
           
@@ -2685,7 +2688,7 @@ Future<void> main() async {
     final path = pathTestPage;
     DirectoryHelper.createDir(path);
     join(path, 'mapper_test.dart').write(
-        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, require_trailing_commas
+        '''// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unused_local_variable, require_trailing_commas, prefer_single_quotes, prefer_double_quotes
         
 import 'package:$featureName/$pageName/mapper.dart';
 ${resultModelUnitTest.map((e) => isReturnDataModel(e['returnData']!) ? '''import 'package:$featureName/$pageName/data/models/response/${e['apiName']?.snakeCase}_response.dart' as response_${e['apiName']?.snakeCase};

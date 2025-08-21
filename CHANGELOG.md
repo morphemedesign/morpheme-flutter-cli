@@ -1,3 +1,10 @@
+## 3.5.2
+
+fix: correct formatting issues in generated code and improve consistency in json2dart command
+
+- add trailing commas in emit statements for better readability
+- update ignore_for_file comments to include prefer_single_quotes and prefer_double_quotes for code style consistency
+
 ## 3.5.1
 
 - fix: improve null safety in copyWith method of json2dart command by conditionally adding nullable types

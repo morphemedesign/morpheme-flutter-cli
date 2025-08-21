@@ -1177,7 +1177,7 @@ class ${apiClassName}Bloc extends MorphemeBloc<${apiClassName}Event, ${apiClassN
     required this.useCase,
   }) : super(${apiClassName}Initial()) {
     on<Fetch$apiClassName>((event, emit) async {
-      emit(${apiClassName}Loading(event.body, event.headers, event.extra,));
+      emit(${apiClassName}Loading(event.body, event.headers, event.extra,),);
       ${whenMethod(
       method,
       onStream: () {
