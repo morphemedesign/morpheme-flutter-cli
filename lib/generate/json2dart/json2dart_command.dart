@@ -560,6 +560,7 @@ auth:
           keepExpiredCache: keepExpiredCache,
           appsName: appsName,
           returnData: returnData,
+          dirExtra: apiValue['dir_extra'],
         );
       }
 
@@ -643,6 +644,7 @@ auth:
     required bool? keepExpiredCache,
     required String? appsName,
     required String returnData,
+    required String? dirExtra,
   }) async {
     if (body != null) {
       createDataModelBody(
@@ -659,6 +661,10 @@ auth:
       createDataModelResponse(pathPage, pageName, apiName, response);
       createDomainEntity(pathPage, pageName, apiName, response);
       appendMapper(pathPage, apiName, response);
+
+      if (dirExtra != null && dirExtra.isNotEmpty) {
+        createDataModelExtra(dirExtra, apiName, response);
+      }
     }
 
     final argBody = isBodyList ? '--body-list' : '--no-body-list';
@@ -755,6 +761,29 @@ import 'package:core/core.dart';
     join(path, '${apiName.snakeCase}_response.dart').write(classResponse);
 
     StatusHelper.generated(join(path, '${apiName.snakeCase}_response.dart'));
+  }
+
+  void createDataModelExtra(
+    String dirExtra,
+    String apiName,
+    dynamic response,
+  ) {
+    final apiClassName = apiName.pascalCase;
+    String classExtra = '''import 'dart:convert';
+
+import 'package:core/core.dart';
+
+''';
+    classExtra += getExtraClass(apiClassName, 'Extra', '', response, true);
+
+    final path = join(dirExtra);
+    DirectoryHelper.createDir(path);
+    final pathFile = join(path, '${apiName.snakeCase}_extra.dart');
+
+    format.add(dirExtra);
+
+    pathFile.write(classExtra);
+    StatusHelper.generated(pathFile);
   }
 
   String setConstractor(
@@ -1069,6 +1098,36 @@ ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).is
 
 ${map.keys.map((e) => map[e] is Map ? getResponseClass(suffix, e.toString().pascalCase, apiClassName, map[e]) : '').join()}
 ${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).isEmpty ? '' : (map[e] as List).first is! Map ? '' : getResponseClass(suffix, e.toString().pascalCase, apiClassName, (map[e] as List).first) : '').join()}
+''';
+
+    return classString;
+  }
+
+  String getExtraClass(String suffix, String name, String parent, Map? map,
+      [bool root = false]) {
+    if (map == null) return '';
+    final apiClassName = ModelClassNameHelper.getClassName(
+        listClassNameResponse, suffix, name, root, true, parent);
+
+    final classString = '''class $apiClassName extends Equatable {
+  ${setConstractor(apiClassName, map)}
+
+  ${fromMap(apiClassName, map, suffix, listClassNameResponse, apiClassName)}
+
+  factory $apiClassName.fromJson(String source) =>
+      $apiClassName.fromMap(json.decode(source));
+
+  ${setTypeData(map, suffix, listClassNameResponse, apiClassName)}
+
+  ${toMap(map)}
+
+  String toJson() => json.encode(toMap());
+
+  ${setPropsEquatable(map)}
+}
+
+${map.keys.map((e) => map[e] is Map ? getExtraClass(suffix, e.toString().pascalCase, apiClassName, map[e]) : '').join()}
+${map.keys.map((e) => map[e] is List ? map[e] == null ? '' : (map[e] as List).isEmpty ? '' : (map[e] as List).first is! Map ? '' : getExtraClass(suffix, e.toString().pascalCase, apiClassName, (map[e] as List).first) : '').join()}
 ''';
 
     return classString;

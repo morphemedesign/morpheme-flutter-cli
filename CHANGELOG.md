@@ -1,3 +1,11 @@
+## 3.6.0
+
+chore: bump version to 3.6.0 and add support for extra data model generation in json2dart command
+
+- update version in pubspec.yaml to 3.6.0
+- modify morpheme.dart to reflect the new version
+- enhance json2dart command to include optional extra data model generation based on configuration
+
 ## 3.5.2
 
 fix: correct formatting issues in generated code and improve consistency in json2dart command
