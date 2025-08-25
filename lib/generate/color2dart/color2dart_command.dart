@@ -173,7 +173,7 @@ class MorphemeColor extends ThemeExtension<MorphemeColor> {
 
   @override
   MorphemeColor lerp(covariant MorphemeColor? other, double t) {
-    if (other is MorphemeColor) {
+    if (other is! MorphemeColor) {
       return this;
     }
 
@@ -181,9 +181,9 @@ class MorphemeColor extends ThemeExtension<MorphemeColor> {
       ${colors.entries.map((e) {
         final key = e.key.toString().camelCase;
         if (e.value is Map) {
-          return '''    ${key.camelCase}: other?.${key.camelCase} ?? ${key.camelCase},''';
+          return '''    ${key.camelCase}: other.${key.camelCase},''';
         } else {
-          return '''    ${key.camelCase}: Color.lerp(${key.camelCase}, other?.${key.camelCase}, t) ?? ${key.camelCase},''';
+          return '''    ${key.camelCase}: Color.lerp(${key.camelCase}, other.${key.camelCase}, t) ?? ${key.camelCase},''';
         }
       }).join('\n')}
     );

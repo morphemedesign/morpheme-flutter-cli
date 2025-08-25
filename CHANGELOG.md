@@ -1,3 +1,12 @@
+## 3.6.1
+
+chore: bump version to 3.6.1 and update color2dart command handling
+
+- update version in pubspec.yaml to 3.6.1
+- modify morpheme.dart to reflect the new version
+- fix lerp method in MorphemeColor class for better type handling
+- add color2dart configuration options in init_command.dart
+
 ## 3.6.0
 
 chore: bump version to 3.6.0 and add support for extra data model generation in json2dart command

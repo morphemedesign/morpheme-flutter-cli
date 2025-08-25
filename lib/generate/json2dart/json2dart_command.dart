@@ -277,6 +277,7 @@ class Json2DartCommand extends Command {
     if (listCommands.isNotEmpty) {
       await ModularHelper.executeCommand(listCommands);
       printMessage('Execute morpheme format................');
+      await ModularHelper.format([join(current, 'features')]);
     }
 
     StatusHelper.success('morpheme json2dart');

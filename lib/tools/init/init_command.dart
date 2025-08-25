@@ -76,6 +76,10 @@ class InitCommand extends Command {
 #    project_id: "morpheme"
 #    token: "YOUR FIREBASE TOKEN: firebase login:ci"
 
+color2dart:
+  color2dart_dir: color2dart
+  output_dir: core/lib/src/themes
+
 localization:
   arb_dir: assets/assets/l10n
   template_arb_file: id.arb
