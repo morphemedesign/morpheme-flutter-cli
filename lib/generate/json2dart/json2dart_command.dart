@@ -31,6 +31,10 @@ class Json2DartCommand extends Command {
       'only-unit-test',
       help: 'Generate only unit test for api implementation.',
     );
+    argParser.addFlag(
+      'cubit',
+      help: 'Gnerate with cubit. for api implementation.',
+    );
     argParser.addOption(
       'feature-name',
       abbr: 'f',
@@ -74,6 +78,7 @@ class Json2DartCommand extends Command {
   bool isOnlyUnitTest = false;
   bool isReplace = false;
   bool isFormat = true;
+  bool isCubit = true;
   String? appsName;
   String? featureName;
   String? pageName;
@@ -174,6 +179,9 @@ class Json2DartCommand extends Command {
         if (config['format'] != null && config['format'] is bool) {
           isFormat = config['format'];
         }
+        if (config['cubit'] != null && config['cubit'] is bool) {
+          isCubit = config['cubit'];
+        }
       }
 
       isEndpoint = (argResults?.arguments.firstWhereOrNull(
@@ -218,6 +226,13 @@ class Json2DartCommand extends Command {
               ? argResults!['format']
               : null) ??
           isFormat ??
+          true;
+      isCubit = (argResults?.arguments.firstWhereOrNull(
+                      (element) => element.contains('cubit')) !=
+                  null
+              ? argResults!['cubit']
+              : null) ??
+          isCubit ??
           true;
       featureName = argResults?['feature-name'];
       pageName = argResults?['page-name'];
@@ -612,6 +627,19 @@ auth:
       }
     }
 
+    if (isCubit) {
+      updatePresentationCubit(
+        featureName,
+        pageName,
+        pathPage,
+        pageValue.entries
+            .map(
+              (e) => e.key.toString(),
+            )
+            .toList(),
+      );
+    }
+
     format.add(pathPage);
 
     if (isOnlyUnitTest || isUnitTest) {
@@ -624,6 +652,180 @@ auth:
         resultModelUnitTest: resultModelUnitTest,
       );
     }
+  }
+
+  void updatePresentationCubit(
+    String featureName,
+    String pageName,
+    String pathPage,
+    List<String> blocsName,
+  ) {
+    final pathCubit = join(
+        pathPage, 'presentation', 'cubit', '${pageName.snakeCase}_cubit.dart');
+
+    String cubit = readFile(pathCubit);
+
+    // Import
+    for (var element in blocsName) {
+      if (!RegExp(
+              'import \'package:${featureName.snakeCase}/${pageName.snakeCase}/presentation/bloc/${element.snakeCase}/${element.snakeCase}_bloc.dart\';')
+          .hasMatch(cubit)) {
+        cubit =
+            'import \'package:${featureName.snakeCase}/${pageName.snakeCase}/presentation/bloc/${element.snakeCase}/${element.snakeCase}_bloc.dart\';\n$cubit';
+      }
+    }
+
+    // Constructor
+    cubit = cubit.replaceAll(
+        '${pageName.pascalCase}Cubit\\({[\\s\\w\\.\\,\\d]+}\\)',
+        '''${pageName.pascalCase}Cubit({
+${blocsName.isEmpty ? '' : blocsName.map(
+              (e) => '    required this.${e.camelCase}Bloc,',
+            ).join('\n')}
+  })''');
+
+    // Variables
+    final constructorRegex = RegExp(
+      r'(AchievementCubit\s*\([\s\S]*?\)\s*:\s*super\([\s\S]*?\);)',
+      multiLine: true,
+    );
+
+    final newVariableToAdd = blocsName.map(
+      (e) {
+        if (cubit.contains(
+            RegExp('final ${e.pascalCase}Bloc ${e.camelCase}Bloc;'))) {
+          return '';
+        }
+
+        return '  final ${e.pascalCase}Bloc ${e.camelCase}Bloc;';
+      },
+    ).join('\n');
+
+    cubit = cubit.replaceFirstMapped(constructorRegex, (match) {
+      final matchedConstructor = match.group(1)!;
+      return '$matchedConstructor\n\n  $newVariableToAdd';
+    });
+
+    // Bloc Providers
+    final blocProvidersRegex = RegExp(
+      r'@override\s+List<BlocProvider>\s+blocProviders\s*\([\s\S]*?\)\s*=>\s*\[([\s\S]*?)\];',
+      multiLine: true,
+    );
+
+    if (cubit.contains(blocProvidersRegex)) {
+      cubit = cubit.replaceFirstMapped(blocProvidersRegex, (match) {
+        final reversed = blocsName.reversed;
+
+        String arrayContent = match.group(1)!.trim();
+
+        for (var element in reversed) {
+          if (!arrayContent.contains('${element.camelCase}Bloc')) {
+            arrayContent =
+                '        BlocProvider<${element.pascalCase}Bloc>.value(value: ${element.camelCase}Bloc,),\n$arrayContent';
+          }
+        }
+
+        return '''  @override
+  List<BlocProvider> blocProviders(BuildContext context) => [
+  $arrayContent
+        ];''';
+      });
+    } else {
+      cubit = cubit.replaceAll(
+          RegExp(r'\}(?![\s\S]*\})', multiLine: true), '''  @override
+  List<BlocProvider> blocProviders(BuildContext context) => [
+${blocsName.map((e) => '        BlocProvider<${e.pascalCase}Bloc>.value(value: ${e.camelCase}Bloc,),').join('\n')}
+      ];
+  }''');
+    }
+
+    // Bloc Listeners
+    final blocListenerRegex = RegExp(
+      r'@override\s+List<BlocListener>\s+blocListeners\s*\([\s\S]*?\)\s*=>\s*\[([\s\S]*?)\];',
+      multiLine: true,
+    );
+
+    if (cubit.contains(blocListenerRegex)) {
+      cubit = cubit.replaceFirstMapped(blocListenerRegex, (match) {
+        final reversed = blocsName.reversed;
+
+        String arrayContent = match.group(1)!.trim();
+
+        for (var element in reversed) {
+          if (!arrayContent.contains('${element.pascalCase}Bloc')) {
+            arrayContent =
+                'BlocListener<${element.pascalCase}Bloc, ${element.pascalCase}State>(listener: listener${element.pascalCase}Bloc,),';
+
+            if (!RegExp('void listener${element.pascalCase}Bloc')
+                .hasMatch(cubit)) {
+              cubit = cubit.replaceAll(
+                RegExp(r'\}(?![\s\S]*\})', multiLine: true),
+                '''void listener${element.pascalCase}Bloc(${element.pascalCase}Bloc bloc, ${element.pascalCase}State state) {
+    state.when(
+      onFailed: (state) {
+        // handle failed state
+      },
+      onSuccess: (state) {
+        // handle success state
+      },
+    );
+  }
+}''',
+              );
+            }
+          }
+        }
+
+        return '''  @override
+  List<BlocListener> blocListeners(BuildContext context) => [
+  $arrayContent
+        ];''';
+      });
+    } else {
+      cubit = cubit.replaceAll(
+          RegExp(r'\}(?![\s\S]*\})', multiLine: true), '''  @override
+  List<BlocListener> blocListeners(BuildContext context) => [
+${blocsName.map((e) => '        BlocListener<${e.pascalCase}Bloc, ${e.pascalCase}State>(listener: listener${e.pascalCase}Bloc,),').join('\n')}
+      ];
+  }''');
+    }
+
+    // Dispose
+    final disposeRegex = RegExp(
+      r'@override\s+(Future<)?void(>)? dispose\s*\(\s*\)\s*(async\s*)?\{([\s\S]*?)\}',
+      multiLine: true,
+    );
+
+    if (cubit.contains(disposeRegex)) {
+      cubit = cubit.replaceFirstMapped(disposeRegex, (match) {
+        final reversed = blocsName.reversed;
+
+        String arrayContent = match.group(4)!.trim();
+
+        for (var element in reversed) {
+          if (!arrayContent.contains('${element.camelCase}Bloc')) {
+            arrayContent = '    ${element.camelCase}Bloc.close();';
+          }
+        }
+
+        return '''  @override
+  void dispose() {
+  $arrayContent
+  }''';
+      });
+    } else {
+      cubit = cubit.replaceAll(
+          RegExp(r'\}(?![\s\S]*\})', multiLine: true), '''  @override
+  void dispose() {
+    ${blocsName.map(
+                (e) => '    ${e.camelCase}Bloc.close();',
+              ).join('\n')}
+    super.dispose();
+  }
+}''');
+    }
+
+    pathCubit.write(cubit);
   }
 
   Future<void> handleApi({

@@ -1,3 +1,21 @@
+## 3.7.0
+
+feat(json2dart): add cubit generation support for api implementation
+
+- Add 'cubit' flag to command line arguments for JSON to Dart command
+- Introduce isCubit boolean to control cubit generation
+- Update argument parsing to handle cubit flag properly
+- Integrate cubit update logic within json2dart generation workflow
+- Implement updatePresentationCubit method to modify cubit files
+- Add imports for bloc dependencies in cubit file if missing
+- Update cubit constructor to include required bloc fields dynamically
+- Insert bloc variables into cubit class if not already present
+- Modify blocProviders method to include new bloc providers
+- Modify blocListeners method to add listeners for new blocs
+- Add listeners methods for blocs if missing with default handling
+- Enhance dispose method to close all managed bloc instances
+- Ensure cubit file is saved back after modifications
+
 ## 3.6.1
 
 chore: bump version to 3.6.1 and update color2dart command handling
