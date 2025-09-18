@@ -1,67 +1,61 @@
-/* Copyright (C) S. Brett Sutton - All Rights Reserved
- * Unauthorized copying of this file, via any medium is strictly prohibited
- * Proprietary and confidential
- * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
- */
-
 import 'dart:io';
 
 import 'package:path/path.dart';
 
 import 'is.dart';
 
+/// Path search utilities for finding executable applications.
 ///
-/// Searches the PATH for the location of the application
-/// give by [appname].
+/// This module provides functionality similar to the Unix 'which' command,
+/// allowing you to locate executable files in the system PATH.
 ///
-/// The search is conducted by searching each of the
-/// paths in the environment variable 'PATH' from
-/// left to right (start to end) as this is the
-/// same order the OS searches the path.
-///
-/// If the [verbose] flag is true then a line is output to
-/// the [progress] for each path searched.
-///
-/// It is possible that more than one copy of the
-/// appliation is found.
-///
-/// [which] returns a list of paths that contain
-/// [appname] in the order they were found.
-///
-/// The first path in the list is the one the OS
-/// will be using.
-///
-/// if the [first] flag is true then which will
-/// stop searching as soon as it finds a match.
-/// [first] is true by default.
-///
+/// Example usage:
 /// ```dart
-/// which('ls', first: false, verbose: true);
-/// ```
+/// // Find the location of the 'dart' executable
+/// final dartLocation = which('dart');
+/// if (dartLocation.found) {
+///   print('Dart found at: ${dartLocation.path}');
+/// }
 ///
-/// To print the path to the command:
-///
-/// ```dart
-/// printMessage(which('ls').path);
-/// ```
-///
-/// To check if an app is on the path use:
-///
-/// ```dart
-/// if (which('apt').found)
-/// {
-///   printMessage('found apt');
+/// // Find all occurrences of 'python'
+/// final pythonLocations = which('python', first: false);
+/// for (final path in pythonLocations.paths) {
+///   print('Python found at: $path');
 /// }
 /// ```
+
+/// Search the PATH for an executable application.
 ///
-/// if [extensionSearch] is true and the passed [appname]  doesn't have a file
-/// extension then when running on Windows the which  command will search
-/// for [appname] plus [appname] with each of the extensions listed
-/// in the Windows environment variable PATHEX.
-/// This feature is intended to make it easier to implement cross platform
-/// command search. For example the dart  will be 'dart'
-/// on Linux and 'dart.bat' on Windows. Using `which('dart')` will find `dart`
-///  on linux and `dart.bat` on Windows.
+/// This function searches for the specified application in all directories
+/// listed in the PATH environment variable, from left to right.
+///
+/// Parameters:
+/// - [appname]: Name of the application to find
+/// - [first]: If true, stops after finding the first match (default: true)
+/// - [verbose]: If true, provides detailed search progress (default: false)
+/// - [extensionSearch]: If true, searches for Windows extensions (default: true)
+/// - [progress]: Optional callback for processing search progress
+///
+/// Returns a [Which] object containing search results and status.
+///
+/// The [extensionSearch] parameter is useful for cross-platform development.
+/// When true on Windows, it will search for 'dart.exe', 'dart.bat', etc.
+/// when you search for 'dart'.
+///
+/// Example:
+/// ```dart
+/// // Find the first occurrence of 'ls'
+/// final result = which('ls');
+/// if (result.found) {
+///   print('Found at: ${result.path}');
+/// }
+///
+/// // Find all occurrences with verbose output
+/// which('python', first: false, verbose: true);
+///
+/// // Cross-platform executable search
+/// which('dart'); // Finds 'dart' on Unix, 'dart.exe' on Windows
+/// ```
 Which which(
   String appname, {
   bool first = true,
@@ -77,8 +71,22 @@ Which which(
       progress: progress,
     );
 
-/// Returned from the [which] funtion to provide the details we discovered
-/// about  appname.
+/// Search results container for executable location queries.
+///
+/// This class holds the results of a PATH search operation, including
+/// all found locations and status information.
+///
+/// Example:
+/// ```dart
+/// final result = which('python');
+///
+/// if (result.found) {
+///   print('Primary location: ${result.path}');
+///   print('All locations: ${result.paths}');
+/// } else {
+///   print('Python not found in PATH');
+/// }
+/// ```
 class Which {
   String? _path;
   final _paths = <String>[];
@@ -91,40 +99,63 @@ class Which {
   /// otherwse a Progress.devNull will be allocated and returned.
   Stream<String>? progress;
 
-  /// The first path found containing appname
+  /// The primary path where the application was found.
   ///
-  /// See [paths] for a list of all paths that contained appname
+  /// This is the first location found in the PATH search,
+  /// which is the one the OS would use when executing the command.
+  ///
+  /// Returns null if the application was not found.
+  ///
+  /// See [paths] for all found locations.
   String? get path => _path;
 
-  /// Contains the list of paths that contain appname.
+  /// All paths where the application was found.
   ///
-  /// If no paths are found then this list will be empty.
+  /// Contains a list of all directories in PATH that contain the
+  /// requested application, in the order they appear in PATH.
   ///
-  /// If first is true this will contain at most 1 path.
+  /// If [first] was true during the search, this will contain
+  /// at most one path. Otherwise, it contains all found locations.
+  ///
+  /// Returns an empty list if no paths were found.
   List<String> get paths => _paths;
 
-  /// Returns true if at least one path was found that contained appname
+  /// Whether the application was found in at least one PATH location.
+  ///
+  /// Returns true if [paths] is not empty.
   bool get found => _found;
 
-  /// Returns true if appname was not found in any path.
+  /// Whether the application was not found in any PATH location.
+  ///
+  /// Returns true if [paths] is empty. This is the inverse of [found].
   bool get notfound => !_found;
 }
 
-/// Search resutls from the [which] method.
+/// Individual search result for a single PATH directory.
+///
+/// This class represents the result of searching a single directory
+/// in the PATH for the requested application.
 class WhichSearch {
-  /// the app was found on the path.
+  /// Create a successful search result.
+  ///
+  /// Use this constructor when the application was found in the [path] directory.
+  /// [exePath] should be the full path to the executable.
   WhichSearch.found(this.path, this.exePath) : found = true;
 
-  /// the app was not found.
+  /// Create a failed search result.
+  ///
+  /// Use this constructor when the application was not found in the [path] directory.
   WhichSearch.notfound(this.path) : found = false;
 
-  /// passed in path to search for.
+  /// The PATH directory that was searched.
   String path;
 
-  /// true if the app was found
+  /// Whether the application was found in this directory.
   bool found;
 
-  /// If the app was found this is the fully qualified path to the app.
+  /// The full path to the executable if found.
+  ///
+  /// This is null if [found] is false.
   String? exePath;
 }
 

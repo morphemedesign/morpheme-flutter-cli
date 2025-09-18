@@ -1,86 +1,104 @@
-import 'dart:io';
-
 import 'package:morpheme_cli/constants.dart';
 import 'package:morpheme_cli/dependency_manager.dart';
 
 import '../../helper/helper.dart';
+import 'helpers/path_helper.dart';
+import 'helpers/config_helper.dart';
 
+/// Command to remove a feature module from the project.
+///
+/// This command removes a feature module, with optional app scoping:
+/// - Deletes the feature directory
+/// - Removes feature references from locator files
+/// - Updates pubspec.yaml files
+///
+/// Usage:
+/// ```
+/// morpheme remove-feature <feature_name>
+/// morpheme remove-feature <feature_name> --apps-name <app_name>
+/// ```
 class RemoveFeatureCommand extends Command {
   RemoveFeatureCommand() {
     argParser.addOption(
       'apps-name',
       abbr: 'a',
-      help: 'Name of the apps to be remove feature',
+      help: 'Name of the app containing the feature to remove',
     );
   }
+
   @override
   String get name => 'remove-feature';
 
   @override
-  String get description => 'Remove code feature.';
+  String get description => 'Remove a feature module from the project.';
 
   @override
   String get category => Constants.generate;
 
   @override
   void run() async {
+    // Validate inputs
     if (argResults?.rest.isEmpty ?? true) {
-      StatusHelper.failed('Feature name is empty');
+      _handleError('Feature name is required');
+      return;
     }
 
     final appsName = (argResults?['apps-name'] as String? ?? '').snakeCase;
     final featureName = (argResults?.rest.first ?? '').snakeCase;
-    final pathApps = join(current, 'apps', appsName);
 
-    if (appsName.isNotEmpty && !exists(pathApps)) {
-      StatusHelper.failed('Apps with "$appsName" does not exists"');
-    }
-
-    String pathFeature = join(current, 'features', featureName);
+    // Validate app exists (if specified)
     if (appsName.isNotEmpty) {
-      pathFeature = join(pathApps, 'features', featureName);
+      final pathApps = PathHelper.getAppsPath(appsName);
+      if (!exists(pathApps)) {
+        _handleError('App "$appsName" does not exist');
+        return;
+      }
     }
 
+    // Validate feature exists
+    final pathFeature = PathHelper.getFeaturePath(appsName, featureName);
     if (!exists(pathFeature)) {
-      StatusHelper.failed('Feature with "$featureName" does not exists"');
+      _handleError('Feature "$featureName" does not exist');
+      return;
     }
 
-    if (exists(pathFeature)) {
-      deleteDir(pathFeature);
+    try {
+      // Remove feature directory
+      _removeFeatureDirectory(pathFeature);
+
+      // Update locator file
+      ConfigHelper.removeFeatureFromLocator(appsName, featureName);
+
+      // Update pubspec.yaml
+      ConfigHelper.removeFeatureFromPubspec(appsName, featureName);
+
+      // Format code
+      await _formatCode(appsName);
+
+      StatusHelper.success('Successfully removed feature "$featureName"');
+    } catch (e) {
+      _handleError('Failed to remove feature "$featureName": ${e.toString()}');
     }
+  }
 
-    final workingDir = appsName.isEmpty ? current : pathApps;
+  /// Removes the feature directory.
+  void _removeFeatureDirectory(String pathFeature) {
+    deleteDir(pathFeature);
+  }
 
-    final pathLibLocator = join(workingDir, 'lib', 'locator.dart');
-    String data = File(pathLibLocator).readAsStringSync();
+  /// Formats the code after removal.
+  Future<void> _formatCode(String appsName) async {
+    final paths = <String>[];
+    if (appsName.isEmpty) {
+      paths.add('.');
+    } else {
+      paths.add(join(current, 'apps', appsName));
+    }
+    await ModularHelper.format(paths);
+  }
 
-    data = data.replaceAll(
-        "import 'package:${featureName.snakeCase}/locator.dart';", '');
-    data =
-        data.replaceAll("setupLocatorFeature${featureName.pascalCase}();", '');
-
-    pathLibLocator.write(data);
-
-    final pathPubspec = join(workingDir, 'pubspec.yaml');
-    String pubspec = File(pathPubspec).readAsStringSync();
-
-    pubspec = pubspec.replaceAll(
-      RegExp("\\s+- features/${featureName.snakeCase}"),
-      '',
-    );
-    pubspec = pubspec.replaceAll(
-      RegExp(
-          "\\s+${featureName.snakeCase}:\\s+path: ./features/${featureName.snakeCase}"),
-      '',
-    );
-
-    pathPubspec.write(pubspec);
-
-    await ModularHelper.format([
-      if (appsName.isEmpty) '.',
-      if (appsName.isNotEmpty) pathApps,
-    ]);
-
-    StatusHelper.success('removed feature $featureName');
+  /// Handles errors with consistent messaging.
+  void _handleError(String message) {
+    StatusHelper.failed(message);
   }
 }

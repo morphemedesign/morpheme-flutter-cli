@@ -11,5 +11,5 @@ export 'refactor/refactor_command.dart';
 export 'run/run_command.dart';
 export 'test/coverage_command.dart';
 export 'test/test_command.dart';
-export 'unused_l10n/unused_l10n.dart';
+export 'unused_l10n/unused_l10n_command.dart';
 export 'upgrade_dependency/upgrade_dependency_command.dart';

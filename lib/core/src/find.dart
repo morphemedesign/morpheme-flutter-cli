@@ -1,9 +1,3 @@
-/* Copyright (C) S. Brett Sutton - All Rights Reserved
- * Unauthorized copying of this file, via any medium is strictly prohibited
- * Proprietary and confidential
- * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
- */
-
 import 'dart:io';
 
 import 'package:morpheme_cli/helper/status_helper.dart';
@@ -12,22 +6,45 @@ import 'package:path/path.dart';
 import 'is.dart';
 import 'truepath.dart';
 
-/// Typedef for LineActions
+/// File system search and discovery utilities.
+///
+/// This module provides powerful file and directory search capabilities
+/// with glob pattern matching, similar to the Unix 'find' command.
+///
+/// Example usage:
+/// ```dart
+/// // Find all .dart files recursively
+/// find('*.dart').forEach(print);
+///
+/// // Find all files in current directory only
+/// find('*', recursive: false).forEach(print);
+///
+/// // Find with custom working directory
+/// find('*.json', workingDirectory: '/path/to/search').forEach(print);
+/// ```
+
+/// Callback function type for processing individual lines.
 typedef LineAction = void Function(String line);
 
-/// Typedef for cancellable LineActions.
+/// Callback function type for cancellable line processing.
+/// Returns true to continue processing, false to stop.
 typedef CancelableLineAction = bool Function(String line);
 
-/// Base class for functions that return some type
-/// of Progres.
+/// Base class for operations that return progress information.
+///
+/// This abstract class provides the foundation for functions that process
+/// results incrementally, allowing both streaming and batch processing.
 abstract class InternalProgress {
-  /// Abstract method which should be overriden
-  /// by the derived class to call  [action]
-  /// for each line in the derived classes perview.
+  /// Process each line using the provided action function.
+  ///
+  /// Override this method in derived classes to implement
+  /// the specific line processing logic.
   void forEach(LineAction action);
 
-  /// Returns the list of lines by
-  /// calliing [forEach].
+  /// Convert all results to a list.
+  ///
+  /// This method collects all results by calling [forEach]
+  /// and returns them as a list.
   List<String> toList() {
     final list = <String>[];
 
@@ -37,6 +54,43 @@ abstract class InternalProgress {
   }
 }
 
+/// Find files and directories matching a glob pattern.
+///
+/// This function searches for files and directories that match the given
+/// glob pattern, providing flexible search capabilities.
+///
+/// Parameters:
+/// - [pattern]: Glob pattern to match (supports *, ?, [abc], [a-z], [!abc])
+/// - [caseSensitive]: Whether to perform case-sensitive matching (default: false)
+/// - [recursive]: Whether to search subdirectories recursively (default: true)
+/// - [includeHidden]: Whether to include hidden files/directories (default: false)
+/// - [workingDirectory]: Directory to start search from (default: current directory)
+/// - [types]: Types of file system entities to include (default: files only)
+///
+/// Returns a [FindProgress] object that can be used to iterate over results.
+///
+/// Supported glob patterns:
+/// - `*` - matches any number of characters
+/// - `?` - matches any single character
+/// - `[abc]` - matches any one character in the brackets
+/// - `[a-z]` - matches any character in the range
+/// - `[!abc]` - matches any character NOT in the brackets
+/// - `[!a-z]` - matches any character NOT in the range
+///
+/// Example:
+/// ```dart
+/// // Find all .dart files
+/// find('*.dart').forEach(print);
+///
+/// // Find all files starting with 'test_'
+/// find('test_*').forEach(print);
+///
+/// // Find directories only
+/// find('*', types: [Find.directory]).forEach(print);
+///
+/// // Case-sensitive search
+/// find('Test*', caseSensitive: true).forEach(print);
+/// ```
 FindProgress find(
   String pattern, {
   bool caseSensitive = false,
@@ -55,9 +109,25 @@ FindProgress find(
   );
 }
 
+/// Progress tracker for find operations.
 ///
+/// This class manages the execution and results of file system searches,
+/// providing both streaming and batch processing capabilities.
+///
+/// Example:
+/// ```dart
+/// final progress = find('*.dart');
+/// progress.forEach(print); // Process each result
+///
+/// final files = progress.toList(); // Get all results as list
+/// final first = progress.firstLine; // Get first result only
+/// ```
 class FindProgress extends InternalProgress {
   ///
+  /// Create a new find progress tracker.
+  ///
+  /// This constructor initializes the search parameters that will be used
+  /// when the search is executed via [forEach] or other methods.
   FindProgress(
     this.pattern, {
     required this.caseSensitive,

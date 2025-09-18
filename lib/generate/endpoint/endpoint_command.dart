@@ -1,17 +1,59 @@
 import 'package:morpheme_cli/constants.dart';
 import 'package:morpheme_cli/dependency_manager.dart';
 import 'package:morpheme_cli/extensions/extensions.dart';
-import 'package:morpheme_cli/helper/helper.dart';
-import 'package:path_to_regexp/path_to_regexp.dart';
+import 'package:morpheme_cli/helper/status_helper.dart';
+import 'package:morpheme_cli/generate/endpoint/managers/endpoint_config_manager.dart';
+import 'package:morpheme_cli/generate/endpoint/orchestrators/endpoint_orchestrator.dart';
+import 'package:morpheme_cli/generate/endpoint/models/endpoint_config.dart';
 
+/// Command for generating endpoint files from json2dart.yaml configurations.
+///
+/// The EndpointCommand processes json2dart.yaml files and generates corresponding
+/// Dart endpoint classes with static URI methods for API endpoints.
+///
+/// ## Usage
+///
+/// Generate endpoints from all json2dart.yaml files:
+/// ```bash
+/// morpheme generate endpoint
+/// ```
+///
+/// Generate endpoints with custom configuration:
+/// ```bash
+/// morpheme generate endpoint --morpheme-yaml custom/path/morpheme.yaml
+/// ```
+///
+/// ## Generated Structure
+///
+/// The command creates the following file:
+/// ```
+/// core/lib/src/data/remote/{project_name}_endpoints.dart
+/// ```
+///
+/// With content like:
+/// ```dart
+/// abstract class ProjectEndpoints {
+///   static Uri _createUriBASE_URL(String path) => Uri.parse(const String.fromEnvironment('BASE_URL') + path,);
+///   
+///   static Uri login = _createUriBASE_URL('/auth/login',);
+///   static Uri getUserProfile(String id,) => _createUriBASE_URL('/users/$id',);
+/// }
+/// ```
 class EndpointCommand extends Command {
+  /// Configuration manager for loading and validating configuration.
+  late final EndpointConfigManager _configManager;
+
+  /// Orchestrator for coordinating the endpoint generation workflow.
+  late final EndpointOrchestrator _orchestrator;
+
+  /// Creates a new EndpointCommand instance.
+  ///
+  /// Configures the command-line argument parser with all required options.
   EndpointCommand() {
     argParser.addOptionMorphemeYaml();
-    argParser.addFlag(
-      'json2dart',
-      help: 'Generate from json2dart',
-      defaultsTo: false,
-    );
+
+    // Initialize services
+    _initializeServices();
   }
 
   @override
@@ -23,129 +65,87 @@ class EndpointCommand extends Command {
   @override
   String get category => Constants.generate;
 
-  String projectName = '';
+  /// Initializes all service dependencies.
+  ///
+  /// This method sets up all the service classes needed for the command to function.
+  void _initializeServices() {
+    _configManager = EndpointConfigManager();
+    _orchestrator = EndpointOrchestrator();
+  }
 
   @override
   void run() async {
-    final argMorphemeYaml = argResults.getOptionMorphemeYaml();
-    projectName = YamlHelper.loadFileYaml(argMorphemeYaml).projectName;
+    try {
+      // Validate inputs
+      if (!_validateInputs()) return;
 
-    final pathDir = join(
-      current,
-      'core',
-      'lib',
-      'src',
-      'data',
-      'remote',
-    );
+      // Prepare configuration (always generate from json2dart)
+      final config = _prepareConfiguration();
 
-    final pathOutput = join(
-      pathDir,
-      '${projectName.snakeCase}_endpoints.dart',
-    );
+      // Validate configuration
+      if (!_configManager.validateConfig(config)) return;
 
-    StringBuffer file = StringBuffer();
+      // Execute generation
+      final success = await _executeGeneration(config);
 
-    final findOld = find(
-      '*_endpoints.dart',
-      workingDirectory: pathDir,
-    ).toList();
-
-    for (var item in findOld) {
-      delete(item);
-    }
-
-    file.write('''abstract class ${projectName.pascalCase}Endpoints {
-''');
-
-    final workingDirectory = find(
-      '*json2dart.yaml',
-      workingDirectory: join(current, 'json2dart'),
-    ).toList();
-
-    for (var pathJson2Dart in workingDirectory) {
-      if (!exists(pathJson2Dart)) continue;
-
-      final yml = YamlHelper.loadFileYaml(pathJson2Dart);
-      Map json2DartMap = Map.from(yml);
-
-      List environmentUrl =
-          json2DartMap['json2dart']?['environment_url'] ?? ['BASE_URL'];
-
-      for (var baseUrl in environmentUrl) {
-        if (!file
-            .toString()
-            .contains('_createUri${baseUrl.toString().pascalCase}')) {
-          file.writeln(
-            '  static Uri _createUri${baseUrl.toString().pascalCase}(String path) => Uri.parse(const String.fromEnvironment(\'$baseUrl\') + path,);',
-          );
-        }
+      if (success) {
+        _reportSuccess();
       }
+    } catch (e, stackTrace) {
+      StatusHelper.failed(
+        'Endpoint generation failed: $e',
+        suggestion: 'Check your configuration and try again',
+        examples: [
+          'morpheme generate endpoint --help',
+          'morpheme generate endpoint',
+        ],
+      );
+      print('Stack trace: $stackTrace');
+    }
+  }
+
+  /// Validates input parameters and configuration.
+  ///
+  /// Returns true if validation passes, false otherwise.
+  /// Displays specific error messages with resolution guidance.
+  bool _validateInputs() {
+    final argMorphemeYaml = argResults.getOptionMorphemeYaml();
+    return _configManager.validateInputs(argMorphemeYaml);
+  }
+
+  /// Prepares configuration for the generation execution.
+  ///
+  /// Returns a validated EndpointConfig object.
+  EndpointConfig _prepareConfiguration() {
+    final argMorphemeYaml = argResults.getOptionMorphemeYaml();
+    return _configManager.loadConfig(argMorphemeYaml);
+  }
+
+  /// Executes the endpoint generation process.
+  ///
+  /// This method coordinates the complete generation workflow through the orchestrator.
+  ///
+  /// Parameters:
+  /// - [config]: The configuration for generation
+  ///
+  /// Returns: true if generation was successful, false otherwise
+  Future<bool> _executeGeneration(EndpointConfig config) async {
+    printMessage('🚀 Generating endpoint files...');
+    final success = await _orchestrator.execute(config);
+
+    if (success) {
+      printMessage('✅ Endpoint generation completed successfully');
+    } else {
+      printMessage('❌ Endpoint generation failed');
     }
 
-    file.writeln();
+    return success;
+  }
 
-    for (var pathJson2Dart in workingDirectory) {
-      if (!exists(pathJson2Dart)) continue;
-
-      final yml = YamlHelper.loadFileYaml(pathJson2Dart);
-      Map json2DartMap = Map.from(yml);
-
-      json2DartMap.forEach((featureName, featureValue) {
-        final lastPathJson2Dart = pathJson2Dart.split(separator).last;
-
-        String appsName = '';
-        if (lastPathJson2Dart.contains('_')) {
-          appsName = lastPathJson2Dart.split('_').first;
-        }
-        if (featureValue is Map) {
-          featureValue.forEach((pageKey, pageValue) {
-            if (pageValue is Map) {
-              pageValue.forEach((apiKey, apiValue) {
-                final baseUrl = apiValue['base_url'] ?? 'BASE_URL';
-                final pathUrl = apiValue['path'];
-                if (pathUrl != null) {
-                  final parameters = <String>[];
-                  parse(pathUrl, parameters: parameters);
-
-                  final isHttp =
-                      RegExp(r'^(http|https):\/\/').hasMatch(pathUrl);
-
-                  String data = '';
-
-                  if (parameters.isEmpty) {
-                    data =
-                        "static Uri ${apiKey.toString().camelCase}${appsName.pascalCase} = ${isHttp ? 'Uri.parse' : '_createUri${baseUrl.toString().pascalCase}'}('$pathUrl',);";
-                  } else {
-                    final parameterString =
-                        parameters.map((e) => 'String ${e.camelCase},').join();
-                    final replacePath = parameters
-                        .map((e) => ".replaceAll(':$e', ${e.camelCase})")
-                        .join();
-
-                    data =
-                        "static Uri ${apiKey.toString().camelCase}${appsName.pascalCase}($parameterString) => ${isHttp ? 'Uri.parse' : '_createUri${baseUrl.toString().pascalCase}'}('$pathUrl'$replacePath,);";
-                  }
-
-                  if (!file.toString().contains(data)) {
-                    file.writeln(data);
-                  }
-                }
-              });
-            }
-          });
-        }
-      });
-    }
-
-    file.write("}");
-    pathOutput.write(file.toString());
-    StatusHelper.generated(pathOutput);
-
-    await ModularHelper.format([pathDir]);
-    await ModularHelper.fix([pathDir]);
-    await ModularHelper.format([pathDir]);
-
-    StatusHelper.success('morpheme endpoint');
+  /// Reports successful completion of the generation.
+  ///
+  /// Displays success message with the generated endpoint file path.
+  void _reportSuccess() {
+    StatusHelper.success('Endpoint generation completed successfully');
   }
 }

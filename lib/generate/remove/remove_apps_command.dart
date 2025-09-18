@@ -1,64 +1,79 @@
-import 'dart:io';
-
 import 'package:morpheme_cli/constants.dart';
 import 'package:morpheme_cli/dependency_manager.dart';
 
 import '../../helper/helper.dart';
+import 'helpers/path_helper.dart';
+import 'helpers/config_helper.dart';
 
+/// Command to remove an app module from the project.
+///
+/// This command removes an entire app module including:
+/// - Deleting the app directory
+/// - Removing app references from the main locator file
+/// - Removing app entries from pubspec.yaml
+///
+/// Usage:
+/// ```
+/// morpheme remove-apps <app_name>
+/// ```
 class RemoveAppsCommand extends Command {
   @override
   String get name => 'remove-apps';
 
   @override
-  String get description => 'Remove code apps.';
+  String get description => 'Remove an app module from the project.';
 
   @override
   String get category => Constants.generate;
 
   @override
   void run() async {
+    // Validate inputs
     if (argResults?.rest.isEmpty ?? true) {
-      StatusHelper.failed('Apps name is empty');
+      _handleError('App name is required');
+      return;
     }
 
     final appsName = (argResults?.rest.first ?? '').snakeCase;
 
-    final pathApps = join(current, 'apps', appsName);
-
+    // Validate app exists
+    final pathApps = PathHelper.getAppsPath(appsName);
     if (!exists(pathApps)) {
-      StatusHelper.failed('Apps with "$appsName" does not exists"');
+      _handleError('App "$appsName" does not exist');
+      return;
     }
 
-    if (exists(pathApps)) {
-      deleteDir(pathApps);
+    try {
+      // Remove app directory
+      _removeAppDirectory(pathApps);
+
+      // Update locator file
+      ConfigHelper.removeAppFromLocator(appsName);
+
+      // Update pubspec.yaml
+      ConfigHelper.removeAppFromPubspec(appsName);
+
+      // Format code
+      await _formatCode();
+
+      StatusHelper.success('Successfully removed app "$appsName"');
+    } catch (e) {
+      _handleError('Failed to remove app "$appsName": ${e.toString()}');
     }
+  }
 
-    final pathLibLocator = join(current, 'lib', 'locator.dart');
-    String data = File(pathLibLocator).readAsStringSync();
+  /// Removes the app directory.
+  void _removeAppDirectory(String pathApps) {
+    deleteDir(pathApps);
+  }
 
-    data = data.replaceAll(
-        "import 'package:${appsName.snakeCase}/locator.dart';", '');
-    data = data.replaceAll("setupLocatorApps${appsName.pascalCase}();", '');
-
-    pathLibLocator.write(data);
-
-    final pathPubspec = join(current, 'pubspec.yaml');
-    String pubspec = File(pathPubspec).readAsStringSync();
-
-    pubspec = pubspec.replaceAll(
-      RegExp("\\s+- apps/${appsName.snakeCase}"),
-      '',
-    );
-    pubspec = pubspec.replaceAll(
-      RegExp(
-          "\\s+${appsName.snakeCase}:\\s+path: ./apps/${appsName.snakeCase}"),
-      '',
-    );
-
-    pathPubspec.write(pubspec);
-
+  /// Formats the code after removal.
+  Future<void> _formatCode() async {
     await '${FlutterHelper.getCommandDart()} format .'.run;
+  }
 
-    StatusHelper.success('removed apps $appsName');
+  /// Handles errors with consistent messaging.
+  void _handleError(String message) {
+    StatusHelper.failed(message);
   }
 }

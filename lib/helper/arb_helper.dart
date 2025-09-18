@@ -2,11 +2,27 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 
-/// Includes the novel keys of `arb2Contents` in the `arb1Contents`
-/// and returns the result of the merge. In case of discrepances of
-/// the values for the same key, the `arb2Contents` will prevail
+/// Merges two ARB (Application Resource Bundle) files.
 ///
-/// In a nutshell `arb1Contents` <-merge-- `arb2Contents`
+/// This function includes the novel keys of [arb2Contents] in the [arb1Contents]
+/// and returns the result of the merge. In case of discrepancies of
+/// the values for the same key, the [arb2Contents] will prevail.
+///
+/// In a nutshell [arb1Contents] <-merge-- [arb2Contents]
+///
+/// Parameters:
+/// - [arb1Contents]: The base ARB file contents as a JSON string
+/// - [arb2Contents]: The ARB file contents to merge into the base as a JSON string
+///
+/// Returns: Merged ARB file contents as a JSON string
+///
+/// Example:
+/// ```dart
+/// final baseArb = '{"appName": "My App", "welcomeMessage": "Welcome!"}';
+/// final newArb = '{"appName": "New App Name", "newFeature": "New Feature"}';
+/// final merged = mergeARBs(baseArb, newArb);
+/// // Result: '{"appName": "New App Name", "welcomeMessage": "Welcome!", "newFeature": "New Feature"}'
+/// ```
 String mergeARBs(String arb1Contents, String arb2Contents) {
   Map<String, dynamic> ret = json.decode(arb1Contents);
   Map<String, dynamic> json2 = json.decode(arb2Contents);
@@ -16,11 +32,37 @@ String mergeARBs(String arb1Contents, String arb2Contents) {
   return json.encode(ret);
 }
 
-/// Sorts the .arb formatted String `arbContents` in alphabetical order
-/// of the keys, with the @key portion added below it's respective key
-/// Optionally you can provide a `compareFunction` for customizing the sorting.
+/// Sorts the .arb formatted String in alphabetical order of the keys.
+///
+/// Sorts the .arb formatted String [arbContents] in alphabetical order
+/// of the keys, with the @key portion added below it's respective key.
+///
+/// Optionally you can provide a [compareFunction] for customizing the sorting.
 /// For simplicity sake there are common sorting features you can use when not
-/// defining the former parameter
+/// defining the former parameter.
+///
+/// Parameters:
+/// - [arbContents]: The ARB file contents as a JSON string to sort
+/// - [compareFunction]: Optional custom comparison function for sorting keys
+/// - [caseInsensitive]: Whether to perform case-insensitive sorting (default: false)
+/// - [naturalOrdering]: Whether to use natural ordering (e.g., "2" before "10") (default: false)
+/// - [descendingOrdering]: Whether to sort in descending order (default: false)
+///
+/// Returns: Sorted ARB file contents as a JSON string
+///
+/// Example:
+/// ```dart
+/// final arbContent = '{"zebra": "Zebra", "apple": "Apple", "banana": "Banana"}';
+/// final sorted = sortARB(arbContent);
+/// // Result: '{"apple": "Apple", "banana": "Banana", "zebra": "Zebra"}'
+///
+/// // Case insensitive sorting
+/// final sortedCaseInsensitive = sortARB(arbContent, caseInsensitive: true);
+///
+/// // Natural ordering (useful for numbered keys)
+/// final sortedNatural = sortARB('{"item2": "Item 2", "item10": "Item 10", "item1": "Item 1"}', naturalOrdering: true);
+/// // Result: '{"item1": "Item 1", "item2": "Item 2", "item10": "Item 10"}'
+/// ```
 String sortARB(String arbContents,
     {int Function(String, String)? compareFunction,
     bool caseInsensitive = false,
@@ -53,6 +95,19 @@ String sortARB(String arbContents,
   return encoder.convert(sorted);
 }
 
+/// Common sorting function for ARB keys.
+///
+/// Internal helper function that implements common sorting algorithms
+/// for ARB file keys based on the provided parameters.
+///
+/// Parameters:
+/// - [a]: First key to compare
+/// - [b]: Second key to compare
+/// - [isCaseInsensitive]: Whether to perform case-insensitive comparison
+/// - [isNaturalOrdering]: Whether to use natural ordering
+/// - [isDescending]: Whether to reverse the sorting order
+///
+/// Returns: Comparison result (-1, 0, or 1)
 int _commonSorts(String a, String b, bool isCaseInsensitive,
     bool isNaturalOrdering, bool isDescending) {
   var ascending = 1;

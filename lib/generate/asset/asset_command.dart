@@ -3,22 +3,38 @@ import 'package:morpheme_cli/dependency_manager.dart';
 import 'package:morpheme_cli/extensions/extensions.dart';
 import 'package:morpheme_cli/helper/helper.dart';
 
-extension AssetsExtension on Map {
-  String get pubspecDir =>
-      this['pubspec_dir']?.toString().replaceAll('/', separator) ?? 'assets';
-  String get outputDir =>
-      this['output_dir']?.toString().replaceAll('/', separator) ?? 'assets/lib';
-  bool get createLibraryFile => this['create_library_file'] ?? true;
-  String get assetsDir =>
-      this['assets_dir']?.toString().replaceAll('/', separator) ??
-      'assets/assets';
-  String get flavorDir =>
-      this['flavor_dir']?.toString().replaceAll('/', separator) ??
-      'assets/flavor';
-}
+import 'orchestrators/asset_orchestrator.dart';
+import 'models/models.dart';
 
+/// Command for generating asset constants from Flutter pubspec.yaml definitions.
+///
+/// This command scans asset directories defined in pubspec.yaml and generates
+/// corresponding Dart classes with static constants for each asset file.
+///
+/// Features:
+/// - Generates type-safe asset constants
+/// - Supports flavor-specific asset overrides
+/// - Creates library export files for easy importing
+/// - Validates asset naming and directory structure
+/// - Formats generated code automatically
+///
+/// Usage:
+/// ```
+/// morpheme generate assets
+/// morpheme generate assets --flavor dev
+/// morpheme generate assets --morpheme-yaml custom/morpheme.yaml
+/// ```
 class AssetCommand extends Command {
-  AssetCommand() {
+  /// Asset orchestrator for coordinating the generation workflow.
+  final AssetOrchestrator _orchestrator;
+
+  /// Creates a new AssetCommand instance.
+  ///
+  /// Parameters:
+  /// - [orchestrator]: Optional custom orchestrator for testing
+  AssetCommand({
+    AssetOrchestrator? orchestrator,
+  }) : _orchestrator = orchestrator ?? AssetOrchestrator() {
     argParser.addOptionMorphemeYaml();
     argParser.addOptionFlavor(defaultsTo: '');
   }
@@ -27,134 +43,96 @@ class AssetCommand extends Command {
   String get name => 'assets';
 
   @override
-  String get description => 'Generate assets from setup assets pubspec.yaml.';
+  String get description =>
+      'Generate asset constants from Flutter pubspec.yaml definitions.';
 
   @override
   String get category => Constants.generate;
-
-  String projectName = '';
 
   @override
   void run() async {
     final argMorphemeYaml = argResults.getOptionMorphemeYaml();
     final argFlavor = argResults.getOptionFlavor(defaultTo: '');
 
-    YamlHelper.validateMorphemeYaml(argMorphemeYaml);
-    final morphemeYaml = YamlHelper.loadFileYaml(argMorphemeYaml);
+    try {
+      // Execute the complete asset generation workflow
+      final result = await _orchestrator.execute(
+        morphemeYamlPath: argMorphemeYaml,
+        flavor: argFlavor.isNotEmpty ? argFlavor : null,
+      );
 
-    if (morphemeYaml['assets'] == null) {
-      StatusHelper.failed('assets not found in $argMorphemeYaml');
-    }
-
-    projectName = morphemeYaml.projectName;
-    final morphemeAssets = morphemeYaml['assets'] as Map;
-
-    if (argFlavor.isNotEmpty && exists(morphemeAssets.flavorDir)) {
-      final pathFlavorDir = join(current, morphemeAssets.flavorDir, argFlavor);
-      final pathAssetsDir = join(current, morphemeAssets.assetsDir);
-
-      copyTree(pathFlavorDir, pathAssetsDir, overwrite: true);
-    }
-
-    final pathYaml = join(current, morphemeAssets.pubspecDir, 'pubspec.yaml');
-
-    if (!exists(pathYaml)) {
-      StatusHelper.failed('$pathYaml not found!');
-    }
-
-    final yaml = YamlHelper.loadFileYaml(pathYaml);
-    if (!yaml.containsKey('flutter')) {
-      StatusHelper.failed('flutter not found in pubspec.yaml');
-    }
-
-    final flutter = (yaml['flutter'] is Map) ? yaml['flutter'] as Map : null;
-    if (flutter == null || !flutter.containsKey('assets')) {
-      StatusHelper.failed('assets not found in pubspec.yaml');
-    }
-
-    final pubspecAssets = (yaml['flutter']['assets'] as List)
-        .where((element) =>
-            !RegExp(r'(0|[1-9]\d*)\.?(0|[1-9]\d*)?\.?(0|[1-9]\d*)?x')
-                .hasMatch(element))
-        .toList();
-
-    DirectoryHelper.createDir(join(morphemeAssets.outputDir, 'src'));
-
-    createFileAssets(pubspecAssets, morphemeAssets);
-    if (morphemeAssets.createLibraryFile) createFileExport(morphemeAssets);
-
-    await ModularHelper.format([morphemeAssets.outputDir]);
-
-    StatusHelper.success('morpheme assets');
-  }
-
-  void createFileAssets(List<dynamic> pubspecAssets, Map morphemeAssets) {
-    final outputDir = join(current, morphemeAssets.outputDir);
-
-    for (var element in pubspecAssets) {
-      final nameDir = element
-          .toString()
-          .split('/')
-          .lastWhere((element) => element.isNotEmpty);
-      if (RegExp(r'^\w+\.\w*').hasMatch(nameDir)) {
-        continue;
+      if (result.isSuccess) {
+        _reportSuccess(result);
+      } else {
+        _reportFailure(result);
       }
-
-      final findOld = find(
-        '*_${nameDir.snakeCase}.dart',
-        workingDirectory: join(outputDir, 'src'),
-      ).toList();
-
-      for (var item in findOld) {
-        delete(item);
-      }
-
-      final pathOutput = join(outputDir, 'src',
-          '${projectName.snakeCase}_${nameDir.snakeCase}.dart');
-
-      final assetsDir = '${morphemeAssets.pubspecDir}/$element'
-          .replaceAll(RegExp(r'\/$'), '');
-
-      pathOutput.write(
-          '''abstract class ${projectName.pascalCase}${nameDir.pascalCase} {
-  // ignore: unused_field
-  static const String _assets = 'packages/${assetsDir.replaceAll(RegExp(r'\.'), current.split(separator).last)}';
-''');
-
-      final items = find(
-        '[a-z]*.*',
-        workingDirectory: join(current, assetsDir),
-        recursive: false,
-      ).toList();
-
-      for (var item in items) {
-        final nameWithExtension = item.split('/').last;
-        pathOutput.append(
-            '''  static const String ${nameWithExtension.split('.').first.camelCase} = '\$_assets/$nameWithExtension';''');
-      }
-
-      pathOutput.append('}');
-
-      StatusHelper.generated(pathOutput);
+    } catch (e, stackTrace) {
+      StatusHelper.failed(
+        'Unexpected error during asset generation: $e',
+        suggestion:
+            'Check the error details and ensure all requirements are met',
+        examples: [
+          'morpheme generate assets --help',
+          'morpheme doctor',
+        ],
+      );
+      print('Stack trace: $stackTrace');
     }
   }
 
-  void createFileExport(Map morphemeAssets) {
-    final items = find(
-      '[a-z]*.*',
-      workingDirectory: join(current, morphemeAssets.outputDir, 'src'),
-      recursive: false,
-    ).toList();
-
-    final pathOutput = join(current, morphemeAssets.outputDir, 'assets.dart');
-
-    pathOutput.write('');
-
-    for (var item in items) {
-      final nameWithExtension = item.split('/').last;
-      pathOutput.append("export 'src/$nameWithExtension';");
+  /// Reports successful generation results.
+  void _reportSuccess(GenerationResult result) {
+    // Report warnings if any
+    if (result.hasWarnings) {
+      for (final warning in result.warnings) {
+        StatusHelper.warning(warning);
+      }
     }
 
-    StatusHelper.generated(pathOutput);
+    // Report generated files
+    for (final file in result.generatedFiles) {
+      StatusHelper.generated(file.path);
+    }
+
+    // Report summary
+    final summary = _buildSuccessSummary(result);
+    print(summary);
+
+    StatusHelper.success('Asset generation completed successfully');
+  }
+
+  /// Reports generation failure.
+  void _reportFailure(GenerationResult result) {
+    final errorMessage = result.errorMessage ?? 'Unknown error';
+
+    StatusHelper.failed(
+      errorMessage,
+      suggestion: 'Review the error details and fix any configuration issues',
+      examples: [
+        'Check that morpheme.yaml has an "assets" section',
+        'Verify that pubspec.yaml has valid asset paths',
+        'Ensure asset directories exist and are readable',
+        'Run "morpheme doctor" to check environment setup',
+      ],
+    );
+  }
+
+  /// Builds a summary message for successful generation.
+  String _buildSuccessSummary(GenerationResult result) {
+    final buffer = StringBuffer();
+
+    buffer.writeln('\n=== Asset Generation Summary ===');
+    buffer.writeln('Files generated: ${result.fileCount}');
+    buffer.writeln('Classes created: ${result.metrics.classesCreated}');
+    buffer.writeln('Assets processed: ${result.metrics.assetsProcessed}');
+    buffer.writeln('Duration: ${result.metrics.duration.inMilliseconds}ms');
+
+    if (result.hasWarnings) {
+      buffer.writeln('Warnings: ${result.warnings.length}');
+    }
+
+    buffer.writeln('================================');
+
+    return buffer.toString();
   }
 }

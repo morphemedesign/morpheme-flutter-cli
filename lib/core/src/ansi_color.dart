@@ -1,30 +1,29 @@
-/* Copyright (C) S. Brett Sutton - All Rights Reserved
- * Unauthorized copying of this file, via any medium is strictly prohibited
- * Proprietary and confidential
- * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
- */
-
 import 'ansi.dart';
 
-/// Wraps the passed text with the ANSI escape sequence for
-/// the color red.
-/// Use this to control the color of text when printing to the
-/// console.
+/// ANSI color utility functions for terminal text formatting.
 ///
-/// ```
-/// printMessage(red('a dark message'));
-/// ```
-/// The [text] to wrap.
-/// By default the color is [bold] however you can turn off bold
-/// by setting the [bold] argment to false:
+/// This module provides convenient functions for applying colors to text
+/// in terminal output. Each function wraps text with appropriate ANSI
+/// escape sequences while respecting terminal capabilities.
 ///
+/// Example usage:
+/// ```dart
+/// print(red('Error message'));
+/// print(green('Success message', bold: false));
+/// print(blue('Info', background: AnsiColor.yellow));
 /// ```
-/// printMessage(red('a dark message', bold: false));
+
+/// Apply red color to text.
+///
+/// [text] - The text to colorize
+/// [background] - Background color (defaults to none)
+/// [bold] - Whether to make text bold (defaults to true)
+///
+/// Example:
+/// ```dart
+/// print(red('Error: File not found'));
+/// print(red('Warning', bold: false, background: AnsiColor.white));
 /// ```
-///
-/// [background] is the background color to use when printing the
-/// text.  Defaults to White.
-///
 String red(
   String text, {
   AnsiColor background = AnsiColor.none,
@@ -36,25 +35,16 @@ String red(
       background: background,
     );
 
-/// Wraps the passed text with the ANSI escape sequence for
-/// the color red.
-/// Use this to control the color of text when printing to the
-/// console.
+/// Apply black color to text.
 ///
-/// ```
-/// printMessage(black('a dark message'));
-/// ```
-/// The [text] to wrap.
-/// By default the color is [bold] however you can turn off bold
-/// by setting the [bold] argment to false:
+/// [text] - The text to colorize
+/// [background] - Background color (defaults to white for visibility)
+/// [bold] - Whether to make text bold (defaults to true)
 ///
+/// Example:
+/// ```dart
+/// print(black('Dark text'));
 /// ```
-/// printMessage(black('a dark message', bold: false));
-/// ```
-///
-/// [background] is the background color to use when printing the
-/// text.  Defaults to White.
-///
 String black(
   String text, {
   AnsiColor background = AnsiColor.white,
@@ -66,25 +56,16 @@ String black(
       background: background,
     );
 
-/// Wraps the passed text with the ANSI escape sequence for
-/// the color red.
-/// Use this to control the color of text when printing to the
-/// console.
+/// Apply green color to text.
 ///
-/// ```
-/// printMessage(green('a dark message'));
-/// ```
-/// The [text] to wrap.
-/// By default the color is [bold] however you can turn off bold
-/// by setting the [bold] argment to false:
+/// [text] - The text to colorize
+/// [background] - Background color (defaults to none)
+/// [bold] - Whether to make text bold (defaults to true)
 ///
+/// Example:
+/// ```dart
+/// print(green('Operation successful'));
 /// ```
-/// printMessage(green('a dark message', bold: false));
-/// ```
-///
-/// [background] is the background color to use when printing the
-/// text.  Defaults to White.
-///
 String green(
   String text, {
   AnsiColor background = AnsiColor.none,
@@ -96,25 +77,16 @@ String green(
       background: background,
     );
 
-/// Wraps the passed text with the ANSI escape sequence for
-/// the color red.
-/// Use this to control the color of text when printing to the
-/// console.
+/// Apply blue color to text.
 ///
-/// ```
-/// printMessage(blue('a dark message'));
-/// ```
-/// The [text] to wrap.
-/// By default the color is [bold] however you can turn off bold
-/// by setting the [bold] argment to false:
+/// [text] - The text to colorize
+/// [background] - Background color (defaults to none)
+/// [bold] - Whether to make text bold (defaults to true)
 ///
+/// Example:
+/// ```dart
+/// print(blue('Information message'));
 /// ```
-/// printMessage(blue('a dark message', bold: false));
-/// ```
-///
-/// [background] is the background color to use when printing the
-/// text.  Defaults to White.
-///
 String blue(
   String text, {
   AnsiColor background = AnsiColor.none,
@@ -126,25 +98,16 @@ String blue(
       background: background,
     );
 
-/// Wraps the passed text with the ANSI escape sequence for
-/// the color red.
-/// Use this to control the color of text when printing to the
-/// console.
+/// Apply yellow color to text.
 ///
-/// ```
-/// printMessage(yellow('a dark message'));
-/// ```
-/// The [text] to wrap.
-/// By default the color is [bold] however you can turn off bold
-/// by setting the [bold] argment to false:
+/// [text] - The text to colorize
+/// [background] - Background color (defaults to none)
+/// [bold] - Whether to make text bold (defaults to true)
 ///
+/// Example:
+/// ```dart
+/// print(yellow('Warning message'));
 /// ```
-/// printMessage(yellow('a dark message', bold: false));
-/// ```
-///
-/// [background] is the background color to use when printing the
-/// text.  Defaults to White.
-///
 String yellow(
   String text, {
   AnsiColor background = AnsiColor.none,
@@ -156,26 +119,16 @@ String yellow(
       background: background,
     );
 
-/// Wraps the passed text with the ANSI escape sequence for
-/// the color red.
-/// Use this to control the color of text when printing to the
-/// console.
+/// Apply magenta color to text.
 ///
-/// ```
-/// printMessage(magenta('a dark message'));
-/// ```
-/// The [text] to wrap.
-/// By default the color is [bold] however you can turn off bold
-/// by setting the [bold] argment to false:
+/// [text] - The text to colorize
+/// [background] - Background color (defaults to none)
+/// [bold] - Whether to make text bold (defaults to true)
 ///
+/// Example:
+/// ```dart
+/// print(magenta('Highlighted text'));
 /// ```
-/// printMessage(magenta('a dark message', bold: false));
-/// ```
-///
-/// [background] is the background color to use when printing the
-/// text.  Defaults to White.
-///xt.  Defaults to none.
-///
 String magenta(
   String text, {
   AnsiColor background = AnsiColor.none,
@@ -187,26 +140,16 @@ String magenta(
       background: background,
     );
 
-/// Wraps the passed text with the ANSI escape sequence for
-/// the color red.
-/// Use this to control the color of text when printing to the
-/// console.
+/// Apply cyan color to text.
 ///
-/// ```
-/// printMessage(cyan('a dark message'));
-/// ```
-/// The [text] to wrap.
-/// By default the color is [bold] however you can turn off bold
-/// by setting the [bold] argment to false:
+/// [text] - The text to colorize
+/// [background] - Background color (defaults to none)
+/// [bold] - Whether to make text bold (defaults to true)
 ///
+/// Example:
+/// ```dart
+/// print(cyan('Debug information'));
 /// ```
-/// printMessage(cyan('a dark message', bold: false));
-/// ```
-///
-/// [background] is the background color to use when printing the
-/// text.  Defaults to White.
-///xt.  Defaults to none.
-///
 String cyan(
   String text, {
   AnsiColor background = AnsiColor.none,
@@ -218,26 +161,16 @@ String cyan(
       background: background,
     );
 
-/// Wraps the passed text with the ANSI escape sequence for
-/// the color red.
-/// Use this to control the color of text when printing to the
-/// console.
+/// Apply white color to text.
 ///
-/// ```
-/// printMessage(white('a dark message'));
-/// ```
-/// The [text] to wrap.
-/// By default the color is [bold] however you can turn off bold
-/// by setting the [bold] argment to false:
+/// [text] - The text to colorize
+/// [background] - Background color (defaults to none)
+/// [bold] - Whether to make text bold (defaults to true)
 ///
+/// Example:
+/// ```dart
+/// print(white('Bright text'));
 /// ```
-/// printMessage(white('a dark message', bold: false));
-/// ```
-///
-/// [background] is the background color to use when printing the
-/// text.  Defaults to White.
-///xt.  Defaults to none.
-///
 String white(
   String text, {
   AnsiColor background = AnsiColor.none,
@@ -249,26 +182,16 @@ String white(
       background: background,
     );
 
-/// Wraps the passed text with the ANSI escape sequence for
-/// the color red.
-/// Use this to control the color of text when printing to the
-/// console.
+/// Apply orange color to text.
 ///
-/// ```
-/// printMessage(orange('a dark message'));
-/// ```
-/// The [text] to wrap.
-/// By default the color is [bold] however you can turn off bold
-/// by setting the [bold] argment to false:
+/// [text] - The text to colorize
+/// [background] - Background color (defaults to none)
+/// [bold] - Whether to make text bold (defaults to true)
 ///
+/// Example:
+/// ```dart
+/// print(orange('Alert message'));
 /// ```
-/// printMessage(orange('a dark message', bold: false));
-/// ```
-///
-/// [background] is the background color to use when printing the
-/// text.  Defaults to White.
-///xt.  Defaults to none.
-///
 String orange(
   String text, {
   AnsiColor background = AnsiColor.none,
@@ -280,26 +203,19 @@ String orange(
       background: background,
     );
 
-/// Wraps the passed text with the ANSI escape sequence for
-/// the color red.
-/// Use this to control the color of text when printing to the
-/// console.
+/// Apply grey color to text with adjustable brightness level.
 ///
-/// ```
-/// printMessage(grey('a dark message'));
-/// ```
-/// The [text] to wrap.
-/// By default the color is [bold] however you can turn off bold
-/// by setting the [bold] argment to false:
+/// [text] - The text to colorize
+/// [level] - Brightness level from 0.0 (dark) to 1.0 (light), defaults to 0.5
+/// [background] - Background color (defaults to none)
+/// [bold] - Whether to make text bold (defaults to true)
 ///
+/// Example:
+/// ```dart
+/// print(grey('Subtle text'));
+/// print(grey('Dark grey', level: 0.2));
+/// print(grey('Light grey', level: 0.8));
 /// ```
-/// printMessage(grey('a dark message', bold: false));
-/// ```
-///
-/// [background] is the background color to use when printing the
-/// text.  Defaults to White.
-///xt.  Defaults to none.
-///
 String grey(
   String text, {
   double level = 0.5,
@@ -312,37 +228,54 @@ String grey(
       background: background,
     );
 
-/// Helper class to assist in printing text to the console with a color.
+/// ANSI color management class for terminal text formatting.
 ///
-/// Use one of the color functions instead of this class.
+/// This class provides low-level ANSI color functionality. For most use cases,
+/// prefer the convenience functions like [red], [green], [blue], etc.
 ///
-/// See:
-///  * [black]
-///  * [white]
-///  * [green]
-///  * [orange]
-///  ...
+/// Example usage:
+/// ```dart
+/// final redColor = AnsiColor(AnsiColor.codeRed);
+/// print(redColor.apply('Error message'));
+/// ```
+///
+/// See also:
+/// * [red], [green], [blue] and other color convenience functions
+/// * [Ansi] for ANSI detection and management
 class AnsiColor {
+  /// Create an ANSI color with the specified color code.
   ///
+  /// [code] - The ANSI color code (see class constants)
+  /// [bold] - Whether to apply bold formatting (defaults to true)
   const AnsiColor(
     int code, {
     bool bold = true,
   })  : _code = code,
         _bold = bold;
 
+  /// Create a grey color with adjustable brightness level.
+  ///
+  /// [level] - Brightness level from 0.0 (darkest) to 1.0 (lightest)
+  /// [bold] - Whether to apply bold formatting (defaults to true)
   AnsiColor._grey({
     double level = 0.5,
     bool bold = true,
   })  : _code = codeGrey + (level.clamp(0.0, 1.0) * 23).round(),
         _bold = bold;
 
-  /// resets the color scheme.
+  /// Reset all color formatting to terminal defaults.
+  ///
+  /// This clears both foreground and background colors.
   static String reset() => _emit(_resetCode);
 
-  /// resets the foreground color
+  /// Reset only the foreground color to terminal default.
+  ///
+  /// Background color remains unchanged.
   static String fgReset() => _emit(_fgResetCode);
 
-  /// resets the background color.
+  /// Reset only the background color to terminal default.
+  ///
+  /// Foreground color remains unchanged.
   static String bgReset() => _emit(_bgResetCode);
 
   final int _code;
@@ -352,13 +285,18 @@ class AnsiColor {
   //
   static String _emit(String ansicode) => '${Ansi.esc}${ansicode}m';
 
-  /// ansi code for this color.
+  /// The ANSI color code for this color instance.
   int get code => _code;
 
-  /// do we bold the color
+  /// Whether this color uses bold formatting.
   bool get bold => _bold;
 
-  /// writes the text to the terminal.
+  /// Apply this color to the given text.
+  ///
+  /// [text] - The text to colorize
+  /// [background] - Optional background color (defaults to none)
+  ///
+  /// Returns the text wrapped with appropriate ANSI escape sequences.
   String apply(String text, {AnsiColor background = none}) =>
       _apply(this, text, background: background);
 
@@ -410,7 +348,7 @@ class AnsiColor {
     return output;
   }
 
-  /// Resets
+  // ANSI reset codes
 
   /// Reset fg and bg colors
   static const String _resetCode = '0';
@@ -421,11 +359,15 @@ class AnsiColor {
   /// Defaults the terminal's bg color without altering the fg.
   static const String _bgResetCode = '49';
 
+  // ANSI color application codes
+
   // emit this code followed by a color code to set the fg color
   static const String _fgColorCode = '38;5;';
 
-// emit this code followed by a color code to set the fg color
+  // emit this code followed by a color code to set the bg color
   static const String _backgroundCode = '48;5;';
+
+  // Standard ANSI color codes
 
   /// code for black
   static const int codeBlack = 30;
@@ -451,13 +393,15 @@ class AnsiColor {
   /// code for white
   static const int codeWhite = 37;
 
+  // Extended color codes
+
   /// code for orange
   static const int codeOrange = 208;
 
   /// code for grey
   static const int codeGrey = 232;
 
-  /// Colors
+  // Predefined color instances
   /// black
   static const AnsiColor black = AnsiColor(codeBlack);
 
@@ -485,8 +429,8 @@ class AnsiColor {
   /// orange
   static const AnsiColor orange = AnsiColor(codeOrange);
 
-  /// passing this as the background color will cause
-  /// the background code to be suppressed resulting
-  /// in the default background color.
+  /// Represents no color/transparent - suppresses background color codes.
+  ///
+  /// Use this when you want the default terminal background color.
   static const AnsiColor none = AnsiColor(-1, bold: false);
 }

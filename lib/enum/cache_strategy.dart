@@ -6,9 +6,9 @@ extension CacheStrategyExtension on CacheStrategy? {
       return 'cacheStrategy: cacheStrategy';
     }
     if (this == CacheStrategy.justAsync) {
-      return 'cacheStrategy: cacheStrategy ?? ${this?.value.pascalCase}Strategy()';
+      return 'cacheStrategy: cacheStrategy ?? ${this?.value.pascalCase}Strategy(),';
     }
-    return 'cacheStrategy: cacheStrategy ?? ${this?.value.pascalCase}Strategy(${ttl == null ? '' : 'ttlValue: const Duration(minutes: $ttl)'}${keepExpiredCache == null ? '' : ttl == null ? '' : ', keepExpiredCache: $keepExpiredCache'}${ttl != null || keepExpiredCache != null ? ',' : ''})';
+    return 'cacheStrategy: cacheStrategy ?? ${this?.value.pascalCase}Strategy(${ttl == null ? '' : 'ttlValue: const Duration(minutes: $ttl)'}${keepExpiredCache == null ? '' : ttl == null ? '' : ', keepExpiredCache: $keepExpiredCache'}${ttl != null || keepExpiredCache != null ? ',' : ''}),';
   }
 
   String toParamCacheStrategyTest({int? ttl, bool? keepExpiredCache}) {

@@ -1,3 +1,33 @@
+## 4.0.0-beta
+
+feat!: major release with breaking changes and new features
+
+- feat!: refactor entire codebase architecture for better modularity
+- feat!: update all commands to use new streamlined API
+- feat!: add support for Flutter 3.5+ and Dart 3.0+
+- feat!: implement new plugin system for extensibility
+- feat!: add enhanced error handling and reporting
+- feat!: improve performance with new caching mechanism
+- feat!: add support for multi-platform project generation
+- feat!: introduce new testing framework integration
+- feat!: add advanced localization support
+- feat!: implement new build system with incremental compilation
+- feat!: add support for code splitting and lazy loading
+- feat!: enhance CLI with new interactive mode
+- feat!: add support for custom themes and styling
+- feat!: implement new state management integration
+- feat!: add advanced debugging capabilities
+- feat!: improve documentation generation
+- feat!: add support for web and desktop platforms
+- feat!: implement new dependency management system
+- feat!: add support for internationalization
+- feat!: enhance security with new encryption features
+- chore!: update all dependencies to latest versions
+- chore!: remove deprecated APIs and methods
+- fix!: resolve all known critical issues
+- fix!: improve stability and reliability
+- fix!: enhance compatibility with latest Flutter versions
+
 ## 3.7.0
 
 feat(json2dart): add cubit generation support for api implementation

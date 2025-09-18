@@ -2,23 +2,37 @@ import 'package:morpheme_cli/constants.dart';
 import 'package:morpheme_cli/dependency_manager.dart';
 
 import '../../helper/helper.dart';
+import 'helpers/path_helper.dart';
 
+/// Command to remove test helper files from the project.
+///
+/// This command removes test helper files:
+/// - Deletes bundle_test.dart files
+/// - Removes coverage_helper_test.dart files
+///
+/// Usage:
+/// ```
+/// morpheme remove-test
+/// morpheme remove-test --apps-name <app_name>
+/// morpheme remove-test --feature <feature_name>
+/// morpheme remove-test --page <page_name>
+/// ```
 class RemoveTestCommand extends Command {
   RemoveTestCommand() {
     argParser.addOption(
       'apps-name',
       abbr: 'a',
-      help: 'Test with spesific apps (Optional)',
+      help: 'Remove tests from a specific app (optional)',
     );
     argParser.addOption(
       'feature',
       abbr: 'f',
-      help: 'Test with spesific feature (optional)',
+      help: 'Remove tests from a specific feature (optional)',
     );
     argParser.addOption(
       'page',
       abbr: 'p',
-      help: 'Test with spesific page (optional)',
+      help: 'Remove tests from a specific page (optional)',
     );
   }
 
@@ -26,7 +40,7 @@ class RemoveTestCommand extends Command {
   String get name => 'remove-test';
 
   @override
-  String get description => 'Remove code helper test in spesific feature.';
+  String get description => 'Remove test helper files from the project.';
 
   @override
   String get category => Constants.generate;
@@ -37,30 +51,28 @@ class RemoveTestCommand extends Command {
     final String? feature = argResults?['feature']?.toString().snakeCase;
     final String? page = argResults?['page']?.toString().snakeCase;
 
-    final pathApps = join(current, 'apps', '${apps}_test');
-    final pathFeature = apps?.isEmpty ?? true
-        ? join(current, 'features', '$feature', 'test')
-        : join(pathApps, 'features', '$feature', 'test');
-    final pathPage = join(pathFeature, '${page}_test');
+    try {
+      if (page != null) {
+        _deleteTestHelpersForPath(PathHelper.getPageTestPath(apps ?? '', feature ?? '', page));
+      } else if (feature != null) {
+        _deleteTestHelpersForPath(PathHelper.getFeatureTestPath(apps ?? '', feature));
+      } else if (apps != null) {
+        _deleteTestHelpersForPath(PathHelper.getAppsTestPath(apps));
+      } else {
+        _deleteTestHelpersForPath(current);
+      }
 
-    String path = current;
-    if (page != null) {
-      deleteAllTestHelper(pathPage);
-    } else if (feature != null) {
-      deleteAllTestHelper(pathFeature);
-    } else if (apps != null) {
-      deleteAllTestHelper(pathApps);
-    } else {
-      deleteAllTestHelper(path);
+      StatusHelper.success('Successfully removed test helper files');
+    } catch (e) {
+      _handleError('Failed to remove test helper files: ${e.toString()}');
     }
-
-    StatusHelper.success('Remove test success');
   }
-
-  void deleteAllTestHelper(String? dir) {
+  
+  /// Deletes test helper files from the specified path.
+  void _deleteTestHelpersForPath(String path) {
     final files = find(
       'bundle_test.dart',
-      workingDirectory: dir ?? current,
+      workingDirectory: path,
       recursive: true,
       types: [Find.file],
     ).toList();
@@ -71,7 +83,7 @@ class RemoveTestCommand extends Command {
 
     final fileCoverages = find(
       'coverage_helper_test.dart',
-      workingDirectory: dir ?? current,
+      workingDirectory: path,
       recursive: true,
       types: [Find.file],
     ).toList();
@@ -79,5 +91,10 @@ class RemoveTestCommand extends Command {
     for (var i = 0; i < fileCoverages.length; i++) {
       delete(fileCoverages[i]);
     }
+  }
+  
+  /// Handles errors with consistent messaging.
+  void _handleError(String message) {
+    StatusHelper.failed(message);
   }
 }

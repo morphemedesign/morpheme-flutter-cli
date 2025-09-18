@@ -1,25 +1,51 @@
 import 'dart:async';
 import 'dart:io';
 
-/// callback used when overloadin [printerr] in a DCliZone.
+/// Error output utilities for CLI applications.
+///
+/// This module provides functions for writing error messages to stderr,
+/// following CLI conventions where errors go to stderr and normal output
+/// goes to stdout.
+
+/// Callback function type for capturing stderr output.
+///
+/// This is used when overriding [printerr] behavior in zones.
 typedef CaptureZonePrintErr = void Function(String?);
 
-/// This class is highly experimental - use at your own risk.
-/// It is designed to capture any output to print or printerr
-/// within the scope of the callback.
-/// Key to the overloading [printerr] function.
-
-/// Key to the overloading [printerr] function.
+/// Zone key for capturing stderr output.
+///
+/// This experimental feature allows capturing stderr output within zones.
 const String capturePrinterrKey = 'printerr';
 
-/// [printerr] provides the equivalent functionality to the
-/// standard Dart print function but instead writes
-/// the output to stderr rather than stdout.
+/// Write a message to stderr (standard error output).
 ///
-/// CLI applications should, by convention, write error messages
-/// out to stderr and expected output to stdout.
+/// This function provides the equivalent functionality to Dart's standard
+/// [print] function, but writes to stderr instead of stdout. This follows
+/// CLI conventions where error messages should go to stderr.
 ///
-/// [line] the line to write to stderr.
+/// Parameters:
+/// - [line]: The message to write to stderr (null is converted to 'null')
+///
+/// This function cooperates with zone-based output capture if configured.
+/// When running in a zone with [capturePrinterrKey] set, the output will
+/// be redirected to the configured capture function.
+///
+/// Example:
+/// ```dart
+/// // Write error message to stderr
+/// printerr('Error: File not found');
+///
+/// // Write warning to stderr
+/// printerr('Warning: Deprecated function used');
+///
+/// // Handle null values gracefully
+/// String? message = null;
+/// printerr(message); // Outputs 'null'
+/// ```
+///
+/// See also:
+/// * [print] for writing to stdout
+/// * [capturePrinterrKey] for zone-based output capture
 void printerr(String? line) {
   /// Co-operate with runDCliZone
   final overloaded = Zone.current[capturePrinterrKey] as CaptureZonePrintErr?;

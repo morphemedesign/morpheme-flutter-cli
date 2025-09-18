@@ -1,21 +1,24 @@
-/* Copyright (C) S. Brett Sutton - All Rights Reserved
- * Unauthorized copying of this file, via any medium is strictly prohibited
- * Proprietary and confidential
- * Written by Brett Sutton <bsutton@onepub.dev>, Jan 2022
- */
-
 import 'dart:io';
 
 import 'ansi_color.dart';
 
-/// Helper class to assist in printing text to the console with a color.
+/// Helper class for ANSI escape sequence detection and management.
 ///
-/// Use one of the color functions instead of this class.
+/// This class provides utilities for detecting ANSI support in terminals
+/// and managing ANSI escape sequences for text formatting.
 ///
-/// See:
-///  * [AnsiColor]
-///  * [Terminal]
-///  ...
+/// Example usage:
+/// ```dart
+/// if (Ansi.isSupported) {
+///   print('\x1b[31mRed text\x1b[0m');
+/// } else {
+///   print('Plain text');
+/// }
+/// ```
+///
+/// See also:
+/// * [AnsiColor] for color application utilities
+/// * [red], [green], [blue] and other color functions
 class Ansi {
   /// Factory ctor
   factory Ansi() => _self;
@@ -25,7 +28,11 @@ class Ansi {
   static const _self = Ansi._internal();
   static bool? _emitAnsi;
 
-  /// returns true if stdout supports ansi escape characters.
+  /// Returns true if stdout supports ANSI escape characters.
+  ///
+  /// This detection is more reliable on non-Windows platforms.
+  /// On Windows, it relies on [stdout.supportsAnsiEscapes].
+  /// On other platforms, it defaults to true unless explicitly overridden.
   static bool get isSupported {
     if (_emitAnsi == null) {
       // We don't trust [stdout.supportsAnsiEscapes] except on Windows.
@@ -40,31 +47,39 @@ class Ansi {
     return _emitAnsi!;
   }
 
-  /// You can set [isSupported] to
-  /// override the detected ansi settings.
-  /// Dart doesn't do a great job of correctly detecting
-  /// ansi support so this give a way to override it.
-  /// If [isSupported] is true then escape charaters are emmitted
-  /// If [isSupported] is false escape characters are not emmited
-  /// By default the detected setting is used.
-  /// After setting emitAnsi you can reset back to the
-  /// default detected by calling [resetEmitAnsi].
+  /// Override the detected ANSI settings.
+  ///
+  /// Dart's ANSI detection isn't always accurate, so this provides
+  /// a way to manually control ANSI output.
+  ///
+  /// - If set to `true`: ANSI escape characters are emitted
+  /// - If set to `false`: ANSI escape characters are not emitted
+  ///
+  /// Use [resetEmitAnsi] to return to automatic detection.
   static set isSupported(bool emit) => _emitAnsi = emit;
 
-  /// If you have called [isSupported] then calling
-  /// [resetEmitAnsi]  will reset the emit
-  /// setting to the default detected.
-  static void get resetEmitAnsi => _emitAnsi = null;
+  /// Reset ANSI emission to automatic detection.
+  ///
+  /// If you have manually set [isSupported], calling this will
+  /// reset the setting back to automatic platform detection.
+  static void resetEmitAnsi() => _emitAnsi = null;
 
   /// ANSI Control Sequence Introducer, signals the terminal for new settings.
   static const esc = '\x1b[';
   // static const esc = '\u001b[';
 
-  /// Strip all ansi escape sequences from [line].
+  /// Strip all ANSI escape sequences from [line].
   ///
-  /// This method is useful when logging messages
-  /// or if you need to calculate the number of printable
-  /// characters in a message.
+  /// This method is useful for:
+  /// - Logging messages without formatting
+  /// - Calculating the number of printable characters
+  /// - Storing plain text versions of formatted output
+  ///
+  /// Example:
+  /// ```dart
+  /// final colored = red('Hello World');
+  /// final plain = Ansi.strip(colored); // 'Hello World'
+  /// ```
   static String strip(String line) =>
       line.replaceAll(RegExp('\x1b\\[[0-9;]+m'), '');
 }

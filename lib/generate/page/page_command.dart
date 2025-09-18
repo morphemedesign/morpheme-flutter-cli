@@ -1,13 +1,69 @@
-import 'dart:io';
-
 import 'package:morpheme_cli/constants.dart';
 import 'package:morpheme_cli/dependency_manager.dart';
-import 'package:morpheme_cli/helper/directory_helper.dart';
-import 'package:morpheme_cli/helper/modular_helper.dart';
-import 'package:morpheme_cli/helper/recase.dart';
 import 'package:morpheme_cli/helper/status_helper.dart';
+import 'package:morpheme_cli/generate/page/managers/page_config_manager.dart';
+import 'package:morpheme_cli/generate/page/models/page_config.dart';
+import 'package:morpheme_cli/generate/page/orchestrators/page_generation_orchestrator.dart';
 
+/// Command for generating page structures within feature modules.
+///
+/// This command creates a complete page structure following Clean Architecture principles,
+/// including data, domain, and presentation layers. It also sets up locator files for
+/// dependency injection and integrates with the feature's locator system.
+///
+/// ## Usage
+///
+/// Basic usage:
+/// ```bash
+/// morpheme page <page-name> -f <feature-name>
+/// ```
+///
+/// With apps context:
+/// ```bash
+/// morpheme page <page-name> -f <feature-name> -a <apps-name>
+/// ```
+///
+/// ## Generated Structure
+///
+/// The command generates the following directory structure:
+/// ```
+/// <page-name>/
+/// ├── data/
+/// │   ├── datasources/
+/// │   ├── models/
+/// │   │   ├── body/
+/// │   │   └── response/
+/// │   └── repositories/
+/// ├── domain/
+/// │   ├── entities/
+/// │   ├── repositories/
+/// │   └── usecases/
+/// ├── presentation/
+/// │   ├── bloc/
+/// │   ├── cubit/
+/// │   ├── pages/
+/// │   └── widgets/
+/// ├── locator.dart
+/// ```
+///
+/// ## Dependencies
+///
+/// - Requires a valid feature module to exist
+/// - Requires morpheme CLI core utilities
+/// - Uses ModularHelper for code formatting
 class PageCommand extends Command {
+  /// Configuration manager for loading and validating configuration.
+  late final PageConfigManager _configManager;
+
+  /// Orchestrator for coordinating the page generation workflow.
+  late final PageGenerationOrchestrator _orchestrator;
+
+  /// Creates a new PageCommand instance.
+  ///
+  /// Configures the command-line argument parser with required and optional parameters:
+  /// - `page-name`: Positional argument for the page name (required)
+  /// - `-f, --feature-name`: Name of the feature to add the page to (required)
+  /// - `-a, --apps-name`: Name of the apps context (optional)
   PageCommand() {
     argParser.addOption(
       'feature-name',
@@ -20,6 +76,9 @@ class PageCommand extends Command {
       abbr: 'a',
       help: 'Name of the apps to be added page.',
     );
+
+    // Initialize services
+    _initializeServices();
   }
 
   @override
@@ -31,312 +90,85 @@ class PageCommand extends Command {
   @override
   String get category => Constants.generate;
 
+  /// Initializes all service dependencies.
+  ///
+  /// This method sets up all the service classes needed for the command to function.
+  void _initializeServices() {
+    _configManager = PageConfigManager();
+    _orchestrator = PageGenerationOrchestrator();
+  }
+
   @override
   void run() async {
-    if (argResults?.rest.isEmpty ?? true) {
+    try {
+      // Validate inputs
+      if (!_validateInputs()) return;
+
+      // Prepare configuration
+      final config = _prepareConfiguration();
+
+      // Validate configuration
+      if (!_configManager.validateInputs(argResults)) return;
+
+      // Execute generation
+      final success = await _executeGeneration(config);
+
+      if (success) {
+        _reportSuccess(config.pageName, config.featureName);
+      }
+    } catch (e, stackTrace) {
       StatusHelper.failed(
-          'Page name is empty, add a new page with "morpheme page <page-name> -f <feature-name>"');
+        'Page generation failed: $e',
+        suggestion: 'Check your configuration and try again',
+        examples: [
+          'morpheme page <page-name> --help',
+          'morpheme generate page <page-name>',
+        ],
+      );
+      print('Stack trace: $stackTrace');
+    }
+  }
+
+  /// Validates input parameters and configuration.
+  ///
+  /// Returns true if validation passes, false otherwise.
+  /// Displays specific error messages with resolution guidance.
+  bool _validateInputs() {
+    return _configManager.validateInputs(argResults);
+  }
+
+  /// Prepares configuration for the generation execution.
+  ///
+  /// Returns a validated PageConfig object.
+  PageConfig _prepareConfiguration() {
+    return _configManager.loadConfig(argResults!);
+  }
+
+  /// Executes the page generation process.
+  ///
+  /// This method coordinates the complete generation workflow through the orchestrator.
+  ///
+  /// Parameters:
+  /// - [config]: The configuration for generation
+  ///
+  /// Returns: true if generation was successful, false otherwise
+  Future<bool> _executeGeneration(PageConfig config) async {
+    printMessage('🚀 Generating page structure...');
+    final success = await _orchestrator.generatePage(config);
+
+    if (success) {
+      printMessage('✅ Page generation completed successfully');
+    } else {
+      printMessage('❌ Page generation failed');
     }
 
-    final appsName = (argResults?['apps-name'] as String? ?? '').snakeCase;
-    final pathApps = join(current, 'apps', appsName);
-    String featureName =
-        (argResults?['feature-name'] as String? ?? '').snakeCase;
-    final pageName = (argResults?.rest.first ?? '').snakeCase;
-    if (appsName.isNotEmpty && !RegExp('^${appsName}_').hasMatch(featureName)) {
-      featureName = '${appsName}_$featureName';
-    }
+    return success;
+  }
 
-    if (appsName.isNotEmpty && !exists(pathApps)) {
-      StatusHelper.failed(
-          'Apps with "$appsName" does not exists, create a new apps with "morpheme apps <apps-name>"');
-    }
-
-    String pathFeature = join(current, 'features', featureName);
-    if (appsName.isNotEmpty) {
-      pathFeature = join(pathApps, 'features', featureName);
-    }
-
-    if (!exists(pathFeature)) {
-      StatusHelper.failed(
-          'Feature with "$featureName" does not exists, create a new feature with "morpheme feature <feature-name>"');
-    }
-
-    String pathPage = join(pathFeature, 'lib', pageName);
-    if (exists(pathPage)) {
-      StatusHelper.failed('Page already exists.');
-    }
-
-    final className = pageName.pascalCase;
-    final methodName = pageName.camelCase;
-
-    createDataDataSource(pathPage, pageName, className, methodName);
-    createDataModelBody(pathPage, pageName, className, methodName);
-    createDataModelResponse(pathPage, pageName, className, methodName);
-    createDataRepository(pathPage, pageName, className, methodName);
-
-    createDomainEntity(pathPage, pageName, className, methodName);
-    createDomainRepository(pathPage, pageName, className, methodName);
-    createDomainUseCase(pathPage, pageName, className, methodName);
-
-    createPresentationBloc(pathPage, pageName, className, methodName);
-    createPresentationCubit(pathPage, pageName, className, methodName);
-    createPresentationPage(pathPage, pageName, className, methodName);
-    createPresentationWidget(pathPage, pageName, className, methodName);
-
-    createLocator(pathPage, pageName, className, methodName);
-    appendLocatorFeature(
-        pathFeature, featureName, pageName, className, methodName);
-
-    await ModularHelper.format([pathFeature]);
-
+  /// Reports successful completion of the generation.
+  ///
+  /// Displays success message with the generated page and feature names.
+  void _reportSuccess(String pageName, String featureName) {
     StatusHelper.success('generate page $pageName in feature $featureName');
-  }
-
-  void generateGitKeep(String path) {
-    DirectoryHelper.createDir(path);
-    touch(join(path, '.gitkeep'), create: true);
-    StatusHelper.generated(join(path, '.gitkeep'));
-  }
-
-  void createDataDataSource(
-    String pathPage,
-    String pageName,
-    String className,
-    String methodName,
-  ) {
-    final path = join(pathPage, 'data', 'datasources');
-    generateGitKeep(path);
-  }
-
-  void createDataModelBody(
-    String pathPage,
-    String pageName,
-    String className,
-    String methodName,
-  ) {
-    final path = join(pathPage, 'data', 'models', 'body');
-    generateGitKeep(path);
-  }
-
-  void createDataModelResponse(
-    String pathPage,
-    String pageName,
-    String className,
-    String methodName,
-  ) {
-    final path = join(pathPage, 'data', 'models', 'response');
-    generateGitKeep(path);
-  }
-
-  void createDataRepository(
-    String pathPage,
-    String pageName,
-    String className,
-    String methodName,
-  ) {
-    final path = join(pathPage, 'data', 'repositories');
-    generateGitKeep(path);
-  }
-
-  void createDomainEntity(
-    String pathPage,
-    String pageName,
-    String className,
-    String methodName,
-  ) {
-    final path = join(pathPage, 'domain', 'entities');
-    generateGitKeep(path);
-  }
-
-  void createDomainRepository(
-    String pathPage,
-    String pageName,
-    String className,
-    String methodName,
-  ) {
-    final path = join(pathPage, 'domain', 'repositories');
-    generateGitKeep(path);
-  }
-
-  void createDomainUseCase(
-    String pathPage,
-    String pageName,
-    String className,
-    String methodName,
-  ) {
-    final path = join(pathPage, 'domain', 'usecases');
-    generateGitKeep(path);
-  }
-
-  void createPresentationBloc(
-    String pathPage,
-    String pageName,
-    String className,
-    String methodName,
-  ) {
-    final path = join(pathPage, 'presentation', 'bloc');
-    generateGitKeep(path);
-  }
-
-  void createPresentationCubit(
-    String pathPage,
-    String pageName,
-    String className,
-    String methodName,
-  ) {
-    final path = join(pathPage, 'presentation', 'cubit');
-    DirectoryHelper.createDir(path);
-    join(path, '${pageName}_state.dart')
-        .write('''part of '${pageName}_cubit.dart';
-
-class ${className}StateCubit extends Equatable {
-  @override
-  List<Object?> get props => [];
-}''');
-
-    join(path, '${pageName}_cubit.dart')
-        .write('''import 'package:core/core.dart';
-import 'package:flutter/material.dart';
-
-import '../pages/${pageName}_page.dart';
-
-part '${pageName}_state.dart';
-
-class ${className}Cubit extends MorphemeCubit<${className}StateCubit> {
-  ${className}Cubit() : super(${className}StateCubit());
-
-  @override
-  void initState(BuildContext context) {
-    super.initState(context);
-  }
-
-  @override
-  void initAfterFirstLayout(BuildContext context) {
-    super.initAfterFirstLayout(context);
-  }
-
-  @override
-  void initArgument<T>(BuildContext context, T widget) {
-    super.initArgument(context, widget);
-    if(widget is! ${className}Page) return;
-  }
-
-  @override
-  void didChangeDependencies(BuildContext context) {
-    super.didChangeDependencies(context);
-  }
-
-  @override
-  void didUpdateWidget<T>(
-      BuildContext context, T oldWidget, T widget) {
-    if (oldWidget is! ${className}Page || widget is! ${className}Page) return;
-  }
-
-  @override
-  List<BlocProvider> blocProviders(BuildContext context) => [];
-
-  @override
-  List<BlocListener> blocListeners(BuildContext context) => [];
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-}''');
-
-    StatusHelper.generated(join(path, '${pageName}_cubit.dart'));
-  }
-
-  void createPresentationPage(
-    String pathPage,
-    String pageName,
-    String className,
-    String methodName,
-  ) {
-    final path = join(pathPage, 'presentation', 'pages');
-    DirectoryHelper.createDir(path);
-    join(path, '${pageName}_page.dart')
-        .write('''import 'package:core/core.dart';
-import 'package:flutter/material.dart';
-
-import '../cubit/${pageName}_cubit.dart';
-
-class ${className}Page extends StatefulWidget {
-  const ${className}Page({Key? key}) : super(key: key);
-
-  @override
-  State<${className}Page> createState() => _${className}PageState();
-}
-
-class _${className}PageState extends State<${className}Page>
-    with MorphemeStatePage<${className}Page, ${className}Cubit> {
-  @override
-  ${className}Cubit setCubit() => locator<${className}Cubit>();
-
-  @override
-  Widget buildWidget(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('$className')),
-      body: Container(),
-    );
-  }
-}''');
-
-    StatusHelper.generated(join(path, '${pageName}_page.dart'));
-  }
-
-  void createPresentationWidget(
-    String pathPage,
-    String pageName,
-    String className,
-    String methodName,
-  ) {
-    final path = join(pathPage, 'presentation', 'widgets');
-    generateGitKeep(path);
-  }
-
-  void createLocator(
-    String pathPage,
-    String pageName,
-    String className,
-    String methodName,
-  ) {
-    final path = pathPage;
-    DirectoryHelper.createDir(path);
-    join(path, 'locator.dart').write('''import 'package:core/core.dart';
-
-import 'presentation/cubit/${pageName}_cubit.dart';
-
-void setupLocator$className() {
-  // *Cubit
-  locator.registerFactory(() => ${className}Cubit());
-}''');
-
-    StatusHelper.generated(join(path, 'locator.dart'));
-  }
-
-  void appendLocatorFeature(
-    String pathFeature,
-    String featureName,
-    String pageName,
-    String className,
-    String methodName,
-  ) {
-    final path = join(pathFeature, 'lib');
-    String data = File(join(path, 'locator.dart')).readAsStringSync();
-
-    data = data.replaceAll(RegExp(r'\n?void\s\w+\(\)\s{', multiLine: true),
-        '''import '$pageName/locator.dart';
-
-void setupLocatorFeature${featureName.pascalCase}() {''');
-
-    data = data.replaceAll(
-        RegExp(r'}\n$', multiLine: true), '''  setupLocator$className();
-}''');
-
-    join(path, 'locator.dart').write(data);
-
-    StatusHelper.generated(join(path, 'locator.dart'));
   }
 }
