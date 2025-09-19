@@ -19,31 +19,41 @@ class PreBuildIosCommand extends Command {
 
   @override
   void run() async {
-    final argFlavor = argResults.getOptionFlavor(defaultTo: Constants.dev);
+    _validateInputs();
+    _prepareConfiguration();
+    _setupIOS();
+    _reportSuccess();
+  }
+
+  void _validateInputs() {
     final argMorphemeYaml = argResults.getOptionMorphemeYaml();
-
     YamlHelper.validateMorphemeYaml(argMorphemeYaml);
-
-    final pathAppstoreDeployment =
-        join(current, 'ios', 'deployment', 'appstore_deployment.json');
+    
+    final pathAppstoreDeployment = join(current, 'ios', 'deployment', 'appstore_deployment.json');
     if (!exists(pathAppstoreDeployment)) {
       StatusHelper.failed('$pathAppstoreDeployment is not found!');
     }
-
-    final morphemeYaml = YamlHelper.loadFileYaml(argMorphemeYaml);
-    final Map appstoreDeployment =
-        jsonDecode(readFile(pathAppstoreDeployment))[argFlavor];
-
-    final bundleId = morphemeYaml['flavor'][argFlavor]['IOS_APPLICATION_ID'];
-
-    setupFastlane(bundleId, appstoreDeployment);
-    setupProjectIos(bundleId, appstoreDeployment);
-    setupExportOptions(bundleId, appstoreDeployment);
-
-    StatusHelper.success('prebuild ios');
   }
 
-  void setupFastlane(String bundleId, Map appstoreDeployment) {
+  void _prepareConfiguration() {
+    // Any preparation logic specific to iOS prebuild
+  }
+
+  void _setupIOS() {
+    final argFlavor = argResults.getOptionFlavor(defaultTo: Constants.dev);
+    final argMorphemeYaml = argResults.getOptionMorphemeYaml();
+    
+    final pathAppstoreDeployment = join(current, 'ios', 'deployment', 'appstore_deployment.json');
+    final morphemeYaml = YamlHelper.loadFileYaml(argMorphemeYaml);
+    final Map appstoreDeployment = jsonDecode(readFile(pathAppstoreDeployment))[argFlavor];
+    final bundleId = morphemeYaml['flavor'][argFlavor]['IOS_APPLICATION_ID'];
+    
+    _setupFastlane(bundleId, appstoreDeployment);
+    _setupProjectIos(bundleId, appstoreDeployment);
+    _setupExportOptions(bundleId, appstoreDeployment);
+  }
+
+  void _setupFastlane(String bundleId, Map appstoreDeployment) {
     final path = join(current, 'ios', 'fastlane', 'Appfile');
     path.write(
         '''app_identifier("$bundleId") # The bundle identifier of your app
@@ -58,7 +68,7 @@ team_id("${appstoreDeployment['team_id']}") # Developer Portal Team ID
     StatusHelper.generated(path);
   }
 
-  void setupProjectIos(String bundleId, Map appstoreDeployment) {
+  void _setupProjectIos(String bundleId, Map appstoreDeployment) {
     final path = join(current, 'ios', 'Runner.xcodeproj', 'project.pbxproj');
 
     String file = readFile(path);
@@ -92,12 +102,12 @@ team_id("${appstoreDeployment['team_id']}") # Developer Portal Team ID
     StatusHelper.generated(path);
   }
 
-  void setupExportOptions(String bundleId, Map appstoreDeployment) {
+  void _setupExportOptions(String bundleId, Map appstoreDeployment) {
     final path = join(current, 'ios', 'ExportOptions.plist');
 
-    path.write('''<?xml version=”1.0" encoding=”UTF-8"?>
-<!DOCTYPE plist PUBLIC “-//Apple//DTD PLIST 1.0//EN” “http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version=”1.0">
+    path.write('''<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
 <dict>
     <key>method</key>
     <string>app-store</string>
@@ -112,5 +122,9 @@ team_id("${appstoreDeployment['team_id']}") # Developer Portal Team ID
  </plist>''');
 
     StatusHelper.generated(path);
+  }
+
+  void _reportSuccess() {
+    StatusHelper.success('prebuild ios');
   }
 }

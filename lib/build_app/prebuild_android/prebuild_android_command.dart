@@ -17,26 +17,35 @@ class PreBuildAndroidCommand extends Command {
 
   @override
   void run() async {
-    final argFlavor = argResults.getOptionFlavor(defaultTo: Constants.dev);
-    final argMorphemeYaml = argResults.getOptionMorphemeYaml();
-
-    YamlHelper.validateMorphemeYaml(argMorphemeYaml);
-
-    final morphemeYaml = YamlHelper.loadFileYaml(argMorphemeYaml);
-
-    final packageName =
-        morphemeYaml['flavor'][argFlavor]['ANDROID_APPLICATION_ID'];
-
-    setupFastlane(packageName);
-
-    StatusHelper.success('prebuild android');
+    _validateInputs();
+    _prepareConfiguration();
+    _setupFastlane();
+    _reportSuccess();
   }
 
-  void setupFastlane(String packageName) {
+  void _validateInputs() {
+    final argMorphemeYaml = argResults.getOptionMorphemeYaml();
+    YamlHelper.validateMorphemeYaml(argMorphemeYaml);
+  }
+
+  void _prepareConfiguration() {
+    // Any preparation logic specific to Android prebuild
+  }
+
+  void _setupFastlane() {
+    final argFlavor = argResults.getOptionFlavor(defaultTo: Constants.dev);
+    final argMorphemeYaml = argResults.getOptionMorphemeYaml();
+    final morphemeYaml = YamlHelper.loadFileYaml(argMorphemeYaml);
+    final packageName = morphemeYaml['flavor'][argFlavor]['ANDROID_APPLICATION_ID'];
+    
     final path = join(current, 'android', 'fastlane', 'Appfile');
     path.write('''json_key_file("fastlane/play-store.json")
 package_name("$packageName")''');
-
+    
     StatusHelper.generated(path);
+  }
+
+  void _reportSuccess() {
+    StatusHelper.success('prebuild android');
   }
 }

@@ -13,7 +13,7 @@ class PreBuildCommand extends Command {
   String get name => 'prebuild';
 
   @override
-  String get description => 'Prepare setup ios before build';
+  String get description => 'Prepare setup before build';
 
   @override
   String get category => Constants.build;
