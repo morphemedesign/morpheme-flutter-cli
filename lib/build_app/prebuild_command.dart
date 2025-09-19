@@ -1,46 +1,3 @@
-/// Prebuild command container for platform-specific setup operations.
-///
-/// This command serves as the main entry point for prebuild setup operations,
-/// organizing platform-specific prebuild commands under a unified interface
-/// with enhanced documentation and setup guidance.
-///
-/// ## Available Prebuild Commands
-/// - **android**: Prepare Android project for build operations
-/// - **ios**: Prepare iOS project for build operations (macOS required)
-///
-/// ## Prebuild Purpose
-/// Prebuild commands prepare platform-specific build environments by:
-/// - Configuring deployment automation (Fastlane)
-/// - Setting up code signing and certificates
-/// - Generating platform-specific configuration files
-/// - Validating build prerequisites and dependencies
-///
-/// ## Common Setup Tasks
-/// - **Fastlane Configuration**: Automated deployment setup
-/// - **Code Signing**: Certificates and provisioning profiles
-/// - **Build Settings**: Project-specific build configuration
-/// - **Deployment Keys**: Service account and API key setup
-///
-/// ## Usage Examples
-/// ```bash
-/// # Setup Android prebuild for production
-/// morpheme prebuild android --flavor prod
-///
-/// # Setup iOS prebuild with team configuration
-/// morpheme prebuild ios --flavor prod
-///
-/// # Setup development environment
-/// morpheme prebuild android --flavor dev
-/// morpheme prebuild ios --flavor dev
-/// ```
-///
-/// ## Prerequisites
-/// - Valid morpheme.yaml with flavor configurations
-/// - Platform-specific deployment configuration files
-/// - Required development tools (Xcode for iOS, Android SDK)
-/// - Appropriate certificates and provisioning profiles
-library;
-
 import 'package:morpheme_cli/build_app/prebuild_android/prebuild_android_command.dart';
 import 'package:morpheme_cli/build_app/prebuild_ios/prebuild_ios_command.dart';
 import 'package:morpheme_cli/constants.dart';
@@ -52,10 +9,6 @@ import 'package:morpheme_cli/dependency_manager.dart';
 /// unified access to build environment preparation across
 /// different target platforms.
 class PreBuildCommand extends Command {
-  /// Creates a new PreBuildCommand with all platform subcommands.
-  ///
-  /// Initializes and registers all available prebuild commands
-  /// including Android and iOS setup operations.
   PreBuildCommand() {
     addSubcommand(PreBuildAndroidCommand());
     addSubcommand(PreBuildIosCommand());
@@ -65,8 +18,7 @@ class PreBuildCommand extends Command {
   String get name => 'prebuild';
 
   @override
-  String get description =>
-      'Prepare platform-specific build environments and deployment setup.';
+  String get description => 'Prepare setup before build';
 
   @override
   String get category => Constants.build;
