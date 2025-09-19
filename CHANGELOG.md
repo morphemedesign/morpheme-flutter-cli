@@ -1,3 +1,15 @@
+## 4.0.0-beta.3
+
+refactor(build): consolidate build commands with base class
+
+- Extract common build argument parsing and run logic into BuildCommandBase
+- Refactor Apk, Appbundle, Ios, Ipa, and Web commands to extend BuildCommandBase
+- Move platform-specific build command construction to subclasses
+- Simplify and unify build process flow in all build commands
+- Refactor prebuild commands for Android and iOS to improve structure and validation
+- Add specific arguments to iOS and IPA commands where needed
+- Enhance code maintainability and reduce duplication across build commands
+
 ## 4.0.0-beta.2
 
 style(project): format code and adjust line breaks across multiple files
