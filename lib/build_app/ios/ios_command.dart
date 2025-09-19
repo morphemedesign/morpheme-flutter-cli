@@ -18,17 +18,6 @@ import 'package:morpheme_cli/extensions/extensions.dart';
 /// - Distribution builds: Distribution certificate + distribution provisioning profile
 /// - Ad-hoc builds: Distribution certificate + ad-hoc provisioning profile
 ///
-/// ## Configuration
-/// Uses morpheme.yaml for iOS-specific configuration:
-/// ```yaml
-/// ios:
-///   prod:
-///     codesign: true
-///     provisioning:
-///       teamId: "XXXXXXXXXX"
-///       provisioningProfile: "Profile Name"
-/// ```
-///
 /// ## Usage Examples
 /// ```bash
 /// # Build for iOS simulator (no code signing required)

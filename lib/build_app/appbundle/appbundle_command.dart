@@ -17,17 +17,6 @@ import 'package:morpheme_cli/build_app/base/build_command_base.dart';
 /// - Enhanced security and optimization
 /// - Support for feature modules and asset packs
 ///
-/// ## Configuration
-/// Uses morpheme.yaml for flavor and build configuration:
-/// ```yaml
-/// android:
-///   prod:
-///     buildAppBundle: true
-///     signing:
-///       keystorePath: "release.keystore"
-///       keyAlias: "release"
-/// ```
-///
 /// ## Usage Examples
 /// ```bash
 /// # Build release App Bundle for production

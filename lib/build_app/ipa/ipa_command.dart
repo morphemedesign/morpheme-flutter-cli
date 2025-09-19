@@ -22,17 +22,6 @@ import 'package:morpheme_cli/extensions/extensions.dart';
 /// - **development**: For development team distribution
 /// - **enterprise**: For enterprise in-house distribution
 ///
-/// ## Configuration
-/// Uses morpheme.yaml and appstore_deployment.json for configuration:
-/// ```yaml
-/// ios:
-///   prod:
-///     exportMethod: "app-store"
-///     provisioning:
-///       teamId: "XXXXXXXXXX"
-///       provisioningProfile: "App Store Profile"
-/// ```
-///
 /// ## Usage Examples
 /// ```bash
 /// # Build IPA for App Store submission

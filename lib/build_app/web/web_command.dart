@@ -31,17 +31,6 @@ import 'package:morpheme_cli/extensions/extensions.dart';
 /// - Browser compatibility and fallbacks
 /// - CORS configuration for API access
 ///
-/// ## Configuration
-/// Uses morpheme.yaml for web-specific configuration:
-/// ```yaml
-/// web:
-///   prod:
-///     baseHref: "/app/"
-///     webRenderer: "canvaskit"
-///     pwaStrategy: "offline-first"
-///     csp: true
-/// ```
-///
 /// ## Usage Examples
 /// ```bash
 /// # Build for production with CanvasKit renderer
