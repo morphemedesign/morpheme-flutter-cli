@@ -49,21 +49,24 @@ class Local2DartConfigManager {
 
     // Validate table definitions
     for (final entry in config.table.entries) {
-      if (!_validateTableDefinition(entry.key, entry.value as Map<String, dynamic>)) {
+      if (!_validateTableDefinition(
+          entry.key, entry.value as Map<String, dynamic>)) {
         return false;
       }
     }
 
     // Validate query definitions
     for (final entry in config.query.entries) {
-      if (!_validateQueryDefinition(entry.key, entry.value as Map<String, dynamic>)) {
+      if (!_validateQueryDefinition(
+          entry.key, entry.value as Map<String, dynamic>)) {
         return false;
       }
     }
 
     // Validate view definitions
     for (final entry in config.view.entries) {
-      if (!_validateViewDefinition(entry.key, entry.value as Map<String, dynamic>)) {
+      if (!_validateViewDefinition(
+          entry.key, entry.value as Map<String, dynamic>)) {
         return false;
       }
     }
@@ -124,7 +127,8 @@ class Local2DartConfigManager {
             upperConstraint != 'FOREIGN KEY' &&
             upperConstraint != 'UNIQUE' &&
             upperConstraint != 'CHECK') {
-          StatusHelper.failed('Column $name has invalid constraint: $constraint');
+          StatusHelper.failed(
+              'Column $name has invalid constraint: $constraint');
           return false;
         }
       }
@@ -190,8 +194,9 @@ class Local2DartConfigManager {
 
     config.table.forEach((tableName, tableConfig) {
       if (tableConfig is Map<String, dynamic>) {
-        final createIfNotExists = tableConfig['create_if_not_exists'] as bool? ?? true;
-        
+        final createIfNotExists =
+            tableConfig['create_if_not_exists'] as bool? ?? true;
+
         // Parse columns
         final columns = <String, ColumnDefinition>{};
         final columnConfig = tableConfig['column'] as Map<String, dynamic>?;

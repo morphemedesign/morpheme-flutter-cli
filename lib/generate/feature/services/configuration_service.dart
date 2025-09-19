@@ -59,7 +59,8 @@ test/coverage_helper_test.dart
   ///
   /// This method sets up the analysis_options.yaml file to include the standard
   /// dev_dependency_manager configuration.
-  void setupAnalysisOptions(String pathFeature, String featureName, String appsName) {
+  void setupAnalysisOptions(
+      String pathFeature, String featureName, String appsName) {
     final path = join(pathFeature, 'analysis_options.yaml');
     path.write('''include: package:dev_dependency_manager/flutter.yaml
     

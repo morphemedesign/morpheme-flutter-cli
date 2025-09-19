@@ -88,7 +88,8 @@ class FeatureOrchestrator {
       ]);
 
       printMessage('📥 Running pub get...');
-      await FlutterHelper.start('pub get', workingDirectory: config.featurePath);
+      await FlutterHelper.start('pub get',
+          workingDirectory: config.featurePath);
       await FlutterHelper.start('pub get',
           workingDirectory: config.appsName.isEmpty ? '.' : config.appsPath);
 

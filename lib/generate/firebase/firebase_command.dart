@@ -220,7 +220,8 @@ class FirebaseCommand extends Command {
         firebaseConfig.serviceAccount!.isNotEmpty &&
         exists(firebaseConfig.serviceAccount!);
 
-    final commandFlutterFire = FirebaseHelper.buildFlutterFireCommand(config);
+    final commandFlutterFire =
+        FirebaseHelper.buildFlutterFireCommand(firebaseConfig);
 
     // Handle CI/CD with service account
     if ((isCiCdEnvironment && firebaseConfig.enableCiUseServiceAccount ||

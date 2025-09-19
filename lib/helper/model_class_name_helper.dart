@@ -22,13 +22,13 @@ class ModelClassName {
 
   /// The name of the class
   final String className;
-  
+
   /// The parent context or container of this class
   final String parent;
-  
+
   /// Whether this class has been created/generated
   final bool created;
-  
+
   /// Optional parent list context
   final String? parentList;
 
@@ -116,7 +116,7 @@ abstract class ModelClassNameHelper {
   /// Example:
   /// ```dart
   /// final listClassName = <ModelClassName>[];
-  /// 
+  ///
   /// // Generate a unique class name for a User model
   /// final className1 = ModelClassNameHelper.getClassName(
   ///   listClassName,
@@ -127,7 +127,7 @@ abstract class ModelClassNameHelper {
   ///   'models'
   /// );
   /// print(className1); // UserModel
-  /// 
+  ///
   /// // Generate another class name that might conflict
   /// final className2 = ModelClassNameHelper.getClassName(
   ///   listClassName,

@@ -19,7 +19,7 @@ class HttpClientHelper {
   ///   - contentLength: Total size of the file in bytes (-1 if unknown)
   ///   - progress: Percentage of download completed (0.0 to 100.0)
   ///
-  /// Returns: A Future that completes with the downloaded file contents as List<int>
+  /// Returns: A Future that completes with the downloaded file contents as List&lt;int&gt;
   ///
   /// Example:
   /// ```dart
@@ -63,7 +63,8 @@ class HttpClientHelper {
         }
         return bytes;
       } else {
-        throw HttpException('Failed to download file from $url with status code ${response.statusCode}');
+        throw HttpException(
+            'Failed to download file from $url with status code ${response.statusCode}');
       }
     } finally {
       client.close();

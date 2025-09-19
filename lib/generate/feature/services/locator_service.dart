@@ -13,7 +13,8 @@ class LocatorService {
   ///
   /// This method updates the locator.dart file to import the feature's locator
   /// and call its setup function.
-  void addFeatureToLocator(String pathFeature, String featureName, String appsName) {
+  void addFeatureToLocator(
+      String pathFeature, String featureName, String appsName) {
     String pathLocator = join(current, 'lib', 'locator.dart');
     if (appsName.isNotEmpty) {
       pathLocator = join(current, 'apps', appsName, 'lib', 'locator.dart');
@@ -49,7 +50,7 @@ Future<void> setup''',
       '''  setupLocatorFeature${featureName.pascalCase}();
 }''',
     );
-    
+
     pathLocator.write(locator);
     StatusHelper.generated(pathLocator);
   }

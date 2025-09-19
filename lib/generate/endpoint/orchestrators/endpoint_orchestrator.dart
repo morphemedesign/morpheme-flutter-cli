@@ -32,7 +32,7 @@ class EndpointOrchestrator {
   Future<bool> execute(EndpointConfig config) async {
     try {
       printMessage('🚀 Generating endpoints...');
-      
+
       // Delete old endpoint files
       final pathDir = join(
         current,

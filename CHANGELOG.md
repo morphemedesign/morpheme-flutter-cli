@@ -1,3 +1,18 @@
+## 4.0.0-beta.2
+
+style(project): format code and adjust line breaks across multiple files
+
+- Add missing trailing newlines and fix inconsistent closing braces
+- Align multiline method chains and arguments for better readability
+- Update import and string formatting style in feature_processor.dart for clarity
+- Standardize whitespace usage and indentation in commands and services
+- Refactor long lines in config managers for improved maintainability
+- Enhance error messages and suggestions format consistency
+- Improve listener method code generation in feature_processor.dart
+- Clean up pubspec.yaml modification logic in feature and core services
+- Maintain consistent blank lines between methods and code blocks
+- Add toString override in FirebaseConfig model for improved debugging output
+
 ## 4.0.0-beta
 
 feat!: major release with breaking changes and new features

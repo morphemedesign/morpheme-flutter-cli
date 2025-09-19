@@ -100,7 +100,8 @@ class Color2DartConfigManager {
   bool validateConfig(Color2DartConfig config) {
     // Check if morpheme.yaml file exists
     if (!exists(config.morphemeYamlPath)) {
-      StatusHelper.failed('morpheme.yaml not found at ${config.morphemeYamlPath}');
+      StatusHelper.failed(
+          'morpheme.yaml not found at ${config.morphemeYamlPath}');
       return false;
     }
 

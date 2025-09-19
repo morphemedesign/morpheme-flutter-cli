@@ -49,7 +49,8 @@ class PageGenerationOrchestrator {
   })  : _validationService = validationService ?? PageValidationService(),
         _dataService = dataService ?? DataLayerGenerationService(),
         _domainService = domainService ?? DomainLayerGenerationService(),
-        _presentationService = presentationService ?? PresentationLayerGenerationService(),
+        _presentationService =
+            presentationService ?? PresentationLayerGenerationService(),
         _locatorService = locatorService ?? LocatorGenerationService();
 
   /// Generates a complete page structure based on the configuration.
@@ -126,6 +127,7 @@ class PageGenerationOrchestrator {
   /// Parameters:
   /// - [config]: Configuration containing generation details
   void _reportSuccess(PageConfig config) {
-    StatusHelper.success('generate page ${config.pageName} in feature ${config.featureName}');
+    StatusHelper.success(
+        'generate page ${config.pageName} in feature ${config.featureName}');
   }
 }

@@ -313,7 +313,8 @@ extension ArgResultsExtension on ArgResults? {
   /// final sourceMapsFlag = argResults.getFlagSourceMaps();
   /// // Returns '--source-maps' or ''
   /// ```
-  String getFlagSourceMaps() => this?['source-maps'] ?? false ? '--source-maps' : '';
+  String getFlagSourceMaps() =>
+      this?['source-maps'] ?? false ? '--source-maps' : '';
 
   /// Gets the dart2js optimization option formatted for command-line usage.
   ///

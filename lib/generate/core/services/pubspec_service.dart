@@ -15,7 +15,8 @@ class PubspecService {
   /// [config] - Configuration for the package to add
   void updateCorePubspec(PackageConfiguration config) {
     try {
-      String pubspec = File(join(current, 'core', 'pubspec.yaml')).readAsStringSync();
+      String pubspec =
+          File(join(current, 'core', 'pubspec.yaml')).readAsStringSync();
       pubspec = pubspec.replaceAll(
         RegExp(r'(^\n?dev_dependencies)', multiLine: true),
         '''  ${config.snakeCaseName}:
@@ -29,7 +30,8 @@ dev_dependencies''',
     } catch (e) {
       StatusHelper.failed(
         'Failed to update core pubspec.yaml',
-        suggestion: 'Check file permissions and ensure core/pubspec.yaml exists',
+        suggestion:
+            'Check file permissions and ensure core/pubspec.yaml exists',
       );
       rethrow;
     }

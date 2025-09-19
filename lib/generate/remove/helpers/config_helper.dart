@@ -23,32 +23,35 @@ abstract class ConfigHelper {
 
   /// Removes feature references from a locator file.
   static void removeFeatureFromLocator(String appsName, String featureName) {
-    final workingDir = appsName.isEmpty ? current : join(current, 'apps', appsName);
+    final workingDir =
+        appsName.isEmpty ? current : join(current, 'apps', appsName);
     final pathLibLocator = join(workingDir, 'lib', 'locator.dart');
-    
+
     if (File(pathLibLocator).existsSync()) {
       String data = File(pathLibLocator).readAsStringSync();
 
       data = data.replaceAll(
           "import 'package:${featureName.snakeCase}/locator.dart';", '');
-      data =
-          data.replaceAll("setupLocatorFeature${featureName.pascalCase}();", '');
+      data = data.replaceAll(
+          "setupLocatorFeature${featureName.pascalCase}();", '');
 
       File(pathLibLocator).writeAsStringSync(data);
     }
   }
 
   /// Removes page references from a feature locator file.
-  static void removePageFromLocator(String appsName, String featureName, String pageName) {
-    final pathFeature = appsName.isEmpty 
-        ? join(current, 'features', featureName) 
+  static void removePageFromLocator(
+      String appsName, String featureName, String pageName) {
+    final pathFeature = appsName.isEmpty
+        ? join(current, 'features', featureName)
         : join(current, 'apps', appsName, 'features', featureName);
     final pathFeatureLocator = join(pathFeature, 'lib', 'locator.dart');
-    
+
     if (File(pathFeatureLocator).existsSync()) {
       String data = File(pathFeatureLocator).readAsStringSync();
 
-      data = data.replaceAll("import '${pageName.snakeCase}/locator.dart';", '');
+      data =
+          data.replaceAll("import '${pageName.snakeCase}/locator.dart';", '');
       data = data.replaceAll("setupLocator${pageName.pascalCase}();", '');
 
       File(pathFeatureLocator).writeAsStringSync(data);
@@ -77,9 +80,10 @@ abstract class ConfigHelper {
 
   /// Removes feature entries from pubspec.yaml.
   static void removeFeatureFromPubspec(String appsName, String featureName) {
-    final workingDir = appsName.isEmpty ? current : join(current, 'apps', appsName);
+    final workingDir =
+        appsName.isEmpty ? current : join(current, 'apps', appsName);
     final pathPubspec = join(workingDir, 'pubspec.yaml');
-    
+
     if (File(pathPubspec).existsSync()) {
       String pubspec = File(pathPubspec).readAsStringSync();
 

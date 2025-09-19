@@ -45,37 +45,37 @@ class LocalizationHelper {
 
   /// The directory containing ARB files
   late String _abrDir;
-  
+
   /// The template ARB file name
   late String _templateArbFile;
-  
+
   /// The output localization file name
   late String _outputLocalizationFile;
-  
+
   /// The output class name for generated localization code
   late String _outputClass;
-  
+
   /// The output directory for generated localization files
   late String _outputDir;
-  
+
   /// Whether to replace existing files during generation
   late bool _replace;
 
   /// Gets the directory containing ARB files
   String get arbDir => _abrDir;
-  
+
   /// Gets the template ARB file name
   String get templateArbFile => _templateArbFile;
-  
+
   /// Gets the output localization file name
   String get outputLocalizationFile => _outputLocalizationFile;
-  
+
   /// Gets the output class name for generated localization code
   String get outputClass => _outputClass;
-  
+
   /// Gets the output directory for generated localization files
   String get outputDir => _outputDir;
-  
+
   /// Gets whether to replace existing files during generation
   bool get replace => _replace;
 }

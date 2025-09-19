@@ -35,7 +35,7 @@ class FeatureConfigManager {
   FeatureConfig loadConfig(String featureName, String appsName) {
     final snakeCaseFeatureName = featureName.snakeCase;
     final snakeCaseAppsName = appsName.snakeCase;
-    
+
     String finalFeatureName = snakeCaseFeatureName;
     if (snakeCaseAppsName.isNotEmpty &&
         !RegExp('^${snakeCaseAppsName}_').hasMatch(snakeCaseFeatureName)) {
@@ -44,7 +44,7 @@ class FeatureConfigManager {
 
     final pathApps = join(current, 'apps', snakeCaseAppsName);
     String pathFeature = join(current, 'features', finalFeatureName);
-    
+
     if (snakeCaseAppsName.isNotEmpty) {
       pathFeature = join(pathApps, 'features', finalFeatureName);
     }

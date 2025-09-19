@@ -16,7 +16,8 @@ abstract class PathHelper {
   }
 
   /// Gets the path for a page directory.
-  static String getPagePath(String appsName, String featureName, String pageName) {
+  static String getPagePath(
+      String appsName, String featureName, String pageName) {
     return join(getFeaturePath(appsName, featureName), 'lib', pageName);
   }
 
@@ -29,7 +30,8 @@ abstract class PathHelper {
   }
 
   /// Gets the path for a page test directory.
-  static String getPageTestPath(String appsName, String featureName, String pageName) {
+  static String getPageTestPath(
+      String appsName, String featureName, String pageName) {
     return join(getFeatureTestPath(appsName, featureName), '${pageName}_test');
   }
 

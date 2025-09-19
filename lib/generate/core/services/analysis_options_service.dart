@@ -13,7 +13,8 @@ class AnalysisOptionsService {
   /// [config] - Configuration for the package
   void setup(PackageConfiguration config) {
     try {
-      config.analysisOptionsPath.write('''include: package:dev_dependency_manager/flutter.yaml
+      config.analysisOptionsPath
+          .write('''include: package:dev_dependency_manager/flutter.yaml
     
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

@@ -58,18 +58,19 @@ class FirebaseConfig {
   /// Parameters:
   /// - [map]: Map containing configuration values
   /// - [flavor]: Map containing flavor-specific values for defaults
-  factory FirebaseConfig.fromMap(Map<dynamic, dynamic> map, Map<dynamic, dynamic> flavor) {
+  factory FirebaseConfig.fromMap(
+      Map<dynamic, dynamic> map, Map<dynamic, dynamic> flavor) {
     return FirebaseConfig(
       projectId: map['project_id'] as String,
       token: map['token'] as String?,
       platform: map['platform'] as String?,
       output: map['output'] as String?,
-      androidPackageName: map['android_package_name'] as String? ?? 
-                         flavor['ANDROID_APPLICATION_ID'] as String? ?? 
-                         '',
-      iosBundleId: map['ios_bundle_id'] as String? ?? 
-                   flavor['IOS_APPLICATION_ID'] as String? ?? 
-                   '',
+      androidPackageName: map['android_package_name'] as String? ??
+          flavor['ANDROID_APPLICATION_ID'] as String? ??
+          '',
+      iosBundleId: map['ios_bundle_id'] as String? ??
+          flavor['IOS_APPLICATION_ID'] as String? ??
+          '',
       webAppId: map['web_app_id'] as String?,
       serviceAccount: map['service_account'] as String?,
       enableCiUseServiceAccount: map['enable_ci_use_service_account'] is bool
@@ -77,5 +78,10 @@ class FirebaseConfig {
           : false,
       overwrite: false, // This will be set from command line flag
     );
+  }
+
+  @override
+  String toString() {
+    return 'FirebaseConfig(projectId: $projectId, token: $token, platform: $platform, output: $output, androidPackageName: $androidPackageName, iosBundleId: $iosBundleId, webAppId: $webAppId, serviceAccount: $serviceAccount, enableCiUseServiceAccount: $enableCiUseServiceAccount, overwrite: $overwrite)';
   }
 }

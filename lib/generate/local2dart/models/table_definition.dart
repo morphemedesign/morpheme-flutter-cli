@@ -1,5 +1,3 @@
-
-
 /// Represents a column definition in a table.
 class ColumnDefinition {
   /// The name of the column.

@@ -89,7 +89,7 @@ class Local2DartCommand extends Command {
     try {
       // Check if this is an init command
       final isInit = argResults?.rest.firstOrNull == 'init';
-      
+
       if (isInit) {
         // Handle init command directly
         await _handleInitCommand();
@@ -107,7 +107,7 @@ class Local2DartCommand extends Command {
 
       // Execute generation
       final success = await _executeGeneration(config);
-      
+
       if (success) {
         _reportSuccess();
       }
@@ -130,11 +130,12 @@ class Local2DartCommand extends Command {
   /// Displays specific error messages with resolution guidance.
   bool _validateInputs() {
     final configPath = join(current, 'local2dart', 'local2dart.yaml');
-    
+
     if (!exists(configPath)) {
       StatusHelper.failed(
         'Configuration file not found: $configPath',
-        suggestion: 'Run "morpheme generate local2dart init" to create the configuration file',
+        suggestion:
+            'Run "morpheme generate local2dart init" to create the configuration file',
         examples: ['morpheme generate local2dart init'],
       );
       return false;
@@ -161,9 +162,10 @@ class Local2DartCommand extends Command {
   /// Returns: true if generation was successful, false otherwise
   Future<bool> _executeGeneration(Local2DartConfig config) async {
     printMessage('🎨 Generating Local2Dart classes...');
-    
-    final pathPackageLocal2dart = join(current, 'core', 'packages', 'local2dart');
-    
+
+    final pathPackageLocal2dart =
+        join(current, 'core', 'packages', 'local2dart');
+
     // Ensure the local2dart package exists
     if (!exists(pathPackageLocal2dart)) {
       await 'morpheme core local2dart'.run;
@@ -172,13 +174,13 @@ class Local2DartCommand extends Command {
     }
 
     final success = await _orchestrator.generate(config, pathPackageLocal2dart);
-    
+
     if (success) {
       printMessage('✅ Local2Dart generation completed successfully');
     } else {
       printMessage('❌ Local2Dart generation failed');
     }
-    
+
     return success;
   }
 
@@ -187,7 +189,7 @@ class Local2DartCommand extends Command {
   /// This method processes the init command to create initial configuration.
   Future<void> _handleInitCommand() async {
     printMessage('🔧 Initializing Local2Dart configuration...');
-    
+
     final path = join(current, 'local2dart');
     _orchestrator.init(path);
   }

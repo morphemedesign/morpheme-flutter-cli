@@ -82,7 +82,7 @@ class ApiConfigurationManager {
     // Apply method-specific adjustments
     // Determine if cache strategy should be applied
     final shouldApplyCacheStrategy = isApplyCacheStrategy(config.method);
-    
+
     // Create a new config with appropriate values
     return ApiGenerationConfig(
       apiName: config.apiName,
@@ -101,7 +101,8 @@ class ApiConfigurationManager {
       // Remove cache strategy for methods that don't support it
       cacheStrategy: shouldApplyCacheStrategy ? config.cacheStrategy : null,
       ttl: shouldApplyCacheStrategy ? config.ttl : null,
-      keepExpiredCache: shouldApplyCacheStrategy ? config.keepExpiredCache : null,
+      keepExpiredCache:
+          shouldApplyCacheStrategy ? config.keepExpiredCache : null,
     );
   }
 

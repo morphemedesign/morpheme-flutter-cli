@@ -53,9 +53,11 @@ class RemoveTestCommand extends Command {
 
     try {
       if (page != null) {
-        _deleteTestHelpersForPath(PathHelper.getPageTestPath(apps ?? '', feature ?? '', page));
+        _deleteTestHelpersForPath(
+            PathHelper.getPageTestPath(apps ?? '', feature ?? '', page));
       } else if (feature != null) {
-        _deleteTestHelpersForPath(PathHelper.getFeatureTestPath(apps ?? '', feature));
+        _deleteTestHelpersForPath(
+            PathHelper.getFeatureTestPath(apps ?? '', feature));
       } else if (apps != null) {
         _deleteTestHelpersForPath(PathHelper.getAppsTestPath(apps));
       } else {
@@ -67,7 +69,7 @@ class RemoveTestCommand extends Command {
       _handleError('Failed to remove test helper files: ${e.toString()}');
     }
   }
-  
+
   /// Deletes test helper files from the specified path.
   void _deleteTestHelpersForPath(String path) {
     final files = find(
@@ -92,7 +94,7 @@ class RemoveTestCommand extends Command {
       delete(fileCoverages[i]);
     }
   }
-  
+
   /// Handles errors with consistent messaging.
   void _handleError(String message) {
     StatusHelper.failed(message);

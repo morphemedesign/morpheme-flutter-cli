@@ -1,5 +1,3 @@
-
-
 /// Configuration model for Local2Dart command.
 ///
 /// This class represents the parsed YAML configuration for local2dart generation.

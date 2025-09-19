@@ -237,16 +237,15 @@ abstract class ModularHelper {
     final itemType = isDirectoryExecution ? 'Packages' : 'Command';
     printMessage('📦 Total $itemType: $length');
     printMessage('---------------------------------------');
-    
+
     for (int runnable = 0; runnable < length; runnable += concurrent) {
       int take =
           runnable + concurrent > length ? length % concurrent : concurrent;
 
       final isolate = futures.getRange(runnable, runnable + take).map((e) {
         final item = e.$1;
-        final itemLabel = isDirectoryExecution 
-            ? '$item: ${items.join(', ')}' 
-            : item;
+        final itemLabel =
+            isDirectoryExecution ? '$item: ${items.join(', ')}' : item;
         printMessage('🚀 $itemLabel');
 
         return Isolate.run<(String, bool, List<(bool, String)>)>(e.$2);
@@ -254,16 +253,15 @@ abstract class ModularHelper {
 
       final results = await Future.wait(isolate);
       bool isAllExecutedSuccess = true;
-      
+
       for (var i = 0; i < results.length; i++) {
         final item = results[i].$1;
         final isSuccess = results[i].$2;
         final logs = results[i].$3;
-        
-        final itemLabel = isDirectoryExecution 
-            ? '$item: ${items.join(', ')}' 
-            : item;
-            
+
+        final itemLabel =
+            isDirectoryExecution ? '$item: ${items.join(', ')}' : item;
+
         if (isSuccess) {
           printMessage('✅  $itemLabel');
         } else {
@@ -275,7 +273,7 @@ abstract class ModularHelper {
           _processLogs(logs);
         }
       }
-      
+
       _handleFinalExecutionException(isAllExecutedSuccess);
     }
   }
@@ -454,7 +452,7 @@ abstract class ModularHelper {
   }) async {
     final workingDirectoryFlutter = _findFlutterProjects(ignorePubWorkspaces);
     final futures = _createSequenceFutures(workingDirectoryFlutter, runner);
-    
+
     await _executeSequence(futures);
   }
 

@@ -215,10 +215,11 @@ class FeatureProcessor {
 
       // Add imports
       for (final blocName in blocsName) {
-        final importStatement = RegExp(
-            'import\\s*\'package:${featureName.snakeCase}/${pageName.snakeCase}/presentation/bloc/${blocName.snakeCase}/${blocName.snakeCase}_bloc.dart\';');
+        final importStatement =
+            'import \'package:${featureName.snakeCase}/${pageName.snakeCase}/presentation/bloc/${blocName.snakeCase}/${blocName.snakeCase}_bloc.dart\';';
 
-        if (!cubit.contains(importStatement)) {
+        if (!cubit.contains(RegExp(
+            'import\\s*\'package:${featureName.snakeCase}/${pageName.snakeCase}/presentation/bloc/${blocName.snakeCase}/${blocName.snakeCase}_bloc.dart\';'))) {
           cubit = '$importStatement\n$cubit';
         }
       }
@@ -304,7 +305,7 @@ ${blocsName.isEmpty ? '' : blocsName.map((e) => '    required this.${e.camelCase
         for (final blocName in blocsName.reversed) {
           if (!arrayContent.contains(RegExp('${blocName.camelCase}Bloc'))) {
             arrayContent =
-                '        BlocProvider<${blocName.pascalCase}Bloc>.value(value: ${blocName.camelCase}Bloc,),\n$arrayContent';
+                '$arrayContent\n        BlocProvider<${blocName.pascalCase}Bloc>.value(value: ${blocName.camelCase}Bloc,),';
           }
         }
 
@@ -346,14 +347,21 @@ $providers
         for (final blocName in blocsName.reversed) {
           if (!arrayContent.contains(RegExp('${blocName.pascalCase}Bloc'))) {
             arrayContent =
-                'BlocListener<${blocName.pascalCase}Bloc, ${blocName.pascalCase}State>(listener: listener${blocName.pascalCase}Bloc,),';
+                '$arrayContent\n        BlocListener<${blocName.pascalCase}Bloc, ${blocName.pascalCase}State>(listener: listener${blocName.pascalCase}Bloc,),';
+          }
+        }
 
-            // Add listener method if not exists
-            if (!cubit.contains(
-                RegExp('void\\s*listener${blocName.pascalCase}Bloc'))) {
-              cubit = cubit.replaceAll(
-                RegExp(r'\}(?![\s\S]*\})', multiLine: true),
-                '''void listener${blocName.pascalCase}Bloc(${blocName.pascalCase}Bloc bloc, ${blocName.pascalCase}State state) {
+        return '''List<BlocListener> blocListeners(BuildContext context) => [
+  $arrayContent
+        ];''';
+      });
+
+      for (final blocName in blocsName.reversed) {
+        if (!cubit
+            .contains(RegExp('void\\s*listener${blocName.pascalCase}Bloc'))) {
+          cubit = cubit.replaceAll(
+            RegExp(r'\}(?![\s\S]*\})', multiLine: true),
+            '''  void listener${blocName.pascalCase}Bloc(BuildContext context, ${blocName.pascalCase}State state) {
     state.when(
       onFailed: (state) {
         // handle failed state
@@ -364,15 +372,9 @@ $providers
     );
   }
 }''',
-              );
-            }
-          }
+          );
         }
-
-        return '''List<BlocListener> blocListeners(BuildContext context) => [
-  $arrayContent
-        ];''';
-      });
+      }
     } else {
       // Add bloc listeners if not exists
       final listeners = blocsName
@@ -386,7 +388,21 @@ $providers
   List<BlocListener> blocListeners(BuildContext context) => [
 $listeners
       ];
+  
+  ${blocsName.map(
+              (e) =>
+                  '''  void listener${e.pascalCase}Bloc(BuildContext context, ${e.pascalCase}State state) {
+    state.when(
+      onFailed: (state) {
+        // handle failed state
+      },
+      onSuccess: (state) {
+        // handle success state
+      },
+    );
   }''',
+            ).join('\n')}
+}''',
       );
     }
 
@@ -406,7 +422,8 @@ $listeners
 
         for (final blocName in blocsName.reversed) {
           if (!arrayContent.contains(RegExp('${blocName.camelCase}Bloc'))) {
-            arrayContent = '    ${blocName.camelCase}Bloc.close();';
+            arrayContent =
+                '    ${blocName.camelCase}Bloc.close();\n$arrayContent';
           }
         }
 

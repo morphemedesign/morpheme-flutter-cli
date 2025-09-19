@@ -108,7 +108,7 @@ class Color2DartCommand extends Command {
     try {
       // Check if this is an init command
       final isInit = argResults?.rest.firstOrNull == 'init';
-      
+
       if (isInit) {
         // Handle init command directly
         await _handleInitCommand();
@@ -126,7 +126,7 @@ class Color2DartCommand extends Command {
 
       // Execute generation
       final success = await _executeGeneration(config);
-      
+
       if (success) {
         _reportSuccess();
       }
@@ -182,13 +182,13 @@ class Color2DartCommand extends Command {
   Future<bool> _executeGeneration(Color2DartConfig config) async {
     printMessage('🎨 Generating color classes...');
     final success = await _processor.processGeneration(config, false);
-    
+
     if (success) {
       printMessage('✅ Color generation completed successfully');
     } else {
       printMessage('❌ Color generation failed');
     }
-    
+
     return success;
   }
 
@@ -197,14 +197,14 @@ class Color2DartCommand extends Command {
   /// This method processes the init command to create initial configuration.
   Future<void> _handleInitCommand() async {
     printMessage('🔧 Initializing color2dart configuration...');
-    
+
     try {
       final argMorphemeYaml = argResults.getOptionMorphemeYaml();
       YamlHelper.validateMorphemeYaml(argMorphemeYaml);
-      
+
       final config = _prepareConfiguration();
       final success = await _processor.processGeneration(config, true);
-      
+
       if (success) {
         printMessage('✅ Color2Dart initialization completed successfully');
       }

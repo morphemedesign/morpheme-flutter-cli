@@ -17,7 +17,7 @@ class ReCase {
 
   /// The original text provided to the ReCase instance
   late String originalText;
-  
+
   /// The words extracted from the original text
   late List<String> _words;
 

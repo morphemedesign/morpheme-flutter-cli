@@ -59,20 +59,20 @@ class ApiArgumentsValidator {
     final method = _validateMethod(argResults?['method'] as String?);
     final returnData =
         _validateReturnData(argResults?['return-data'] as String?);
-    
+
     // Only set cache strategy for methods that support it
     CacheStrategy? cacheStrategy;
     int? ttl;
     bool? keepExpiredCache;
-    
+
     if (_isApplyCacheStrategy(method)) {
       cacheStrategy =
           _validateCacheStrategy(argResults?['cache-strategy'] as String?);
       ttl = _validateTtl(argResults?['ttl'] as String?);
-      keepExpiredCache =
-          _validateKeepExpiredCache(argResults?['keep-expired-cache'] as String?);
+      keepExpiredCache = _validateKeepExpiredCache(
+          argResults?['keep-expired-cache'] as String?);
     }
-    
+
     // Handle multipart body list restriction
     final bodyList = (argResults?['body-list'] ?? false) &&
         !method.toLowerCase().contains('multipart');

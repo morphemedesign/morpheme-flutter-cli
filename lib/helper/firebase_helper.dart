@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:morpheme_cli/dependency_manager.dart';
+import 'package:morpheme_cli/generate/firebase/models/firebase_config.dart';
 import 'package:morpheme_cli/helper/helper.dart';
 
 abstract class FirebaseHelper {
@@ -79,7 +80,7 @@ abstract class FirebaseHelper {
     final pathFirebaseOptions = output != null
         ? join(current, output)
         : join(current, 'lib', 'firebase_options.dart');
-        
+
     if (exists(pathFirebaseOptions)) {
       final firebaseOptions = readFile(pathFirebaseOptions);
       if (RegExp('''projectId:(\\s+)?('|")$projectId('|")''')
@@ -136,17 +137,16 @@ abstract class FirebaseHelper {
   /// // Execute the command
   /// await command.run;
   /// ```
-  static String buildFlutterFireCommand(Map<dynamic, dynamic> config) {
-    final project = config['project_id'];
-    final token = config['token'];
-    final platform = config['platform'];
-    final output = config['output'];
-    final androidPackageName = config['android_package_name'];
-    final iosBundleId = config['ios_bundle_id'];
-    final webAppId = config['web_app_id'];
+  static String buildFlutterFireCommand(FirebaseConfig firebaseConfig) {
+    final project = firebaseConfig.projectId;
+    final token = firebaseConfig.token;
+    final platform = firebaseConfig.platform;
+    final output = firebaseConfig.output;
+    final androidPackageName = firebaseConfig.androidPackageName;
+    final iosBundleId = firebaseConfig.iosBundleId;
+    final webAppId = firebaseConfig.webAppId;
 
-    final argToken =
-        token is String && token.isNotEmpty ? ' -t "$token"' : '';
+    final argToken = token is String && token.isNotEmpty ? ' -t "$token"' : '';
     final argPlatform = platform is String && platform.isNotEmpty
         ? ' --platforms="$platform"'
         : '';
@@ -156,13 +156,13 @@ abstract class FirebaseHelper {
         output is String && output.isNotEmpty ? ' -o "$output"' : '';
 
     return 'flutterfire configure $argToken$argPlatform$argWebAppId$argOutput '
-           '-p "$project" '
-           '-a "$androidPackageName" '
-           '-i "$iosBundleId" '
-           '-m "$iosBundleId" '
-           '-w "$androidPackageName" '
-           '-x "$androidPackageName" '
-           '-y';
+        '-p "$project" '
+        '-a "$androidPackageName" '
+        '-i "$iosBundleId" '
+        '-m "$iosBundleId" '
+        '-w "$androidPackageName" '
+        '-x "$androidPackageName" '
+        '-y';
   }
 
   /// Validates that the flutterfire CLI tool is installed.

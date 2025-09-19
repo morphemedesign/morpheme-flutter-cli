@@ -43,7 +43,8 @@ class TemplateTestConfig {
   /// - [currentPath]: Current working directory path
   ///
   /// Returns: A new TemplateTestConfig instance with parsed configuration
-  factory TemplateTestConfig.fromArgs(ArgResults argResults, String currentPath) {
+  factory TemplateTestConfig.fromArgs(
+      ArgResults argResults, String currentPath) {
     final appsName = argResults['apps-name']?.toString().snakeCase;
     final featureName = argResults['feature-name']?.toString().snakeCase ?? '';
     final pageName = argResults['page-name']?.toString().snakeCase ?? '';

@@ -416,8 +416,7 @@ abstract class ErrorHandler {
   /// Returns suggestion and examples for resolving path issues.
   static Map<String, dynamic> _getInvalidPathErrorInfo() {
     return {
-      'suggestion':
-          'Check that the specified path exists and is accessible',
+      'suggestion': 'Check that the specified path exists and is accessible',
       'examples': ['ls -la', 'pwd'],
     };
   }
@@ -458,8 +457,7 @@ abstract class ErrorHandler {
   /// Returns suggestion and examples for resolving permission issues.
   static Map<String, dynamic> _getPermissionDeniedErrorInfo() {
     return {
-      'suggestion':
-          'Check file permissions or run with appropriate privileges',
+      'suggestion': 'Check file permissions or run with appropriate privileges',
       'examples': ['chmod +x file', 'sudo command'],
     };
   }
@@ -489,8 +487,7 @@ abstract class ErrorHandler {
   /// Returns suggestion and examples for resolving timeout issues.
   static Map<String, dynamic> _getTimeoutErrorInfo() {
     return {
-      'suggestion':
-          'Operation timed out, try again or check system resources',
+      'suggestion': 'Operation timed out, try again or check system resources',
       'examples': ['morpheme clean', 'flutter clean'],
     };
   }

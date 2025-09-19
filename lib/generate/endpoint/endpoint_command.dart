@@ -34,7 +34,7 @@ import 'package:morpheme_cli/generate/endpoint/models/endpoint_config.dart';
 /// ```dart
 /// abstract class ProjectEndpoints {
 ///   static Uri _createUriBASE_URL(String path) => Uri.parse(const String.fromEnvironment('BASE_URL') + path,);
-///   
+///
 ///   static Uri login = _createUriBASE_URL('/auth/login',);
 ///   static Uri getUserProfile(String id,) => _createUriBASE_URL('/users/$id',);
 /// }

@@ -17,7 +17,7 @@ class LocatorGenerationService {
   void createLocatorFile(PageConfig config) {
     final path = config.pathPage;
     createDir(path);
-    
+
     join(path, 'locator.dart').write('''import 'package:core/core.dart';
 
 import 'presentation/cubit/${config.pageName}_cubit.dart';
@@ -37,7 +37,7 @@ void setupLocator${config.className}() {
   void updateFeatureLocator(PageConfig config) {
     final path = join(config.pathFeature, 'lib');
     final locatorPath = join(path, 'locator.dart');
-    
+
     if (!exists(locatorPath)) {
       StatusHelper.warning('Feature locator file not found at $locatorPath');
       return;
@@ -50,8 +50,8 @@ void setupLocator${config.className}() {
 
 void setupLocatorFeature${config.featureName.pascalCase}() {''');
 
-    data = data.replaceAll(
-        RegExp(r'}\n$', multiLine: true), '''  setupLocator${config.className}();
+    data = data.replaceAll(RegExp(r'}\n$', multiLine: true),
+        '''  setupLocator${config.className}();
 }''');
 
     join(path, 'locator.dart').write(data);

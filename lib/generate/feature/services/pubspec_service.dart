@@ -12,15 +12,16 @@ class PubspecService {
   ///
   /// This method updates the pubspec.yaml to include the feature as both
   /// a dependency and in the assets section.
-  void addFeatureToPubspec(String pathFeature, String featureName, String appsName) {
+  void addFeatureToPubspec(
+      String pathFeature, String featureName, String appsName) {
     String pathPubspec = join(current, 'pubspec.yaml');
 
     if (!exists(pathPubspec)) {
       return;
     }
-    
+
     String pubspec = File(pathPubspec).readAsStringSync();
-    
+
     // Add to assets section
     pubspec = pubspec.replaceAll(
       RegExp(r'(^\n?dependencies)', multiLine: true),
@@ -28,7 +29,7 @@ class PubspecService {
 
 dependencies''',
     );
-    
+
     // Add as dependency
     pubspec = pubspec.replaceAll(
       RegExp(r'(^\n?dev_dependencies)', multiLine: true),
@@ -37,7 +38,7 @@ dependencies''',
 
 dev_dependencies''',
     );
-    
+
     pathPubspec.write(pubspec);
     StatusHelper.generated(pathPubspec);
   }

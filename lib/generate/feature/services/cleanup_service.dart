@@ -9,7 +9,8 @@ class CleanupService {
   ///
   /// This method cleans up directories like android, ios, web, etc. that are
   /// created by default but not needed for Flutter package modules.
-  void removeUnusedDirs(String pathFeature, String featureName, String appsName) {
+  void removeUnusedDirs(
+      String pathFeature, String featureName, String appsName) {
     for (var element in [
       join(pathFeature, 'android'),
       join(pathFeature, 'ios'),
