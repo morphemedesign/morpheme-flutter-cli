@@ -83,8 +83,15 @@ class EndpointService {
 
       for (var baseUrl in environmentUrl) {
         if (!generatedBaseUrls.contains(baseUrl.toString())) {
+          String baseUrlName = baseUrl;
+          final isHttp = RegExp(r'^(http|https):\/\/').hasMatch(baseUrl);
+          if (isHttp) {
+            final uri = Uri.parse(baseUrl);
+            baseUrlName = uri.host.replaceAll('.', '_');
+          }
+          
           file.writeln(
-            '  static Uri _createUri${baseUrl.toString().pascalCase}(String path) => Uri.parse(const String.fromEnvironment(\'$baseUrl\') + path,);',
+            '  static Uri _createUri${baseUrlName.pascalCase}(String path) => Uri.parse(${isHttp ? "'$baseUrl\$path'" : "'\${const String.fromEnvironment('$baseUrl')}\$path'"},);',
           );
           generatedBaseUrls.add(baseUrl.toString());
         }
@@ -123,15 +130,21 @@ class EndpointService {
                 if (pathUrl != null) {
                   final parameters = <String>[];
                   parse(pathUrl, parameters: parameters);
-
-                  final isHttp =
+                  String baseUrlName = baseUrl;
+                  final isHttpBaseUrl =
+                      RegExp(r'^(http|https):\/\/').hasMatch(baseUrl);
+                  if (isHttpBaseUrl) {
+                    final uri = Uri.parse(baseUrl);
+                    baseUrlName = uri.host.replaceAll('.', '_');
+                  }
+                  final isHttpPath =
                       RegExp(r'^(http|https):\/\/').hasMatch(pathUrl);
 
                   String data = '';
 
                   if (parameters.isEmpty) {
                     data =
-                        "  static Uri ${apiKey.toString().camelCase}${appsName.pascalCase} = ${isHttp ? 'Uri.parse' : '_createUri${baseUrl.toString().pascalCase}'}('$pathUrl',);";
+                        "  static Uri ${apiKey.toString().camelCase}${appsName.pascalCase} = ${isHttpPath ? 'Uri.parse' : '_createUri${baseUrlName.toString().pascalCase}'}('$pathUrl',);";
                   } else {
                     final parameterString =
                         parameters.map((e) => 'String ${e.camelCase},').join();
@@ -140,7 +153,7 @@ class EndpointService {
                         .join();
 
                     data =
-                        "  static Uri ${apiKey.toString().camelCase}${appsName.pascalCase}($parameterString) => ${isHttp ? 'Uri.parse' : '_createUri${baseUrl.toString().pascalCase}'}('$pathUrl'$replacePath,);";
+                        "  static Uri ${apiKey.toString().camelCase}${appsName.pascalCase}($parameterString) => ${isHttpPath ? 'Uri.parse' : '_createUri${baseUrlName.toString().pascalCase}'}('$pathUrl'$replacePath,);";
                   }
 
                   if (!generatedMethods.contains(data)) {

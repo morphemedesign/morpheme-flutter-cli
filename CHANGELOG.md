@@ -1,3 +1,19 @@
+## 4.0.0-beta.4
+
+feat(json2dart): add new modular Json2DartCommand implementation
+
+- Implement Json2DartCommand with modular architecture for separation of concerns
+- Introduce CommandProcessor for CLI handling and argument parsing
+- Add GenerationOrchestrator to coordinate overall generation workflow
+- Integrate FeatureProcessor for individual feature processing
+- Include Json2DartConfigManager for configuration management
+- Add FileOperationService for file I/O operations
+- Support unit test generation via UnitTestGenerationService
+- Enable verbose flag for debug output and error stack trace logging
+- Refactor endpoint service to handle HTTP URLs with hostname-based method naming
+- Parse and generate Uri methods differently for HTTP URLs
+- Update dependencies and bump version to 4.0.0-beta.4
+
 ## 4.0.0-beta.3
 
 refactor(build): consolidate build commands with base class
