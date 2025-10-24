@@ -1,3 +1,15 @@
+## 4.0.0-beta.5
+
+feat(json2dart): add extra response model generation and type inference
+
+- Introduce generateExtraModel and generateExtraClass methods for response models with 'Extra' suffix
+- Implement getTypeExtraVariable to infer Dart types for complex JSON including nested maps and lists
+- Add _generateFromExtraMap factory constructor for extra models with proper deserialization handling
+- Support nested extra classes generation and nullable typing for extra model fields
+- Enhance deserialization for primitives, lists, maps, and DateTime in extra models
+- Update API processor to generate and write extra model files with 'Extra' suffix
+- Bump version to 4.0.0-beta.5
+
 ## 4.0.0-beta.4
 
 feat(json2dart): add new modular Json2DartCommand implementation

@@ -356,13 +356,10 @@ class ApiProcessor {
           ? responseData
           : Map<String, dynamic>.from(responseData);
 
-      final extraModel = _responseGenerator.generateResponseModel(
+      final extraModel = _responseGenerator.generateExtraModel(
         apiName.pascalCase,
         responseMap,
       );
-
-      // Replace 'Response' with 'Extra' in the model
-      final extraModelContent = extraModel.replaceAll('Response', 'Extra');
 
       // Track the extra directory for formatting
       _extraDirectories.add(dirExtra);
@@ -370,7 +367,7 @@ class ApiProcessor {
       _fileService.writeGeneratedFile(
         dirExtra,
         '${apiName.snakeCase}_extra.dart',
-        extraModelContent,
+        extraModel,
       );
 
       return true;

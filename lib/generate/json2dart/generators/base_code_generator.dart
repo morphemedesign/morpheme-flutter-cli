@@ -67,6 +67,55 @@ abstract class BaseCodeGenerator {
     return 'dynamic';
   }
 
+  /// Gets the appropriate type for a given value
+  ///
+  /// [key] - Property key name
+  /// [value] - Property value
+  /// [suffix] - Class suffix for complex types
+  /// [listClassName] - List of class names for collision detection
+  /// [parent] - Parent class name
+  /// Returns the Dart type string
+  String getTypeExtraVariable(
+    String key,
+    dynamic value,
+    String suffix,
+    List<ModelClassName> listClassName,
+    String parent,
+  ) {
+    if (value is int) return 'int';
+    if (value is double) return 'double';
+    if (value is bool) return 'bool';
+
+    if (value is Map) {
+      String className = ModelClassNameHelper.getClassName(
+        listClassName,
+        suffix,
+        key.pascalCase,
+        false,
+        false,
+        parent,
+      );
+
+      return '${className.replaceAll('Extra', '')}Extra';
+    }
+
+    if (value is List) {
+      if (value.isNotEmpty) {
+        return 'List<${getTypeExtraVariable(key, value.first, suffix, listClassName, parent)}>';
+      }
+      return 'List<dynamic>';
+    }
+
+    if (value is String) {
+      if (_isDateTime(value)) {
+        return 'DateTime';
+      }
+      return 'String';
+    }
+
+    return 'dynamic';
+  }
+
   /// Checks if a string value represents a DateTime
   bool _isDateTime(String value) {
     return RegExp(
