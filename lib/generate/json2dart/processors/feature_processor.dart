@@ -253,7 +253,7 @@ class FeatureProcessor {
   String _updateCubitConstructor(
       String cubit, String pageName, List<String> blocsName) {
     final constructorPattern =
-        '${pageName.pascalCase}Cubit\\({[\\s\\w\\.\\,\\d]+}\\)';
+        '${pageName.pascalCase}Cubit\\(({[\\s\\w\\.\\,\\d]+})?\\)';
     final newConstructor = '''${pageName.pascalCase}Cubit({
 ${blocsName.isEmpty ? '' : blocsName.map((e) => '    required this.${e.camelCase}Bloc,').join('\n')}
   })''';

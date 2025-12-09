@@ -1,87 +1,25 @@
-## 4.0.0-beta.5
+## 4.0.0
 
-feat(json2dart): add extra response model generation and type inference
+feat!: Major release with significant architectural refactoring and new features
 
-- Introduce generateExtraModel and generateExtraClass methods for response models with 'Extra' suffix
-- Implement getTypeExtraVariable to infer Dart types for complex JSON including nested maps and lists
-- Add _generateFromExtraMap factory constructor for extra models with proper deserialization handling
-- Support nested extra classes generation and nullable typing for extra model fields
-- Enhance deserialization for primitives, lists, maps, and DateTime in extra models
-- Update API processor to generate and write extra model files with 'Extra' suffix
-- Bump version to 4.0.0-beta.5
-
-## 4.0.0-beta.4
-
-feat(json2dart): add new modular Json2DartCommand implementation
-
-- Implement Json2DartCommand with modular architecture for separation of concerns
-- Introduce CommandProcessor for CLI handling and argument parsing
-- Add GenerationOrchestrator to coordinate overall generation workflow
-- Integrate FeatureProcessor for individual feature processing
-- Include Json2DartConfigManager for configuration management
-- Add FileOperationService for file I/O operations
-- Support unit test generation via UnitTestGenerationService
-- Enable verbose flag for debug output and error stack trace logging
-- Refactor endpoint service to handle HTTP URLs with hostname-based method naming
-- Parse and generate Uri methods differently for HTTP URLs
-- Update dependencies and bump version to 4.0.0-beta.4
-
-## 4.0.0-beta.3
-
-refactor(build): consolidate build commands with base class
-
-- Extract common build argument parsing and run logic into BuildCommandBase
-- Refactor Apk, Appbundle, Ios, Ipa, and Web commands to extend BuildCommandBase
-- Move platform-specific build command construction to subclasses
-- Simplify and unify build process flow in all build commands
-- Refactor prebuild commands for Android and iOS to improve structure and validation
-- Add specific arguments to iOS and IPA commands where needed
-- Enhance code maintainability and reduce duplication across build commands
-
-## 4.0.0-beta.2
-
-style(project): format code and adjust line breaks across multiple files
-
-- Add missing trailing newlines and fix inconsistent closing braces
-- Align multiline method chains and arguments for better readability
-- Update import and string formatting style in feature_processor.dart for clarity
-- Standardize whitespace usage and indentation in commands and services
-- Refactor long lines in config managers for improved maintainability
-- Enhance error messages and suggestions format consistency
-- Improve listener method code generation in feature_processor.dart
-- Clean up pubspec.yaml modification logic in feature and core services
-- Maintain consistent blank lines between methods and code blocks
-- Add toString override in FirebaseConfig model for improved debugging output
-
-## 4.0.0-beta
-
-feat!: major release with breaking changes and new features
-
-- feat!: refactor entire codebase architecture for better modularity
-- feat!: update all commands to use new streamlined API
-- feat!: add support for Flutter 3.5+ and Dart 3.0+
-- feat!: implement new plugin system for extensibility
-- feat!: add enhanced error handling and reporting
-- feat!: improve performance with new caching mechanism
-- feat!: add support for multi-platform project generation
-- feat!: introduce new testing framework integration
-- feat!: add advanced localization support
-- feat!: implement new build system with incremental compilation
-- feat!: add support for code splitting and lazy loading
-- feat!: enhance CLI with new interactive mode
-- feat!: add support for custom themes and styling
-- feat!: implement new state management integration
-- feat!: add advanced debugging capabilities
-- feat!: improve documentation generation
-- feat!: add support for web and desktop platforms
-- feat!: implement new dependency management system
-- feat!: add support for internationalization
-- feat!: enhance security with new encryption features
-- chore!: update all dependencies to latest versions
-- chore!: remove deprecated APIs and methods
-- fix!: resolve all known critical issues
-- fix!: improve stability and reliability
-- fix!: enhance compatibility with latest Flutter versions
+- **Core Architecture**: Refactored entire codebase for improved modularity, introducing a new streamlined API, and updating all commands.
+- **Platform Support**: Added support for Flutter 3.5+, Dart 3.0+, and multi-platform project generation (web, desktop).
+- **JSON to Dart Generation**:
+  - Implemented a new modular `Json2DartCommand` architecture with dedicated processors for CLI, generation orchestration, features, configuration, and file operations.
+  - Added support for generating extra response models with 'Extra' suffixes, including advanced type inference for complex JSON structures and enhanced deserialization.
+  - Refactored endpoint service to handle HTTP URLs and Uri methods more robustly.
+- **Build System**: Consolidated build commands (`Apk`, `Appbundle`, `Ios`, `Ipa`, `Web`) under a `BuildCommandBase` for unified argument parsing and logic, simplifying the build process.
+- **Extensibility**: Introduced a new plugin system.
+- **Developer Experience**:
+  - Enhanced error handling and reporting, including verbose flag for debug output.
+  - Improved CLI with an interactive mode.
+  - Added new testing framework integration, unit test generation, advanced debugging capabilities, and improved documentation generation.
+  - Implemented new caching and dependency management systems.
+- **Code Quality**: Performed extensive code formatting and styling adjustments across multiple files for better readability, consistency, and maintainability.
+- **Security & Localization**: Enhanced security with new encryption features and added support for internationalization and advanced localization.
+- **Bug Fixes**: Resolved all known critical issues, improving stability, reliability, and compatibility with the latest Flutter versions.
+- **Chores**: Updated all dependencies to their latest versions and removed deprecated APIs and methods.
+- **Configuration**: Introduced `Json2DartConfigManager` for configuration management and improved `pubspec.yaml` modification logic.
 
 ## 3.7.0
 
