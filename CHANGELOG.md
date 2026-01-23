@@ -1,3 +1,7 @@
+## 4.0.2
+
+fix: update morpheme_lite to use morpheme 4.0.2
+
 ## 4.0.1
 
 fix: generate class state bloc now using sealed class for json2dart command

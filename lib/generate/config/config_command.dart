@@ -136,7 +136,7 @@ ${dartDefines.entries.map((e) => '''        {
     "tasks": [
 ${dartDefines.entries.map((e) => '''        {
             "label": "firebase-${e.key.paramCase}",
-            "command": "morpheme_lite firebase -f ${e.key}",
+            "command": "morpheme firebase -f ${e.key}",
             "type": "shell"
         },
         {
