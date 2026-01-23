@@ -77,7 +77,7 @@ import 'package:morpheme_cli/tools/tools.dart';
 
 /// Application metadata and configuration constants.
 class _AppConfig {
-  static const String version = '4.0.0';
+  static const String version = '4.0.1';
   static const String name = 'morpheme';
   static const String description =
       'Morpheme CLI Boost productivity with modular project creation, '

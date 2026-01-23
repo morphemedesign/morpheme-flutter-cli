@@ -1,3 +1,8 @@
+## 4.0.1
+
+fix: generate class state bloc now using sealed class for json2dart command
+fix: update generate config if firebase options are not provided
+
 ## 4.0.0
 
 feat!: Major release with significant architectural refactoring and new features

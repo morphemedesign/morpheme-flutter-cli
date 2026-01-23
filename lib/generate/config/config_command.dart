@@ -32,6 +32,9 @@ class ConfigCommand extends Command {
   /// Stores the project name read from the morpheme.yaml file.
   String projectName = '';
 
+  /// Stores the isFirebase read from the morpheme.yaml file.
+  bool isFirebase = false;
+
   /// Executes the config command.
   ///
   /// This method:
@@ -50,6 +53,7 @@ class ConfigCommand extends Command {
     YamlHelper.validateMorphemeYaml(argMorphemeYaml);
     final yaml = YamlHelper.loadFileYaml(argMorphemeYaml);
     projectName = yaml.projectName;
+    isFirebase = yaml['flavor'].containsKey('firebase');
 
     Map<String, List<String>> dartDefines = {};
 
@@ -96,7 +100,7 @@ ${dartDefines.entries.map((e) => '''        {
             "request": "launch",
             "type": "dart",
             "flutterMode": "debug",
-            "preLaunchTask": "build-${e.key.paramCase}",
+            ${isFirebase ? '"preLaunchTask": "build-${e.key.paramCase}",' : ""}
             "program": "$target",
             "args": [
                 ${e.value.join(',\n\t\t\t\t')}
@@ -107,7 +111,7 @@ ${dartDefines.entries.map((e) => '''        {
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile",
-            "preLaunchTask": "build-${e.key.paramCase}",
+            ${isFirebase ? '"preLaunchTask": "build-${e.key.paramCase}",' : ""}
             "program": "$target",
             "args": [
                 ${e.value.join(',\n\t\t\t\t')}
@@ -118,7 +122,7 @@ ${dartDefines.entries.map((e) => '''        {
             "request": "launch",
             "type": "dart",
             "flutterMode": "release",
-            "preLaunchTask": "build-${e.key.paramCase}",
+            ${isFirebase ? '"preLaunchTask": "build-${e.key.paramCase}",' : ""}
             "program": "$target",
             "args": [
                 ${e.value.join(',\n\t\t\t\t')}
@@ -132,7 +136,7 @@ ${dartDefines.entries.map((e) => '''        {
     "tasks": [
 ${dartDefines.entries.map((e) => '''        {
             "label": "firebase-${e.key.paramCase}",
-            "command": "morpheme firebase -f ${e.key}",
+            "command": "morpheme_lite firebase -f ${e.key}",
             "type": "shell"
         },
         {
@@ -243,9 +247,9 @@ ${dartDefines.entries.map((e) => '''        {
   <configuration default="false" name="${projectName.titleCase} $mode ${flavor.titleCase}" type="FlutterRunConfigurationType" factoryName="Flutter">
     <option name="additionalArgs" value="$dartDefines" />
     <option name="filePath" value="$target" />
-    <method v="2">
+    ${isFirebase ? '''<method v="2">
       <option name="RunConfigurationTask" enabled="true" run_configuration_name="${projectName.titleCase} Firebase ${flavor.titleCase}" />
-    </method>
+    </method>''' : ''}
   </configuration>
 </component>''';
 

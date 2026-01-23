@@ -360,7 +360,7 @@ class ${config.apiClassName}UseCase implements ${typeResolver.whenMethod(
     return '''part of '${config.apiName}_bloc.dart';
 
 @immutable
-abstract class ${config.apiClassName}State extends Equatable {
+sealed class ${config.apiClassName}State extends Equatable {
   bool get isInitial => this is ${config.apiClassName}Initial;
   bool get isLoading => this is ${config.apiClassName}Loading;
   bool get isFailed => this is ${config.apiClassName}Failed;
