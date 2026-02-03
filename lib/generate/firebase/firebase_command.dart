@@ -108,6 +108,8 @@ class FirebaseCommand extends Command {
       // Prepare configuration
       final config = _prepareConfiguration();
 
+      if (config.isEmpty) return;
+
       // Execute generation
       final success = await _executeGeneration(config);
 
@@ -161,6 +163,7 @@ class FirebaseCommand extends Command {
     if (firebase.isEmpty) {
       StatusHelper.warning(
           'Cannot setup flavor firebase, You don\'t have config "firebase" with flavor "$argFlavor" in morpheme.yaml');
+      return {};
     }
 
     // Add overwrite flag to the configuration

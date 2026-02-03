@@ -1,3 +1,7 @@
+## 4.0.3
+
+feat: Bump version to 4.0.3 and improve Firebase generation command robustness by handling empty configurations.
+
 ## 4.0.2
 
 fix: update morpheme_lite to use morpheme 4.0.2
